@@ -1,10 +1,15 @@
 # wyvern
 
-![](wyvern.png)
-
-Simplified DRAKON diagramming language.
-
-For a more faithful implementation of DRAKON, please visit: https://github.com/PiotrJustyna/drakon-renderer
+<table>
+  <tr>
+    <td><img src="wyvern.png" alt="wyvern" style="width:300px;"/></td>
+    <td>
+      Simplified version of DRAKON diagramming language.
+      <br /> <br />
+      For a more faithful implementation of DRAKON, please visit: <a href="https://github.com/PiotrJustyna/drakon-renderer">PiotrJustyna/drakon-renderer</a>.
+    </td>
+  </tr>
+</table>
 
 ## constraints
 
