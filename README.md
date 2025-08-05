@@ -1,5 +1,7 @@
 # wyvern
 
+![](wyvern.png)
+
 Simplified DRAKON diagramming language.
 
 For a more faithful implementation of DRAKON, please visit: https://github.com/PiotrJustyna/drakon-renderer
