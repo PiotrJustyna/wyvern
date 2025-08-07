@@ -1,2 +1,2 @@
 #!/bin/bash
-cabal run wyvern
+cabal run Wyvern
