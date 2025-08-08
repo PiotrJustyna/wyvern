@@ -19,8 +19,24 @@ common warnings
 executable Wyvern
     import:           warnings
     main-is:          Main.hs
-    -- other-modules:
+    other-modules:    ID
+                      Content
+                      Constants
+                      HelperDiagrams
+                      StartTerminator
+                      EndTerminator
+                      Lexer
+                      Parser
+                      SkewerBlock
+                      WyvernDiagram
     -- other-extensions:
-    build-depends:    base ^>=4.19.1.0
+    build-depends:    base ^>=4.19.1.0,
+                      colour,
+                      text,
+                      diagrams-lib,
+                      diagrams-svg,
+                      containers,
+                      MissingH,
+                      array
     hs-source-dirs:   app
     default-language: Haskell2010

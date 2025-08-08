@@ -1,6 +1,9 @@
 {
 module Parser where
+import Data.Char
 import Lexer
+import ID
+import SkewerBlock
 }
 
 %name                                       diagram
@@ -15,7 +18,21 @@ import Lexer
 
 %%
 
-block : {- empty -}                                           { [] }
+skewers :   headline                                              { [$1] }
+            | skewers headline                                    { $2 : $1 }
+
+headline :  action '{' skewer '}'                                 { $3 <> [toHeadline $1] }
+            | action '{' skewer soloId '}'                        { toAddress $4 : $3 <> [toHeadline $1] }
+
+skewer :    {- empty -}                                           { [] }
+            | block                                               { [$1] }
+            | skewer block                                        { $2 : $1 }
+
+block :     action                                                { toAction $1 }
+            | action '{' skewer '}' '{' skewer '}'                { toFork $1 $3 Nothing $6 Nothing }
+            | action '{' skewer '}' '{' skewer soloId '}'         { toFork $1 $3 Nothing $6 (Just (ID $7)) }
+            | action '{' skewer soloId '}' '{' skewer '}'         { toFork $1 $3 (Just (ID $4)) $7 Nothing }
+            | action '{' skewer soloId '}' '{' skewer soloId '}'  { toFork $1 $3 (Just (ID $4)) $7 (Just (ID $8)) }
 
 {
 

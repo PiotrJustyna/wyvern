@@ -9,7 +9,10 @@
 {-# LANGUAGE UnboxedTuples #-}
 {-# LANGUAGE PartialTypeSignatures #-}
 module Parser where
+import Data.Char
 import Lexer
+import ID
+import SkewerBlock
 import qualified Control.Monad as Happy_Prelude
 import qualified Data.Bool as Happy_Prelude
 import qualified Data.Function as Happy_Prelude
@@ -29,48 +32,176 @@ import Control.Monad (ap)
 
 -- parser produced by Happy Version 2.1.6
 
-data HappyAbsSyn t5
+data HappyAbsSyn t5 t6 t7 t8
         = HappyTerminal (Token)
         | HappyErrorToken Happy_Prelude.Int
         | HappyAbsSyn5 t5
+        | HappyAbsSyn6 t6
+        | HappyAbsSyn7 t7
+        | HappyAbsSyn8 t8
 
 {-# NOINLINE happyTokenStrings #-}
 happyTokenStrings = ["action","soloId","'{'","'}'","%eof"]
 
 happyActOffsets :: HappyAddr
-happyActOffsets = HappyA# "\x00\x00\x00\x00\x00\x00\x00\x00\xfb\xff\xff\xff\x00\x00\x00\x00"#
+happyActOffsets = HappyA# "\x07\x00\x00\x00\x07\x00\x00\x00\x00\x00\x00\x00\xfe\xff\xff\xff\xff\xff\xff\xff\x00\x00\x00\x00\x0b\x00\x00\x00\x01\x00\x00\x00\x00\x00\x00\x00\x11\x00\x00\x00\x0f\x00\x00\x00\x00\x00\x00\x00\x19\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x05\x00\x00\x00\x1b\x00\x00\x00\x1d\x00\x00\x00\x20\x00\x00\x00\x1f\x00\x00\x00\x22\x00\x00\x00\x09\x00\x00\x00\x21\x00\x00\x00\x00\x00\x00\x00\x0d\x00\x00\x00\x23\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00"#
 
 happyGotoOffsets :: HappyAddr
-happyGotoOffsets = HappyA# "\x02\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00"#
+happyGotoOffsets = HappyA# "\x13\x00\x00\x00\x1e\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x24\x00\x00\x00\x00\x00\x00\x00\x14\x00\x00\x00\x26\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x16\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x26\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x18\x00\x00\x00\x00\x00\x00\x00\x1a\x00\x00\x00\x26\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x26\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00"#
 
 happyDefActions :: HappyAddr
-happyDefActions = HappyA# "\xfe\xff\xff\xff\x00\x00\x00\x00\x00\x00\x00\x00"#
+happyDefActions = HappyA# "\x00\x00\x00\x00\x00\x00\x00\x00\xfe\xff\xff\xff\x00\x00\x00\x00\x00\x00\x00\x00\xfd\xff\xff\xff\xfa\xff\xff\xff\x00\x00\x00\x00\xf9\xff\xff\xff\xf7\xff\xff\xff\xfa\xff\xff\xff\xf8\xff\xff\xff\x00\x00\x00\x00\xfc\xff\xff\xff\xfb\xff\xff\xff\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\xfa\xff\xff\xff\x00\x00\x00\x00\xfa\xff\xff\xff\x00\x00\x00\x00\x00\x00\x00\x00\xf6\xff\xff\xff\x00\x00\x00\x00\x00\x00\x00\x00\xf4\xff\xff\xff\xf5\xff\xff\xff\xf3\xff\xff\xff"#
 
 happyCheck :: HappyAddr
-happyCheck = HappyA# "\xff\xff\xff\xff\x06\x00\x00\x00\x00\x00\x00\x00\xff\xff\xff\xff\xff\xff\xff\xff\xff\xff\xff\xff\xff\xff\xff\xff\xff\xff\xff\xff\xff\xff\xff\xff"#
+happyCheck = HappyA# "\xff\xff\xff\xff\x02\x00\x00\x00\x04\x00\x00\x00\x02\x00\x00\x00\x03\x00\x00\x00\x06\x00\x00\x00\x05\x00\x00\x00\x02\x00\x00\x00\x03\x00\x00\x00\x02\x00\x00\x00\x05\x00\x00\x00\x02\x00\x00\x00\x03\x00\x00\x00\x02\x00\x00\x00\x05\x00\x00\x00\x02\x00\x00\x00\x03\x00\x00\x00\x02\x00\x00\x00\x05\x00\x00\x00\x00\x00\x00\x00\x01\x00\x00\x00\x04\x00\x00\x00\x02\x00\x00\x00\x03\x00\x00\x00\x02\x00\x00\x00\x03\x00\x00\x00\x02\x00\x00\x00\x03\x00\x00\x00\x02\x00\x00\x00\x03\x00\x00\x00\x05\x00\x00\x00\x01\x00\x00\x00\x05\x00\x00\x00\x04\x00\x00\x00\x02\x00\x00\x00\x04\x00\x00\x00\x02\x00\x00\x00\x01\x00\x00\x00\x05\x00\x00\x00\xff\xff\xff\xff\x05\x00\x00\x00\x03\x00\x00\x00\xff\xff\xff\xff\xff\xff\xff\xff\xff\xff\xff\xff"#
 
 happyTable :: HappyAddr
-happyTable = HappyA# "\x00\x00\x00\x00\xff\xff\xff\xff\x02\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00"#
+happyTable = HappyA# "\x00\x00\x00\x00\x04\x00\x00\x00\x07\x00\x00\x00\x0a\x00\x00\x00\x0d\x00\x00\x00\xff\xff\xff\xff\x0e\x00\x00\x00\x0a\x00\x00\x00\x11\x00\x00\x00\x04\x00\x00\x00\x12\x00\x00\x00\x0a\x00\x00\x00\x17\x00\x00\x00\x0a\x00\x00\x00\x18\x00\x00\x00\x0a\x00\x00\x00\x1a\x00\x00\x00\x0a\x00\x00\x00\x1b\x00\x00\x00\x04\x00\x00\x00\x02\x00\x00\x00\x0b\x00\x00\x00\x07\x00\x00\x00\x08\x00\x00\x00\x0f\x00\x00\x00\x08\x00\x00\x00\x15\x00\x00\x00\x08\x00\x00\x00\x18\x00\x00\x00\x08\x00\x00\x00\x0f\x00\x00\x00\x02\x00\x00\x00\x14\x00\x00\x00\x13\x00\x00\x00\x0a\x00\x00\x00\x15\x00\x00\x00\x0a\x00\x00\x00\x05\x00\x00\x00\x1c\x00\x00\x00\x00\x00\x00\x00\x1d\x00\x00\x00\x0b\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00"#
 
-happyReduceArr = Happy_Data_Array.array (1, 1) [
-        (1 , happyReduce_1)
+happyReduceArr = Happy_Data_Array.array (1, 12) [
+        (1 , happyReduce_1),
+        (2 , happyReduce_2),
+        (3 , happyReduce_3),
+        (4 , happyReduce_4),
+        (5 , happyReduce_5),
+        (6 , happyReduce_6),
+        (7 , happyReduce_7),
+        (8 , happyReduce_8),
+        (9 , happyReduce_9),
+        (10 , happyReduce_10),
+        (11 , happyReduce_11),
+        (12 , happyReduce_12)
         ]
 
 happyRuleArr :: HappyAddr
-happyRuleArr = HappyA# "\x00\x00\x00\x00\x00\x00\x00\x00"#
+happyRuleArr = HappyA# "\x00\x00\x00\x00\x01\x00\x00\x00\x00\x00\x00\x00\x02\x00\x00\x00\x01\x00\x00\x00\x04\x00\x00\x00\x01\x00\x00\x00\x05\x00\x00\x00\x02\x00\x00\x00\x00\x00\x00\x00\x02\x00\x00\x00\x01\x00\x00\x00\x02\x00\x00\x00\x02\x00\x00\x00\x03\x00\x00\x00\x01\x00\x00\x00\x03\x00\x00\x00\x07\x00\x00\x00\x03\x00\x00\x00\x08\x00\x00\x00\x03\x00\x00\x00\x08\x00\x00\x00\x03\x00\x00\x00\x09\x00\x00\x00"#
 
 happyCatchStates :: [Happy_Prelude.Int]
 happyCatchStates = []
 
 happy_n_terms = 7 :: Happy_Prelude.Int
-happy_n_nonterms = 1 :: Happy_Prelude.Int
+happy_n_nonterms = 4 :: Happy_Prelude.Int
 
 happy_n_starts = 1 :: Happy_Prelude.Int
 
-happyReduce_1 = happySpecReduce_0  0# happyReduction_1
-happyReduction_1  =  HappyAbsSyn5
+happyReduce_1 = happySpecReduce_1  0# happyReduction_1
+happyReduction_1 (HappyAbsSyn6  happy_var_1)
+         =  HappyAbsSyn5
+                 ([happy_var_1]
+        )
+happyReduction_1 _  = notHappyAtAll 
+
+happyReduce_2 = happySpecReduce_2  0# happyReduction_2
+happyReduction_2 (HappyAbsSyn6  happy_var_2)
+        (HappyAbsSyn5  happy_var_1)
+         =  HappyAbsSyn5
+                 (happy_var_2 : happy_var_1
+        )
+happyReduction_2 _ _  = notHappyAtAll 
+
+happyReduce_3 = happyReduce 4# 1# happyReduction_3
+happyReduction_3 (_ `HappyStk`
+        (HappyAbsSyn7  happy_var_3) `HappyStk`
+        _ `HappyStk`
+        (HappyTerminal (TokenAction happy_var_1)) `HappyStk`
+        happyRest)
+         = HappyAbsSyn6
+                 (happy_var_3 <> [toHeadline happy_var_1]
+        ) `HappyStk` happyRest
+
+happyReduce_4 = happyReduce 5# 1# happyReduction_4
+happyReduction_4 (_ `HappyStk`
+        (HappyTerminal (TokenSoloIdentifier happy_var_4)) `HappyStk`
+        (HappyAbsSyn7  happy_var_3) `HappyStk`
+        _ `HappyStk`
+        (HappyTerminal (TokenAction happy_var_1)) `HappyStk`
+        happyRest)
+         = HappyAbsSyn6
+                 (toAddress happy_var_4 : happy_var_3 <> [toHeadline happy_var_1]
+        ) `HappyStk` happyRest
+
+happyReduce_5 = happySpecReduce_0  2# happyReduction_5
+happyReduction_5  =  HappyAbsSyn7
                  ([]
         )
+
+happyReduce_6 = happySpecReduce_1  2# happyReduction_6
+happyReduction_6 (HappyAbsSyn8  happy_var_1)
+         =  HappyAbsSyn7
+                 ([happy_var_1]
+        )
+happyReduction_6 _  = notHappyAtAll 
+
+happyReduce_7 = happySpecReduce_2  2# happyReduction_7
+happyReduction_7 (HappyAbsSyn8  happy_var_2)
+        (HappyAbsSyn7  happy_var_1)
+         =  HappyAbsSyn7
+                 (happy_var_2 : happy_var_1
+        )
+happyReduction_7 _ _  = notHappyAtAll 
+
+happyReduce_8 = happySpecReduce_1  3# happyReduction_8
+happyReduction_8 (HappyTerminal (TokenAction happy_var_1))
+         =  HappyAbsSyn8
+                 (toAction happy_var_1
+        )
+happyReduction_8 _  = notHappyAtAll 
+
+happyReduce_9 = happyReduce 7# 3# happyReduction_9
+happyReduction_9 (_ `HappyStk`
+        (HappyAbsSyn7  happy_var_6) `HappyStk`
+        _ `HappyStk`
+        _ `HappyStk`
+        (HappyAbsSyn7  happy_var_3) `HappyStk`
+        _ `HappyStk`
+        (HappyTerminal (TokenAction happy_var_1)) `HappyStk`
+        happyRest)
+         = HappyAbsSyn8
+                 (toFork happy_var_1 happy_var_3 Nothing happy_var_6 Nothing
+        ) `HappyStk` happyRest
+
+happyReduce_10 = happyReduce 8# 3# happyReduction_10
+happyReduction_10 (_ `HappyStk`
+        (HappyTerminal (TokenSoloIdentifier happy_var_7)) `HappyStk`
+        (HappyAbsSyn7  happy_var_6) `HappyStk`
+        _ `HappyStk`
+        _ `HappyStk`
+        (HappyAbsSyn7  happy_var_3) `HappyStk`
+        _ `HappyStk`
+        (HappyTerminal (TokenAction happy_var_1)) `HappyStk`
+        happyRest)
+         = HappyAbsSyn8
+                 (toFork happy_var_1 happy_var_3 Nothing happy_var_6 (Just (ID happy_var_7))
+        ) `HappyStk` happyRest
+
+happyReduce_11 = happyReduce 8# 3# happyReduction_11
+happyReduction_11 (_ `HappyStk`
+        (HappyAbsSyn7  happy_var_7) `HappyStk`
+        _ `HappyStk`
+        _ `HappyStk`
+        (HappyTerminal (TokenSoloIdentifier happy_var_4)) `HappyStk`
+        (HappyAbsSyn7  happy_var_3) `HappyStk`
+        _ `HappyStk`
+        (HappyTerminal (TokenAction happy_var_1)) `HappyStk`
+        happyRest)
+         = HappyAbsSyn8
+                 (toFork happy_var_1 happy_var_3 (Just (ID happy_var_4)) happy_var_7 Nothing
+        ) `HappyStk` happyRest
+
+happyReduce_12 = happyReduce 9# 3# happyReduction_12
+happyReduction_12 (_ `HappyStk`
+        (HappyTerminal (TokenSoloIdentifier happy_var_8)) `HappyStk`
+        (HappyAbsSyn7  happy_var_7) `HappyStk`
+        _ `HappyStk`
+        _ `HappyStk`
+        (HappyTerminal (TokenSoloIdentifier happy_var_4)) `HappyStk`
+        (HappyAbsSyn7  happy_var_3) `HappyStk`
+        _ `HappyStk`
+        (HappyTerminal (TokenAction happy_var_1)) `HappyStk`
+        happyRest)
+         = HappyAbsSyn8
+                 (toFork happy_var_1 happy_var_3 (Just (ID happy_var_4)) happy_var_7 (Just (ID happy_var_8))
+        ) `HappyStk` happyRest
 
 happyTerminalToTok term = case term of {
         TokenAction happy_dollar_dollar -> 2#;
