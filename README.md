@@ -15,7 +15,7 @@
 
 * all lines either horizontal, vertical or both - no diagonal lines, no curves, etc.
 * all angles straight
-* main direction: top-to-bottom - that 
+* main direction: top-to-bottom
 * loopbacks possible
 * no arrows (direction is known and default) except loopbacks
 * main skewer - default progression
