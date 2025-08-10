@@ -5,6 +5,6 @@ module Content where
 -- TODO:
 -- Remove as soon as all Drakon code gets ported.
 
-newtype Content =
-  Content String
+newtype Content
+  = Content String
   deriving (Show)

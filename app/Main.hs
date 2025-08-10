@@ -1,16 +1,16 @@
 module Main where
 
+import Constants (defaultBoundingBoxHeight, svgOptions, svgOutputPath)
+import Content (Content (Content))
 import Diagrams.Backend.SVG (renderSVG')
 import Diagrams.Prelude (p2)
-import Constants (defaultBoundingBoxHeight, svgOptions, svgOutputPath)
-import Content (Content(Content))
-import WyvernDiagram (WyvernDiagram(..), heightInUnits, render)
-import EndTerminator (EndTerminator(End))
-import ID (ID(ID))
-import SkewerBlock (reverse'')
-import StartTerminator (StartTerminator(Title))
+import EndTerminator (EndTerminator (End))
+import ID (ID (ID))
 import Lexer (alexScanTokens)
-import Parser (ParseResult(..), diagram)
+import Parser (ParseResult (..), diagram)
+import SkewerBlock (reverse'')
+import StartTerminator (StartTerminator (Title))
+import WyvernDiagram (WyvernDiagram (..), heightInUnits, render)
 
 main :: IO ()
 main = do

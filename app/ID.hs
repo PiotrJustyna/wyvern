@@ -1,7 +1,7 @@
 module ID where
 
-newtype ID =
-  ID String
+newtype ID
+  = ID String
   deriving (Show)
 
 instance Eq ID where

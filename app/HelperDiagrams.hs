@@ -1,28 +1,28 @@
 module HelperDiagrams where
 
+import Constants (defaultFontSize, drakonStyle, fontColour, lineColour)
 import Diagrams.Backend.SVG (B)
 import Diagrams.Prelude
-  ( Diagram
-  , Point(..)
-  , V2(..)
-  , (#)
-  , closeLine
-  , fc
-  , font
-  , fontSize
-  , fromOffsets
-  , fromVertices
-  , lc
-  , light
-  , local
-  , lw
-  , r2
-  , strokeLoop
-  , text
-  , translate
-  , veryThin
+  ( Diagram,
+    Point (..),
+    V2 (..),
+    closeLine,
+    fc,
+    font,
+    fontSize,
+    fromOffsets,
+    fromVertices,
+    lc,
+    light,
+    local,
+    lw,
+    r2,
+    strokeLoop,
+    text,
+    translate,
+    veryThin,
+    (#),
   )
-import Constants (defaultFontSize, drakonStyle, fontColour, lineColour)
 
 rect' :: Double -> Double -> Diagram B
 rect' x y =
@@ -53,12 +53,12 @@ boundingBox x y =
 hex' :: Double -> Double -> Diagram B
 hex' x y =
   fromOffsets
-    [ V2 (x - 0.1 - 0.1) 0.0
-    , V2 0.1 (y * (-0.5))
-    , V2 (-0.1) (y * (-0.5))
-    , V2 ((x - 0.1 - 0.1) * (-1.0)) 0.0
-    , V2 (-0.1) (y * 0.5)
-    , V2 0.1 (y * 0.5)
+    [ V2 (x - 0.1 - 0.1) 0.0,
+      V2 0.1 (y * (-0.5)),
+      V2 (-0.1) (y * (-0.5)),
+      V2 ((x - 0.1 - 0.1) * (-1.0)) 0.0,
+      V2 (-0.1) (y * 0.5),
+      V2 0.1 (y * 0.5)
     ]
     # closeLine
     # strokeLoop

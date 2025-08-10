@@ -3,16 +3,16 @@ module Constants where
 import Data.Colour.SRGB (sRGB)
 import Data.Text (empty)
 import Diagrams.Backend.SVG
-  ( B
-  , Options(SVGOptions)
-  , SVG
-  , _generateDoctype
-  , _idPrefix
-  , _size
-  , _svgAttributes
-  , _svgDefinitions
+  ( B,
+    Options (SVGOptions),
+    SVG,
+    _generateDoctype,
+    _idPrefix,
+    _size,
+    _svgAttributes,
+    _svgDefinitions,
   )
-import Diagrams.Prelude (Colour, Diagram, V2(..), (#), fc, lc, lw, mkSizeSpec, veryThin)
+import Diagrams.Prelude (Colour, Diagram, V2 (..), fc, lc, lw, mkSizeSpec, veryThin, (#))
 
 defaultBoundingBoxWidth :: Double
 defaultBoundingBoxWidth = 3.0
@@ -46,12 +46,12 @@ drakonStyle = lw veryThin # lc lineColour # fc fillColour
 svgOutputPath :: String
 svgOutputPath = "./diagram.svg"
 
-svgOptions :: Num n => Options SVG V2 n
+svgOptions :: (Num n) => Options SVG V2 n
 svgOptions =
   SVGOptions
-    { _size = mkSizeSpec $ V2 (Just 1000) (Just 1000)
-    , _idPrefix = empty
-    , _svgDefinitions = Nothing
-    , _svgAttributes = []
-    , _generateDoctype = True
+    { _size = mkSizeSpec $ V2 (Just 1000) (Just 1000),
+      _idPrefix = empty,
+      _svgDefinitions = Nothing,
+      _svgAttributes = [],
+      _generateDoctype = True
     }
