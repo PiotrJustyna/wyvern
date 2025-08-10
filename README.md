@@ -13,7 +13,7 @@
 
 ## constraints
 
-* only straight lines - no diagonal lines, no curves, etc.
+* only straight lines - no diagonal or curved lines, etc.
 * main direction: top-to-bottom, loopbacks possible
 * no arrows (direction is known and default) except loopbacks
 * default path on the main skewer - the further to the right, the less ideal the scenario
