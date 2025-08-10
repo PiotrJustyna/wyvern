@@ -4,6 +4,6 @@ cabal update
 cabal install alex
 cabal install happy
 cabal install hlint
-cabal install hindent
+cabal install ormolu
 
 exec "$@"
