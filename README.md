@@ -41,7 +41,9 @@ The preferred way to work with wyvern is in containers. All scripts/commands des
 
 ### DRAKON
 
-DRAKON is wyvern's big brother - more complex, steeper learning curve, more terms.
+DRAKON is wyvern's big brother - more complex, steeper learning curve, more terms, more rules.
+
+* [drakon-renderer](https://github.com/PiotrJustyna/drakon-renderer) - DRAKON diagrams renderer. This is where my adventure with DRAKON started. Wyvern is intended to be a very simplified, easier to fully grasp version of DRAKON.
 
 * [drakon whitepaper](https://drakon.su/_media/video_i_prezentacii/graphical_syntax_.pdf)
 
