@@ -23,7 +23,7 @@
 
 <table>
   <tr>
-    <td><img src="diagrams/development-environment.svg" alt="development environment" style="width:400px;"/></td>
+    <td><img src="diagrams/development-environment.svg" alt="development environment" style="width:100%;"/></td>
     <td>
       The preferred way to work with wyvern is in containers. All scripts/commands described below will work directly on your hardware (not necessarily in a container), but the indended usage is in-container.
     </td>
