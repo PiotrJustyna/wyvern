@@ -37,8 +37,6 @@ The preferred way to work with wyvern is in containers. All scripts/commands des
 
 ## resources
 
-## resources
-
 ### DRAKON
 
 DRAKON is wyvern's big brother - more complex, steeper learning curve, more terms, more rules.
