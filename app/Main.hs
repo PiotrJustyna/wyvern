@@ -14,7 +14,7 @@ import WyvernDiagram (WyvernDiagram (..), heightInUnits, render)
 
 main :: IO ()
 main = do
-  fileContent <- readFile "./app/input.txt"
+  fileContent <- readFile "./diagrams/development-environment.txt"
   let tokens = alexScanTokens fileContent
   case diagram tokens 1 of
     ParseOk d -> do

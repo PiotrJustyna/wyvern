@@ -20,6 +20,7 @@ import SkewerBlock
 
 skewers :   headline                                              { [$1] }
             | skewers headline                                    { $2 : $1 }
+            | skewer                                              { [$1] }
 
 headline :  action '{' skewer '}'                                 { $3 <> [toHeadline $1] }
             | action '{' skewer soloId '}'                        { toAddress $4 : $3 <> [toHeadline $1] }

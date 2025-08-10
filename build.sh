@@ -9,6 +9,9 @@ happy --ghc ./app/Parser.y \
       --info="./app/Parser.info" && \
 
 cabal build && \
+
 hlint . \
   --ignore-glob=app/Parser.hs \
-  --ignore-glob=app/Lexer.hs
+  --ignore-glob=app/Lexer.hs && \
+
+find . -name '*.hs' ! -name 'Lexer.hs' ! -name 'Parser.hs' -exec ormolu --mode inplace {} +

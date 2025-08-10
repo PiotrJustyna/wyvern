@@ -1,0 +1,31 @@
+0 "using containers?"
+{
+  0l1 "./start-development-environment.sh"
+}
+{
+}
+1 "change code"
+2 "build needed?"
+{
+  2l1 "./build.sh"
+}
+{
+}
+3 "run the program?"
+{
+  3l1 "./run.sh"
+}
+{
+}
+4 "exit?"
+{
+  4l1 "using containers?"
+  {
+    4l1l1 "exit"
+  }
+  {
+  }
+}
+{
+  1
+}
