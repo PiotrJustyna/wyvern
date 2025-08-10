@@ -49,7 +49,7 @@ svgOutputPath = "./diagram.svg"
 svgOptions :: (Num n) => Options SVG V2 n
 svgOptions =
   SVGOptions
-    { _size = mkSizeSpec $ V2 (Just 1000) (Just 1000),
+    { _size = mkSizeSpec $ V2 (Just 300) (Just 1000),
       _idPrefix = empty,
       _svgDefinitions = Nothing,
       _svgAttributes = [],
