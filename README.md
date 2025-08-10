@@ -34,3 +34,37 @@ The preferred way to work with wyvern is in containers. All scripts/commands des
 ## community
 
 * [youtube](https://www.youtube.com/playlist?list=PL9-WsOrOzOxSqWNqzhzyBGZsN0sOxEF6Q)
+
+## resources
+
+## resources
+
+### DRAKON
+
+DRAKON is wyvern's big brother - more complex, steeper learning curve, more terms.
+
+* [drakon whitepaper](https://drakon.su/_media/video_i_prezentacii/graphical_syntax_.pdf)
+
+* [drakon wiki](https://en.m.wikipedia.org/wiki/DRAKON)
+
+* [drakon.su](https://drakon.su/start)
+
+* [drakon](https://drakonhub.com/read/docs)
+
+### haskell
+
+* [diagrams](https://archives.haskell.org/projects.haskell.org/diagrams/doc/quickstart.html#introduction)
+
+* [diagrams - user manual](https://archives.haskell.org/projects.haskell.org/diagrams/doc/manual.html)
+
+* [alex](https://haskell-alex.readthedocs.io/en/latest/index.html)
+
+* [lexing with alex](https://serokell.io/blog/lexing-with-alex#our-first-lexer)
+
+### colours
+
+* [colours](https://www.colourlovers.com)
+
+* [colorkit](https://colorkit.co/)
+
+  * [default palette](https://colorkit.co/palette/642915-963e20-c7522a-e5c185-fbf2c4-74a892-008585-006464-004343/)
