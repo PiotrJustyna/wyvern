@@ -13,11 +13,24 @@
 
 ## constraints
 
-* all lines either horizontal, vertical or both - no diagonal lines, no curves, etc.
-* all angles straight
-* main direction: top-to-bottom
-* loopbacks possible
+* only straight lines - no diagonal lines, no curves, etc.
+* main direction: top-to-bottom, loopbacks possible
 * no arrows (direction is known and default) except loopbacks
-* main skewer - default progression
-* the further to the right - the less ideal the scenario
+* default path on the main skewer - the further to the right, the less ideal the scenario
 * deterministic: input A will always produce output B
+
+## development environment
+
+The preferred way to work with wyvern is in containers. All scripts/commands described below will work directly on your hardware (not necessarily in a container), but the indended usage is in-container. 
+
+| command | description |
+| --- | --- |
+| `./start-development-environment.sh` | starts a fully dockerized development environment |
+| `./build.sh` | builds and lints code |
+| `./run.sh` | runs code |
+| `./format.sh` | formats all `*.hs` |
+| `exit` | terminates development environment |
+
+## community
+
+* [youtube](https://www.youtube.com/playlist?list=PL9-WsOrOzOxSqWNqzhzyBGZsN0sOxEF6Q)
