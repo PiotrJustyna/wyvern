@@ -27,7 +27,7 @@ renderSingleSkewer skewerBlocks (P (V2 x y)) addressDepth =
 
 render :: WyvernDiagram -> Double -> Diagram B
 render (WyvernDiagram startTerminator allSkewers endTerminator) addressY =
-  let (result, _, _, finishX) =
+  let (result, _unusedConnectionToPreviousSkewer, _unusedFinishY, finishX) =
         if length allSkewers > 1
           then
             foldl
