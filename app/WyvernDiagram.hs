@@ -1,12 +1,11 @@
 module WyvernDiagram where
 
 import Constants (defaultBoundingBoxHeight, defaultBoundingBoxWidth)
-import Data.Map (Map, empty, lookup)
+import Data.Map (empty)
 import Diagrams.Backend.SVG (B)
 import Diagrams.Prelude (Diagram, Point (..), V2 (..), p2)
 import EndTerminator (EndTerminator, changeOrigin, heightInUnits, render)
 import HelperDiagrams (renderedConnection)
-import ID (ID)
 import SkewerBlock (SkewerBlock, heightInUnits', position', renderIcons, toMap, widthInUnits')
 import StartTerminator (StartTerminator, changeOrigin, heightInUnits, render)
 
@@ -15,7 +14,7 @@ data WyvernDiagram
   deriving (Show)
 
 renderSingleSkewer :: [SkewerBlock] -> Point V2 Double -> Double -> (Diagram B, Double)
-renderSingleSkewer skewerBlocks origin@(P (V2 x y)) addressDepth =
+renderSingleSkewer skewerBlocks (P (V2 x y)) addressDepth =
   let connectionX = x + defaultBoundingBoxWidth * 0.5
       skewerY = defaultBoundingBoxHeight
       startY1 = y - skewerY
@@ -24,12 +23,11 @@ renderSingleSkewer skewerBlocks origin@(P (V2 x y)) addressDepth =
       mapOfOrigins = toMap positionedSkewerBlocks
       renderedSkewerBlocks = renderIcons positionedSkewerBlocks mapOfOrigins addressDepth
       finishY1 = y - skewerY - heightInUnits' positionedSkewerBlocks
-      finishY2 = finishY1 - defaultBoundingBoxHeight * 0.25
    in (renderedConnection [p2 (connectionX, startY1), p2 (connectionX, startY2)] <> renderedSkewerBlocks, finishY1)
 
 render :: WyvernDiagram -> Double -> Diagram B
-render diagram@(WyvernDiagram startTerminator allSkewers endTerminator) addressY =
-  let (result, _, finishY1, finishX) =
+render (WyvernDiagram startTerminator allSkewers endTerminator) addressY =
+  let (result, _, _, finishX) =
         if length allSkewers > 1
           then
             foldl
