@@ -21,7 +21,7 @@
 
 ## development environment
 
-The preferred way to work with wyvern is in containers. All scripts/commands described below will work directly on your hardware (not necessarily in a container), but the indended usage is in-container.
+The preferred way to work with wyvern is in containers. All scripts/commands described below will work directly on your local operating system, but the indended usage is in-container.
 
 ![](diagrams/development-environment.svg)
 
