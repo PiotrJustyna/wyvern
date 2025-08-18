@@ -7,8 +7,7 @@ import Diagrams.Prelude (p2)
 import EndTerminator (EndTerminator (End))
 import ID (ID (ID))
 import InputArguments
-  ( InputArguments (InputArguments),
-    inputPath,
+  (inputPath,
     outputPath,
     parseInput,
   )

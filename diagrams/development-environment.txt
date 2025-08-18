@@ -1,31 +1,45 @@
 0 "using containers?"
-{
-  0l1 "./start-development-environment.sh"
-}
-{
-}
-1 "change code"
-2 "build needed?"
-{
-  2l1 "./build.sh"
-}
-{
-}
-3 "run the program?"
-{
-  3l1 "./run.sh"
-}
-{
-}
-4 "exit?"
-{
-  4l1 "using containers?"
   {
-    4l1l1 "exit"
+    0l1 "./start-development-environment.sh"
+    0l2 "change code"
+    0l3 "build needed?"
+      {
+        0l3l1 "./build.sh"
+      }
+      {
+      }
+    0l4 "run the program?"
+      {
+        0l4l1 "./run.sh"
+      }
+      {
+      }
+    0l5 "exit?"
+      {
+          0l5l1 "exit"
+      }
+      {
+        0l2
+      }
   }
   {
+    0r2 "change code"
+    0r3 "build needed?"
+      {
+        0r3l1 "./build.sh"
+      }
+      {
+      }
+    0r4 "run the program?"
+      {
+        0l4l1 "./run.sh"
+      }
+      {
+      }
+    0r5 "exit?"
+      {
+      }
+      {
+        0r2
+      }
   }
-}
-{
-  1
-}
