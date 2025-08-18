@@ -30,7 +30,7 @@ import qualified GHC.Exts as Happy_GHC_Exts
 import Control.Applicative(Applicative(..))
 import Control.Monad (ap)
 
--- parser produced by Happy Version 2.1.6
+-- parser produced by Happy Version 2.1.7
 
 data HappyAbsSyn t5 t6 t7 t8
         = HappyTerminal (Token)
@@ -245,7 +245,7 @@ happyAbort :: () => [(Token)] -> (P a)
 happyAbort = Happy_Prelude.error "Called abort handler in non-resumptive parser"
 
 diagram tks = happySomeParser where
- happySomeParser = happyThen (happyParse 0# tks) (\x -> case x of {HappyAbsSyn5 z -> happyReturn z; _other -> notHappyAtAll })
+ happySomeParser = happyThen (happyDoParse 0# tks) (\x -> case x of {HappyAbsSyn5 z -> happyReturn z; _other -> notHappyAtAll })
 
 happySeq = happyDontSeq
 
@@ -316,7 +316,7 @@ data HappyStk a = HappyStk a (HappyStk a)
 -----------------------------------------------------------------------------
 -- starting the parse
 
-happyParse start_state = happyNewToken start_state notHappyAtAll notHappyAtAll
+happyDoParse start_state = happyNewToken start_state notHappyAtAll notHappyAtAll
 
 -----------------------------------------------------------------------------
 -- Accepting the parse

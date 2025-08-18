@@ -43,9 +43,6 @@ defaultFontSize = defaultBoundingBoxHeight / 8.0
 drakonStyle :: Diagram B -> Diagram B
 drakonStyle = lw veryThin # lc lineColour # fc fillColour
 
-svgOutputPath :: String
-svgOutputPath = "./diagram.svg"
-
 svgOptions :: (Num n) => Options SVG V2 n
 svgOptions =
   SVGOptions
