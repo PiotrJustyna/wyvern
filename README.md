@@ -30,7 +30,6 @@ The preferred way to work with wyvern is in containers. All scripts/commands des
 | `./start-development-environment.sh` | starts a fully dockerized development environment |
 | `./build.sh` | builds and lints code |
 | `./run.sh` | runs code |
-| `./format.sh` | formats all `*.hs` |
 | `exit` | terminates development environment |
 
 ## community
