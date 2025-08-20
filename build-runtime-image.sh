@@ -6,9 +6,6 @@ docker buildx build \
   . \
 && \
 docker run \
-  -v ./diagrams:/tmp/ \
-  --rm wyvern-runtime:latest \
-  -i /tmp/development-environment.txt \
   -v ./diagrams:/app/diagrams \
   --rm wyvern-runtime:latest \
   -i /app/diagrams/development-environment.txt \
