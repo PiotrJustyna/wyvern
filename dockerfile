@@ -1,9 +1,9 @@
-FROM alpine:3.22.1
+FROM alpine:3.22.1 as sdk
 
 WORKDIR "/root/code/wyvern"
 
 RUN apk update
-RUN apk add \
+RUN apk add --no-cache \
     bash \
     git \
     openssh \
@@ -23,7 +23,7 @@ RUN echo 'export PS1="\[\e[32m\]\w\[\e[35m\]\$\[\e[0m\] "' >> /root/.bashrc
 # installed with cabal install are located
 ENV PATH="${PATH}:/root/.local/bin"
 
-COPY setup-cabal.sh /root/code/wyvern/
+COPY ./setup-cabal.sh /root/code/wyvern/
 
 ENTRYPOINT ["/root/code/wyvern/setup-cabal.sh"]
 

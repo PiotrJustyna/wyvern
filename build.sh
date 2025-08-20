@@ -8,7 +8,7 @@ happy --ghc ./app/Parser.y \
       --outfile="./app/Parser.hs" \
       --info="./app/Parser.info" && \
 
-cabal build && \
+cabal build --enable-executable-stripping && \
 
 hlint . \
   --ignore-glob=app/Parser.hs \

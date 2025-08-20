@@ -1,11 +1,9 @@
-FROM alpine:3.22.1
+FROM alpine:3.22.1 as sdk
 
-ARG CODE_DIR="/root/code/wyvern/"
-
-WORKDIR "$CODE_DIR"
+WORKDIR "/root/code/wyvern"
 
 RUN apk update
-RUN apk add \
+RUN apk add --no-cache \
     bash \
     git \
     openssh \
@@ -15,7 +13,7 @@ RUN apk add \
     ghc \
     cabal \
     ncurses-dev
-RUN git config --global --add safe.directory "$CODE_DIR"
+RUN git config --global --add safe.directory "/root/code/wyvern"
 
 RUN echo 'export PS1="\[\e[32m\]\w\[\e[35m\]\$\[\e[0m\] "' >> /root/.bashrc
 
@@ -25,8 +23,30 @@ RUN echo 'export PS1="\[\e[32m\]\w\[\e[35m\]\$\[\e[0m\] "' >> /root/.bashrc
 # installed with cabal install are located
 ENV PATH="${PATH}:/root/.local/bin"
 
-COPY setup-cabal.sh "$CODE_DIR"
+COPY ./setup-cabal.sh /root/code/wyvern/
 
-COPY Wyvern.cabal "$CODE_DIR"
+COPY ./build.sh /root/code/wyvern/
 
-RUN "$CODE_DIR"setup-cabal.sh && cabal build --enable-executable-stripping
+COPY Wyvern.cabal /root/code/wyvern/
+
+COPY ./app /root/code/wyvern/app/
+
+RUN /root/code/wyvern/setup-cabal.sh
+
+RUN /root/code/wyvern/build.sh
+
+RUN find /root/code/wyvern/dist-newstyle -name Wyvern -type f -exec cp {} /tmp/ \;
+
+FROM alpine:3.22.1
+
+RUN apk update
+RUN apk add --no-cache \
+    bash \
+    libgmpxx \
+    libffi
+
+COPY --from=sdk /tmp/Wyvern /usr/local/bin/
+
+ENTRYPOINT [ "/usr/local/bin/Wyvern" ]
+
+CMD [ "--help" ]
