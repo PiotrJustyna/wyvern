@@ -26,7 +26,7 @@ ENV PATH="${PATH}:/root/.local/bin"
 
 COPY ./setup-cabal.sh /root/code/wyvern/
 
-COPY ./build.sh /root/code/wyvern/
+COPY ./build-code.sh /root/code/wyvern/
 
 COPY Wyvern.cabal /root/code/wyvern/
 
@@ -34,7 +34,7 @@ COPY ./app /root/code/wyvern/app/
 
 RUN /root/code/wyvern/setup-cabal.sh
 
-RUN /root/code/wyvern/build.sh
+RUN /root/code/wyvern/build-code.sh
 
 RUN find /root/code/wyvern/dist-newstyle -name Wyvern -type f -exec cp {} /tmp/ \;
 

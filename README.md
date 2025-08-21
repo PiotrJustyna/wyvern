@@ -19,6 +19,13 @@
 * default path on the main skewer - the further to the right, the less ideal the scenario
 * deterministic: input A will always produce output B
 
+## how to use
+
+You can run wyvern:
+
+* either directly from the source having build it locally or in a container (see `development-environment`) - preferred if you'd also like to make code modification
+* or in a runtime container (see `runtime environment`) - preferred if you only want to render diagrams
+
 ## development environment
 
 The preferred way to work with wyvern is in containers. All scripts/commands described below will work directly on your local operating system, but the indended usage is in-container.
@@ -28,9 +35,21 @@ The preferred way to work with wyvern is in containers. All scripts/commands des
 | command | description |
 | --- | --- |
 | `./start-development-environment.sh` | starts a fully dockerized development environment |
-| `./build.sh` | builds and lints code |
+| `./build-code.sh` | builds, lints and formats code |
 | `./run.sh` | runs code |
 | `exit` | terminates development environment |
+
+## runtime environment
+
+For those looking to only run a compiled version of wyvern in a container, there is a runtime image I prepared (only `arm64` version for now):
+
+```
+docker pull ghcr.io/piotrjustyna/wyvern-runtime:latest
+```
+
+| command | description |
+| --- | --- |
+| `./run-in-container.sh` | runs code |
 
 ## community
 
