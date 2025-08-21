@@ -21,11 +21,11 @@ import WyvernDiagram (WyvernDiagram (..), heightInUnits, render)
 main :: IO ()
 main = do
   input <- execParser options
+  print input
   fileContent <- readFile $ inputPath input
   let tokens = alexScanTokens fileContent
   case diagram tokens 1 of
     ParseOk d -> do
-      print $ length d
       let blocks = reverse'' d
           wyvernDiagram =
             WyvernDiagram

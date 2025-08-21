@@ -6,7 +6,17 @@ data InputArguments = InputArguments
   { inputPath :: String,
     outputPath :: String
   }
-  deriving (Show)
+
+instance Show InputArguments where
+  show x =
+    let userProvidedInputPath = inputPath x
+        userProvidedOutputPath = outputPath x
+     in "input path: \""
+          <> userProvidedInputPath
+          <> "\"\n"
+          <> "output path: \""
+          <> userProvidedOutputPath
+          <> "\""
 
 parseInput :: Parser InputArguments
 parseInput =
