@@ -13,6 +13,7 @@ RUN apk add --no-cache \
     ghc \
     cabal \
     ncurses-dev
+
 RUN git config --global --add safe.directory "/root/code/wyvern"
 
 RUN echo 'export PS1="\[\e[32m\]\w\[\e[35m\]\$\[\e[0m\] "' >> /root/.bashrc
