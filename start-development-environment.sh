@@ -12,7 +12,7 @@ docker volume create wyvern-cabal-state
 
 docker buildx build \
   -t "wyvern:latest" \
-  -f "dockerfile" \
+  -f "dockerfile-sdk" \
   . \
 && \
 docker run \
