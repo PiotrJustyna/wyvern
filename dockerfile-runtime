@@ -42,11 +42,14 @@ FROM alpine:3.22.1
 
 RUN apk update
 RUN apk add --no-cache \
-    bash \
     libgmpxx \
     libffi
 
+RUN addgroup -S appgroup && adduser -S runtime -G appgroup -D
+
 COPY --from=sdk /tmp/Wyvern /usr/local/bin/
+
+USER runtime
 
 ENTRYPOINT [ "/usr/local/bin/Wyvern" ]
 
