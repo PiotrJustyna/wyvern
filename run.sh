@@ -1,5 +1,5 @@
 #!/bin/bash
 
 cabal run Wyvern -- \
-  -i "./diagrams/development-environment.txt" \
-  -o "./diagrams/development-environment.svg"
+  -i "./diagrams/bubble-sort.txt" \
+  -o "./diagrams/bubble-sort.svg"

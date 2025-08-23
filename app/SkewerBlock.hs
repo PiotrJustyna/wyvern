@@ -111,6 +111,10 @@ renderIcons skewerBlocks mapOfOrigins addressDepth =
         if snd renderedIcons < addressDepth
           then mempty
           else
+          -- this is incorrect for input like:
+          -- https://github.com/PiotrJustyna/wyvern/issues/24#issuecomment-3214758752
+          -- move the second x by 0.1 and you'll see the problem
+          -- for the linked input
             renderedConnection
               [ p2 (firstBlockX + defaultBoundingBoxWidth * 0.5, snd renderedIcons),
                 p2 (firstBlockX + defaultBoundingBoxWidth * 0.5, addressDepth - defaultBoundingBoxHeight)
