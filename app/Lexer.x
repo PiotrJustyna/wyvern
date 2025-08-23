@@ -13,7 +13,7 @@ $digit        = 0-9
 $alpha        = [a-zA-Z]
 
 $idChar       = [$alpha $digit \']
-$contentChar  = [$alpha $digit $white \' \, \! \- \. \/ \?]
+$contentChar  = [$alpha $digit $white \' \, \! \- \. \/ \? \= \< \> \[ \] \+ \( \)]
 
 @id           = $idChar+
 @content      = $contentChar+
