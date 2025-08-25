@@ -16,10 +16,8 @@ extra-doc-files:    CHANGELOG.md
 common warnings
     ghc-options: -Wall
 
-executable Wyvern
-    import:           warnings
-    main-is:          Main.hs
-    other-modules:    ID
+library
+    exposed-modules:  ID
                       Content
                       Constants
                       HelperDiagrams
@@ -30,7 +28,7 @@ executable Wyvern
                       SkewerBlock
                       WyvernDiagram
                       InputArguments
-    -- other-extensions:
+    hs-source-dirs:   lib
     build-depends:    base ^>=4.19.1.0,
                       colour,
                       text,
@@ -40,5 +38,27 @@ executable Wyvern
                       MissingH,
                       array,
                       optparse-applicative
+    default-language: Haskell2010
+
+executable Wyvern
+    import:           warnings
+    main-is:          Main.hs
+    build-depends:    base ^>=4.19.1.0,
+                      array,
+                      diagrams-lib,
+                      diagrams-svg,
+                      optparse-applicative,
+                      Wyvern
     hs-source-dirs:   app
+    default-language: Haskell2010
+
+test-suite WyvernTests
+    type:             exitcode-stdio-1.0
+    hs-source-dirs:   tests
+    main-is:          OverlappingLoopbacks.hs
+    build-depends:    base ^>=4.19.1.0,
+                      HUnit,
+                      diagrams-lib,
+                      containers,
+                      Wyvern
     default-language: Haskell2010
