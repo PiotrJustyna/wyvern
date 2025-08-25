@@ -32,6 +32,8 @@ COPY Wyvern.cabal /root/code/wyvern/
 
 COPY ./app /root/code/wyvern/app/
 
+COPY ./lib /root/code/wyvern/lib/
+
 RUN /root/code/wyvern/setup-cabal.sh
 
 RUN /root/code/wyvern/build-code.sh

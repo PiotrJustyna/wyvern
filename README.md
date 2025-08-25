@@ -35,9 +35,16 @@ The preferred way to work with wyvern is in containers. All scripts/commands des
 | command | description |
 | --- | --- |
 | `./start-development-environment.sh` | starts a fully dockerized development environment |
-| `./build-code.sh` | builds, lints and formats code |
+| `./build.sh` | builds, lints and formats code |
 | `./run.sh` | runs code |
+| `./test.sh` | runs tests |
 | `exit` | terminates development environment |
+
+### debugging
+
+* `cabal repl --repl-options="-fbreak-on-error -fbreak-on-exception"`
+* `:break Main 25`
+* `:main -i "./diagrams/bubble-sort.txt" -o "./diagrams/bubble-sort.svg"`
 
 ## runtime environment
 
