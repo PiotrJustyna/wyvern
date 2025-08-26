@@ -49,6 +49,8 @@ executable Wyvern
                       diagrams-svg,
                       optparse-applicative,
                       Wyvern
+    other-modules:    Lexer
+                      Parser
     hs-source-dirs:   app
     default-language: Haskell2010
 
