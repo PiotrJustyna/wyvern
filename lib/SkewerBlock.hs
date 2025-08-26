@@ -9,9 +9,20 @@ import Diagrams.Prelude (Diagram, Point (..), V2 (..), p2, position, r2, rotateB
 import HelperDiagrams
 import ID
 
-renderAdditionalConnection :: Point V2 Double -> Maybe ID -> Map ID (Point V2 Double) -> (Diagram B, [Point V2 Double])
-renderAdditionalConnection sourceOrigin@(P (V2 x1 y1)) Nothing mapOfOrigins = mempty
-renderAdditionalConnection sourceOrigin@(P (V2 x1 y1)) (Just destinationId) mapOfOrigins =
+-- 2025-08-26 PJ
+-- -------------
+-- TODO:
+-- * [x] [Point V2 Double] -> [[Point V2 Double]]
+-- * [ ] input [[Point V2 Double]]
+-- * [ ] append new connection to the input
+renderAdditionalConnection ::
+  Point V2 Double ->
+  Maybe ID ->
+  Map ID (Point V2 Double) ->
+  [[Point V2 Double]] ->
+  (Diagram B, [[Point V2 Double]])
+renderAdditionalConnection sourceOrigin@(P (V2 x1 y1)) Nothing _ _ = mempty
+renderAdditionalConnection sourceOrigin@(P (V2 x1 y1)) (Just destinationId) mapOfOrigins existing =
   case Data.Map.lookup destinationId mapOfOrigins of
     (Just _destinationOrigin@(P (V2 x2 y2))) ->
       if x1 > x2 && y1 < y2
