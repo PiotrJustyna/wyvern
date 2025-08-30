@@ -42,8 +42,9 @@ The preferred way to work with wyvern is in containers. All scripts/commands des
 
 ### debugging
 
-* `cabal repl --repl-options="-fbreak-on-error -fbreak-on-exception"`
-* `:break Main 25`
+* `cabal repl Wyvern --repl-options="-fbreak-on-error -fbreak-on-exception"`
+* `:load app/Main`
+* `:break SkewerBlock 365`
 * `:main -i "./diagrams/bubble-sort.txt" -o "./diagrams/bubble-sort.svg"`
 
 ## runtime environment

@@ -9,28 +9,30 @@ import Diagrams.Prelude (Diagram, Point (..), V2 (..), p2, position, r2, rotateB
 import HelperDiagrams
 import ID
 
--- 2025-08-26 PJ
--- -------------
--- TODO:
--- * [x] [Point V2 Double] -> [[Point V2 Double]]
--- * [ ] input [[Point V2 Double]]
--- * [ ] append new connection to the input
+loopbackConflict :: [[Point V2 Double]] -> Double -> Bool
+loopbackConflict [] _ = False
+loopbackConflict loopbackConnections midpointX =
+  let (P (V2 x y)) = (head loopbackConnections) !! 1
+   in (if x == midpointX then True else False)
+
 renderAdditionalConnection ::
   Point V2 Double ->
   Maybe ID ->
   Map ID (Point V2 Double) ->
   [[Point V2 Double]] ->
   (Diagram B, [[Point V2 Double]])
-renderAdditionalConnection sourceOrigin@(P (V2 x1 y1)) Nothing _ _ = mempty
-renderAdditionalConnection sourceOrigin@(P (V2 x1 y1)) (Just destinationId) mapOfOrigins existing =
+renderAdditionalConnection sourceOrigin@(P (V2 x1 y1)) Nothing _ existingLoopbacks = (mempty, existingLoopbacks)
+renderAdditionalConnection sourceOrigin@(P (V2 x1 y1)) (Just destinationId) mapOfOrigins existingLoopbacks =
   case Data.Map.lookup destinationId mapOfOrigins of
     (Just _destinationOrigin@(P (V2 x2 y2))) ->
       if x1 > x2 && y1 < y2
         then
-          let points =
+          let midpointX = x1 + defaultBoundingBoxWidth * 0.5
+              updatedMidpointX = if loopbackConflict existingLoopbacks midpointX then midpointX + 0.1 else midpointX
+              points =
                 [ sourceOrigin,
-                  p2 (x1 + defaultBoundingBoxWidth * 0.5 + 0.1, y1),
-                  p2 (x1 + defaultBoundingBoxWidth * 0.5 + 0.1, y2 - 0.1),
+                  p2 (updatedMidpointX, y1),
+                  p2 (updatedMidpointX, y2 - 0.1),
                   p2 (x2 + defaultBoundingBoxWidth * 0.5 + 0.087, y2 - 0.1)
                 ]
            in ( renderedConnection points
@@ -39,7 +41,7 @@ renderAdditionalConnection sourceOrigin@(P (V2 x1 y1)) (Just destinationId) mapO
                         rotateBy (1 / 4) $ triangle 0.1 # drakonStyle
                       )
                     ],
-                points
+                points : existingLoopbacks
               )
         else
           ( if (x1 < x2 && y1 > y2) || (x1 > x2 && y1 > y2)
@@ -50,8 +52,8 @@ renderAdditionalConnection sourceOrigin@(P (V2 x1 y1)) (Just destinationId) mapO
                         p2 (x2 + defaultBoundingBoxWidth - 0.1, y2 + 0.1),
                         p2 (x2 + defaultBoundingBoxWidth * 0.5, y2 + 0.1)
                       ]
-                 in (renderedConnection points, points)
-              else (renderedConnection [sourceOrigin, _destinationOrigin], [sourceOrigin, _destinationOrigin])
+                 in (renderedConnection points, points : existingLoopbacks)
+              else (renderedConnection [sourceOrigin, _destinationOrigin], [sourceOrigin, _destinationOrigin] : existingLoopbacks)
           )
     -- 0.087:   from Pythegorean theorem
     -- 0.02:  from line width?
@@ -60,63 +62,80 @@ renderAdditionalConnection sourceOrigin@(P (V2 x1 y1)) (Just destinationId) mapO
     -- TODO: error here
     _ -> mempty
 
-render' :: ConnectedSkewerBlocks -> Point V2 Double -> Map ID (Point V2 Double) -> (Diagram B, Double, [[Point V2 Double]])
-render' (ConnectedSkewerBlocks skewerBlocks id) (P (V2 x y)) mapOfOrigins =
+renderSkewerBlocks ::
+  Double ->
+  Double ->
+  [SkewerBlock] ->
+  Map ID (Point V2 Double) ->
+  [[Point V2 Double]] ->
+  (Diagram B, Double, [[Point V2 Double]])
+renderSkewerBlocks connectionX lastY skewerBlocks mapOfOrigins existingLoopbacks =
+  foldl
+    ( \accu singleBlock ->
+        let (diagram, preY1, accuLoopbackConnections) = accu
+            preY2 = preY1 - defaultBoundingBoxHeight * 0.25
+            postY1 = preY2 - defaultBoundingBoxHeight * 0.5
+            postY2 = preY1 - defaultBoundingBoxHeight
+            (renderedSingleBlock, loopbackConnections) = render singleBlock mapOfOrigins accuLoopbackConnections
+         in ( renderedConnection [p2 (connectionX, preY1), p2 (connectionX, preY2)]
+                <> diagram
+                <> renderedConnection [p2 (connectionX, postY1), p2 (connectionX, postY2)]
+                <> renderedSingleBlock,
+              preY1 - heightInUnits singleBlock * defaultBoundingBoxHeight,
+              loopbackConnections
+            )
+    )
+    (mempty, lastY, existingLoopbacks)
+    skewerBlocks
+
+render' ::
+  ConnectedSkewerBlocks ->
+  Point V2 Double ->
+  Map ID (Point V2 Double) ->
+  [[Point V2 Double]] ->
+  (Diagram B, Double, [[Point V2 Double]])
+render' (ConnectedSkewerBlocks skewerBlocks id) (P (V2 x y)) mapOfOrigins existingLoopbacks =
   if null skewerBlocks
     then
-      let (additionalConnection, loopbackConnection) = renderAdditionalConnection (p2 (x - defaultBoundingBoxWidth * (1 - widthRatio) / 2.0, y + defaultBoundingBoxHeight * 0.5)) id mapOfOrigins
-       in (additionalConnection, y, [loopbackConnection])
+      let (additionalConnection, loopbackConnections) = renderAdditionalConnection (p2 (x - defaultBoundingBoxWidth * (1 - widthRatio) / 2.0, y + defaultBoundingBoxHeight * 0.5)) id mapOfOrigins existingLoopbacks
+       in (additionalConnection, y, loopbackConnections)
     else
       ( let connectionX = x + defaultBoundingBoxWidth * 0.5
-            (renderedBlocks, lastY, innerLoopbackConnections) =
-              foldl
-                ( \accu singleBlock ->
-                    let (diagram, preY1, accuLoopbackConnections) = accu
-                        preY2 = preY1 - defaultBoundingBoxHeight * 0.25
-                        postY1 = preY2 - defaultBoundingBoxHeight * 0.5
-                        postY2 = preY1 - defaultBoundingBoxHeight
-                        (renderedSingleBlock, loopbackConnections) = render singleBlock mapOfOrigins
-                     in ( renderedConnection [p2 (connectionX, preY1), p2 (connectionX, preY2)]
-                            <> diagram
-                            <> renderedConnection [p2 (connectionX, postY1), p2 (connectionX, postY2)]
-                            <> renderedSingleBlock,
-                          preY1 - heightInUnits singleBlock * defaultBoundingBoxHeight,
-                          accuLoopbackConnections <> loopbackConnections
-                        )
-                )
-                (mempty, y, [])
-                skewerBlocks
-            (additionalConnection, loopbackConnection) = renderAdditionalConnection (p2 (connectionX, lastY)) id mapOfOrigins
-         in (renderedBlocks <> additionalConnection, lastY, loopbackConnection : innerLoopbackConnections)
+            (renderedBlocks, lastY, innerLoopbackConnections) = renderSkewerBlocks connectionX y skewerBlocks mapOfOrigins existingLoopbacks
+            (additionalConnection, loopbackConnections) = renderAdditionalConnection (p2 (connectionX, lastY)) id mapOfOrigins innerLoopbackConnections
+         in (renderedBlocks <> additionalConnection, lastY, loopbackConnections)
       )
+
+renderIcons' :: [SkewerBlock] -> Map ID (Point V2 Double) -> (Diagram B, Double, [[Point V2 Double]])
+renderIcons' skewerBlocks mapOfOrigins =
+  foldl
+    ( \accu singleBlock ->
+        let (currentDiagram, lastBlocksDepth, accuLoopbackConnections) = accu
+            (P (V2 x preY1)) = getOrigin singleBlock
+            connectionX = x + defaultBoundingBoxWidth * 0.5
+            preY2 = preY1 - defaultBoundingBoxHeight * blockHeightOffsetInUnits singleBlock
+            postY1 = preY2 - defaultBoundingBoxHeight * blockHeightInUnits singleBlock
+            postY2 = preY1 - defaultBoundingBoxHeight
+            (renderedSingleBlock, updatedLoopbackConnections) = render singleBlock mapOfOrigins accuLoopbackConnections
+         in ( currentDiagram
+                <> ( case singleBlock of
+                       Address {} -> renderedConnection [p2 (connectionX, lastBlocksDepth), p2 (connectionX, preY1)]
+                       _ -> mempty
+                   )
+                <> renderedConnection [p2 (connectionX, preY1), p2 (connectionX, preY2)]
+                <> renderedSingleBlock
+                <> renderedConnection [p2 (connectionX, postY1), p2 (connectionX, postY2)],
+              postY2,
+              updatedLoopbackConnections
+            )
+    )
+    (mempty, 0.0, [])
+    skewerBlocks
 
 renderIcons :: [SkewerBlock] -> Map ID (Point V2 Double) -> Double -> Diagram B
 renderIcons skewerBlocks mapOfOrigins addressDepth =
   let (P (V2 firstBlockX _)) = getOrigin $ head skewerBlocks
-      (renderedIcons, skewerDepth, allLoopbackConnections) =
-        foldl
-          ( \accu singleBlock ->
-              let (currentDiagram, lastBlocksDepth, accuLoopbackConnections) = accu
-                  (P (V2 x preY1)) = getOrigin singleBlock
-                  connectionX = x + defaultBoundingBoxWidth * 0.5
-                  preY2 = preY1 - defaultBoundingBoxHeight * blockHeightOffsetInUnits singleBlock
-                  postY1 = preY2 - defaultBoundingBoxHeight * blockHeightInUnits singleBlock
-                  postY2 = preY1 - defaultBoundingBoxHeight
-                  (renderedSingleBlock, loopbackConnections) = render singleBlock mapOfOrigins
-               in ( currentDiagram
-                      <> ( case singleBlock of
-                             Address {} -> renderedConnection [p2 (connectionX, lastBlocksDepth), p2 (connectionX, preY1)]
-                             _ -> mempty
-                         )
-                      <> renderedConnection [p2 (connectionX, preY1), p2 (connectionX, preY2)]
-                      <> renderedSingleBlock
-                      <> renderedConnection [p2 (connectionX, postY1), p2 (connectionX, postY2)],
-                    postY2,
-                    accuLoopbackConnections <> loopbackConnections
-                  )
-          )
-          (mempty, 0.0, [])
-          skewerBlocks
+      (renderedIcons, skewerDepth, allLoopbackConnections) = renderIcons' skewerBlocks mapOfOrigins
       connectionForMissingAddress =
         -- 2025-08-24 PJ:
         -- --------------
@@ -273,8 +292,12 @@ renderQuestion questionId origin (Content content) _mapOfOrigins =
       )
     ]
 
-render :: SkewerBlock -> Map ID (Point V2 Double) -> (Diagram B, [[Point V2 Double]])
-render action@(Action actionId origin (Content actionContent)) _mapOfOrigins =
+render ::
+  SkewerBlock ->
+  Map ID (Point V2 Double) ->
+  [[Point V2 Double]] ->
+  (Diagram B, [[Point V2 Double]])
+render action@(Action actionId origin (Content actionContent)) _mapOfOrigins existingLoopbacks =
   let iconHeight = heightInUnits action * defaultBoundingBoxHeight * 0.5
    in ( position
           [ ( origin,
@@ -297,9 +320,9 @@ render action@(Action actionId origin (Content actionContent)) _mapOfOrigins =
                   else mempty
             )
           ],
-        []
+        existingLoopbacks
       )
-render headline@(Headline headlineId origin (Content headlineContent)) _mapOfOrigins =
+render headline@(Headline headlineId origin (Content headlineContent)) _mapOfOrigins existingLoopbacks =
   let iconHeight = heightInUnits headline * defaultBoundingBoxHeight * 0.5
    in ( position
           [ ( origin,
@@ -322,9 +345,9 @@ render headline@(Headline headlineId origin (Content headlineContent)) _mapOfOri
                   else mempty
             )
           ],
-        []
+        existingLoopbacks
       )
-render address@(Address addressId origin (Content addressContent)) _mapOfOrigins =
+render address@(Address addressId origin (Content addressContent)) _mapOfOrigins existingLoopbacks =
   let iconHeight = heightInUnits address * defaultBoundingBoxHeight * 0.5
    in ( position
           [ ( origin,
@@ -347,81 +370,84 @@ render address@(Address addressId origin (Content addressContent)) _mapOfOrigins
                   else mempty
             )
           ],
-        []
+        existingLoopbacks
       )
-render fork@(Fork forkId origin@(P (V2 x y)) content leftBranch@(ConnectedSkewerBlocks l lDetourId) rightBranch@(ConnectedSkewerBlocks r rDetourId)) _mapOfOrigins =
-  let lOrigin@(P (V2 _ lY)) = P (V2 x (y - defaultBoundingBoxHeight))
-      rOrigin@(P (V2 rX rY)) = P (V2 (x + widthInUnits' l * defaultBoundingBoxWidth) (y - defaultBoundingBoxHeight))
-      connectionLX = x + defaultBoundingBoxWidth * 0.5
-      (renderedLBranch, _, lLoopbackConnections) = render' leftBranch lOrigin _mapOfOrigins
-      (renderedRBranch, _, rLoopbackConnections) = render' rightBranch rOrigin _mapOfOrigins
-   in ( renderQuestion forkId origin content _mapOfOrigins
-          <> renderedLBranch
-          <> renderText "no" (x + defaultBoundingBoxWidth * 0.97) (y - defaultBoundingBoxHeight * 0.35)
-          <> renderText "yes" (x + defaultBoundingBoxWidth * 0.42) (y - defaultBoundingBoxHeight * 0.9)
-          <> case lDetourId of
-            Nothing ->
-              renderedConnection
-                [ p2 (connectionLX, lY - heightInUnits' l * defaultBoundingBoxHeight),
-                  p2 (connectionLX, y - heightInUnits fork * defaultBoundingBoxHeight)
-                ]
-            Just _ -> mempty
-          <> ( if null r
-                 then
-                   ( case rDetourId of
-                       Nothing ->
-                         renderedConnection
-                           [ p2 (x + defaultBoundingBoxWidth * (widthRatio + 1) / 2.0, y - defaultBoundingBoxHeight * 0.5),
-                             p2 (rX - 0.1, y - defaultBoundingBoxHeight * 0.5),
-                             p2 (rX - 0.1, rY - (if null l then 0.0 else defaultBoundingBoxHeight * 0.25))
-                           ]
-                       Just _ -> renderedRBranch
-                   )
-                 else
-                   renderedConnection
-                     [ p2 (x + defaultBoundingBoxWidth * (widthRatio + 1) / 2.0, y - defaultBoundingBoxHeight * 0.5),
-                       p2 (rX + defaultBoundingBoxWidth * 0.5, y - defaultBoundingBoxHeight * 0.5),
-                       p2 (rX + defaultBoundingBoxWidth * 0.5, rY)
-                     ]
-                     <> renderedRBranch
-             )
-          <> position
-            [ ( origin,
-                if troubleshootingMode
-                  then
-                    boundingBox
-                      (widthInUnits fork * defaultBoundingBoxWidth)
-                      (heightInUnits fork * defaultBoundingBoxHeight)
-                  else mempty
-              )
-            ]
-          <> case rDetourId of
-            Nothing ->
-              ( if null r
-                  then
-                    renderedConnection
-                      [ p2
-                          ( rX - 0.1,
-                            y
-                              - defaultBoundingBoxHeight
-                                * ( if null l
-                                      then 1.0
-                                      else 1.25
-                                  )
-                          ),
-                        p2 (rX - 0.1, y - heightInUnits fork * defaultBoundingBoxHeight),
-                        p2 (x + defaultBoundingBoxWidth * 0.5, y - heightInUnits fork * defaultBoundingBoxHeight)
-                      ]
-                  else
-                    renderedConnection
-                      [ p2 (rX + defaultBoundingBoxWidth * 0.5, y - defaultBoundingBoxHeight),
-                        p2 (rX + defaultBoundingBoxWidth * 0.5, y - heightInUnits fork * defaultBoundingBoxHeight),
-                        p2 (x + defaultBoundingBoxWidth * 0.5, y - heightInUnits fork * defaultBoundingBoxHeight)
-                      ]
-              )
-            Just _ -> mempty,
-        lLoopbackConnections <> rLoopbackConnections
-      )
+render
+  fork@(Fork forkId origin@(P (V2 x y)) content leftBranch@(ConnectedSkewerBlocks l lDetourId) rightBranch@(ConnectedSkewerBlocks r rDetourId))
+  _mapOfOrigins
+  existingLoopbacks =
+    let lOrigin@(P (V2 _ lY)) = P (V2 x (y - defaultBoundingBoxHeight))
+        rOrigin@(P (V2 rX rY)) = P (V2 (x + widthInUnits' l * defaultBoundingBoxWidth) (y - defaultBoundingBoxHeight))
+        connectionLX = x + defaultBoundingBoxWidth * 0.5
+        (renderedLBranch, _, lLoopbackConnections) = render' leftBranch lOrigin _mapOfOrigins existingLoopbacks
+        (renderedRBranch, _, rLoopbackConnections) = render' rightBranch rOrigin _mapOfOrigins lLoopbackConnections
+     in ( renderQuestion forkId origin content _mapOfOrigins
+            <> renderedLBranch
+            <> renderText "no" (x + defaultBoundingBoxWidth * 0.97) (y - defaultBoundingBoxHeight * 0.35)
+            <> renderText "yes" (x + defaultBoundingBoxWidth * 0.42) (y - defaultBoundingBoxHeight * 0.9)
+            <> case lDetourId of
+              Nothing ->
+                renderedConnection
+                  [ p2 (connectionLX, lY - heightInUnits' l * defaultBoundingBoxHeight),
+                    p2 (connectionLX, y - heightInUnits fork * defaultBoundingBoxHeight)
+                  ]
+              Just _ -> mempty
+            <> ( if null r
+                   then
+                     ( case rDetourId of
+                         Nothing ->
+                           renderedConnection
+                             [ p2 (x + defaultBoundingBoxWidth * (widthRatio + 1) / 2.0, y - defaultBoundingBoxHeight * 0.5),
+                               p2 (rX - 0.1, y - defaultBoundingBoxHeight * 0.5),
+                               p2 (rX - 0.1, rY - (if null l then 0.0 else defaultBoundingBoxHeight * 0.25))
+                             ]
+                         Just _ -> renderedRBranch
+                     )
+                   else
+                     renderedConnection
+                       [ p2 (x + defaultBoundingBoxWidth * (widthRatio + 1) / 2.0, y - defaultBoundingBoxHeight * 0.5),
+                         p2 (rX + defaultBoundingBoxWidth * 0.5, y - defaultBoundingBoxHeight * 0.5),
+                         p2 (rX + defaultBoundingBoxWidth * 0.5, rY)
+                       ]
+                       <> renderedRBranch
+               )
+            <> position
+              [ ( origin,
+                  if troubleshootingMode
+                    then
+                      boundingBox
+                        (widthInUnits fork * defaultBoundingBoxWidth)
+                        (heightInUnits fork * defaultBoundingBoxHeight)
+                    else mempty
+                )
+              ]
+            <> case rDetourId of
+              Nothing ->
+                ( if null r
+                    then
+                      renderedConnection
+                        [ p2
+                            ( rX - 0.1,
+                              y
+                                - defaultBoundingBoxHeight
+                                  * ( if null l
+                                        then 1.0
+                                        else 1.25
+                                    )
+                            ),
+                          p2 (rX - 0.1, y - heightInUnits fork * defaultBoundingBoxHeight),
+                          p2 (x + defaultBoundingBoxWidth * 0.5, y - heightInUnits fork * defaultBoundingBoxHeight)
+                        ]
+                    else
+                      renderedConnection
+                        [ p2 (rX + defaultBoundingBoxWidth * 0.5, y - defaultBoundingBoxHeight),
+                          p2 (rX + defaultBoundingBoxWidth * 0.5, y - heightInUnits fork * defaultBoundingBoxHeight),
+                          p2 (x + defaultBoundingBoxWidth * 0.5, y - heightInUnits fork * defaultBoundingBoxHeight)
+                        ]
+                )
+              Just _ -> mempty,
+          rLoopbackConnections
+        )
 
 widthInUnits :: SkewerBlock -> Double
 widthInUnits (Fork _ _ _ (ConnectedSkewerBlocks l _) (ConnectedSkewerBlocks r rId)) =
