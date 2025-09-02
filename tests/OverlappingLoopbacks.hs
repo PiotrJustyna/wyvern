@@ -156,10 +156,39 @@ iconsRenderingMixedSkewerBlocks =
 
 loopbackConflictTests :: Test
 loopbackConflictTests =
-  let existingLoopbacks = []
+  let emptyExistingLoopbacks = []
    in TestCase
         ( do
-            assertEqual "conflict not present 1" False (loopbackConflict existingLoopbacks 1.0)
+            assertEqual "conflict not present" False (loopbackConflict emptyExistingLoopbacks 1.0 1.0 1.0)
+        )
+
+loopbackConflictTests' :: Test
+loopbackConflictTests' =
+  let x = 1.0
+      y1' = 1.0
+      y2' = 1.0
+      emptyExistingLoopback = []
+      existingLoopbackTooShort1 = [(p2 (1.0, 1.0))]
+      existingLoopbackTooShort2 = [(p2 (1.0, 1.0)), (p2 (1.0, 1.0))]
+      existingLoopbackTooShort3 = [(p2 (1.0, 1.0)), (p2 (1.0, 1.0)), (p2 (1.0, 1.0))]
+      overlappingExistingLoopback1 = [(p2 (1.0, 1.0)), (p2 (1.0, 1.0)), (p2 (1.0, 0.0)), (p2 (1.0, 1.0))]
+      overlappingExistingLoopback2 = [(p2 (1.0, 1.0)), (p2 (1.0, 0.0)), (p2 (1.0, 1.0)), (p2 (1.0, 1.0))]
+      overlappingExistingLoopback3 = [(p2 (1.0, 1.0)), (p2 (1.0, 1.0)), (p2 (1.0, 1.0)), (p2 (1.0, 1.0))]
+      nonoverlappingExistingLoopback1 = [(p2 (1.0, 1.0)), (p2 (1.0, 0.0)), (p2 (1.0, 0.0)), (p2 (1.0, 1.0))]
+      nonoverlappingExistingLoopback2 = [(p2 (1.0, 1.0)), (p2 (1.0, 2.0)), (p2 (1.0, 2.0)), (p2 (1.0, 1.0))]
+      nonoverlappingExistingLoopback3 = [(p2 (1.0, 1.0)), (p2 (1.0, y1' + 0.1)), (p2 (1.0, y2' - 0.1)), (p2 (1.0, 1.0))]
+   in TestCase
+        ( do
+            assertEqual "loopback connection not present" False (loopbackConflict' emptyExistingLoopback x y1' y2')
+            assertEqual "loopback connection too short 1" False (loopbackConflict' existingLoopbackTooShort1 x y1' y2')
+            assertEqual "loopback connection too short 2" False (loopbackConflict' existingLoopbackTooShort2 x y1' y2')
+            assertEqual "loopback connection too short 3" False (loopbackConflict' existingLoopbackTooShort3 x y1' y2')
+            assertEqual "overlapping loopback connection 1" True (loopbackConflict' overlappingExistingLoopback1 x y1' y2')
+            assertEqual "overlapping loopback connection 2" True (loopbackConflict' overlappingExistingLoopback2 x y1' y2')
+            assertEqual "overlapping loopback connection 3" True (loopbackConflict' overlappingExistingLoopback3 x y1' y2')
+            assertEqual "non-overlapping loopback connection 1" False (loopbackConflict' nonoverlappingExistingLoopback1 x y1' y2')
+            assertEqual "non-overlapping loopback connection 2" False (loopbackConflict' nonoverlappingExistingLoopback2 x y1' y2')
+            assertEqual "non-overlapping loopback connection 3" False (loopbackConflict' nonoverlappingExistingLoopback3 x y1' y2')
         )
 
 sanityCheckTests :: Test
@@ -173,7 +202,8 @@ sanityCheckTests =
       iconsRenderingOneFork,
       iconsRenderingManyForks,
       iconsRenderingMixedSkewerBlocks,
-      loopbackConflictTests
+      loopbackConflictTests,
+      loopbackConflictTests'
     ]
 
 main :: IO ()

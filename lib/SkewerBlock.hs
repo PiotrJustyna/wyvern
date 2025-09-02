@@ -9,11 +9,27 @@ import Diagrams.Prelude (Diagram, Point (..), V2 (..), p2, position, r2, rotateB
 import HelperDiagrams
 import ID
 
-loopbackConflict :: [[Point V2 Double]] -> Double -> Bool
-loopbackConflict [] _ = False
-loopbackConflict loopbackConnections midpointX =
-  let (P (V2 x y)) = (head loopbackConnections) !! 1
-   in (if x == midpointX then True else False)
+loopbackConflict' :: [Point V2 Double] -> Double -> Double -> Double -> Bool
+loopbackConflict' [] _ _ _ = False
+loopbackConflict'
+  ( p0
+      : (P (V2 x1 y1))
+      : (P (V2 x2 y2))
+      : p3
+      : []
+    )
+  x
+  y1'
+  y2' =
+    not $
+      (y1' > y2 && y1' > y1 && y2' > y2 && y2' > y1)
+        || (y1' < y1 && y2' < y1 && y1' < y2 && y2' < y2)
+        || (y1' < y1 && y2' > y2)
+loopbackConflict' _ _ _ _ = False
+
+loopbackConflict :: [[Point V2 Double]] -> Double -> Double -> Double -> Bool
+loopbackConflict [] _ _ _ = False
+loopbackConflict loopbackConnections x y1' y2' = loopbackConflict' (head loopbackConnections) x y1' y2'
 
 renderAdditionalConnection ::
   Point V2 Double ->
@@ -28,12 +44,17 @@ renderAdditionalConnection sourceOrigin@(P (V2 x1 y1)) (Just destinationId) mapO
       if x1 > x2 && y1 < y2
         then
           let midpointX = x1 + defaultBoundingBoxWidth * 0.5
-              updatedMidpointX = if loopbackConflict existingLoopbacks midpointX then midpointX + 0.1 else midpointX
+              y1' = y1
+              y2' = y2 - 0.1
+              updatedMidpointX =
+                if loopbackConflict existingLoopbacks midpointX y1' y2'
+                  then midpointX + 0.1
+                  else midpointX
               points =
                 [ sourceOrigin,
-                  p2 (updatedMidpointX, y1),
-                  p2 (updatedMidpointX, y2 - 0.1),
-                  p2 (x2 + defaultBoundingBoxWidth * 0.5 + 0.087, y2 - 0.1)
+                  p2 (updatedMidpointX, y1'),
+                  p2 (updatedMidpointX, y2'),
+                  p2 (x2 + defaultBoundingBoxWidth * 0.5 + 0.087, y2')
                 ]
            in ( renderedConnection points
                   <> position
