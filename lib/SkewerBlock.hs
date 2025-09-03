@@ -21,15 +21,24 @@ loopbackConflict'
   x
   y1'
   y2' =
-    not $
-      (y1' > y2 && y1' > y1 && y2' > y2 && y2' > y1)
-        || (y1' < y1 && y2' < y1 && y1' < y2 && y2' < y2)
-        || (y1' < y1 && y2' > y2)
+    if (y1' < y1 && y2' < y1 && y1' < y2 && y2' < y2)
+      then False
+      else
+        if y2' >= y2
+          then
+            if x == x2
+              then True
+              else False
+          else False -- 2025-09-03 PJ: illegal state
 loopbackConflict' _ _ _ _ = False
 
-loopbackConflict :: [[Point V2 Double]] -> Double -> Double -> Double -> Bool
-loopbackConflict [] _ _ _ = False
-loopbackConflict loopbackConnections x y1' y2' = loopbackConflict' (head loopbackConnections) x y1' y2'
+loopbackConflict :: [[Point V2 Double]] -> Double -> Double -> Double -> Double
+loopbackConflict [] x _ _ = x
+loopbackConflict loopbackConnections x y1' y2' =
+  foldr
+    (\loopbackConnection accu -> if loopbackConflict' loopbackConnection accu y1' y2' then accu + 0.1 else accu)
+    x
+    loopbackConnections
 
 renderAdditionalConnection ::
   Point V2 Double ->
@@ -46,10 +55,7 @@ renderAdditionalConnection sourceOrigin@(P (V2 x1 y1)) (Just destinationId) mapO
           let midpointX = x1 + defaultBoundingBoxWidth * 0.5
               y1' = y1
               y2' = y2 - 0.1
-              updatedMidpointX =
-                if loopbackConflict existingLoopbacks midpointX y1' y2'
-                  then midpointX + 0.1
-                  else midpointX
+              updatedMidpointX = loopbackConflict existingLoopbacks midpointX y1' y2'
               points =
                 [ sourceOrigin,
                   p2 (updatedMidpointX, y1'),
