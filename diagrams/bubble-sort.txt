@@ -1,69 +1,26 @@
-10 "action"
-9 "action"
-8 "action"
-7 "action"
-6 "action"
-5 "action"
-4 "action"
-3 "action"
-2 "action"
-1 "question"
-{
-}
-{
-  1
-}
 "question"
 {
+  3 "action"
+  2 "action"
+  1 "question"
+  {
+  }
+  {
+    1
+  }
+  "question"
+  {
+  }
+  {
+    2
+  }
+  "question"
+  {
+  }
+  {
+    3
+  }
 }
 {
-  2
-}
-"question"
-{
-}
-{
-  3
-}
-"question"
-{
-}
-{
-  4
-}
-"question"
-{
-}
-{
-  5
-}
-"question"
-{
-}
-{
-  6
-}
-"question"
-{
-}
-{
-  7
-}
-"question"
-{
-}
-{
-  8
-}
-"question"
-{
-}
-{
-  9
-}
-"question"
-{
-}
-{
-  10
+  "action"
 }

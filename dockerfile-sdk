@@ -1,4 +1,4 @@
-FROM alpine:3.22.1 as sdk
+FROM alpine:3.22.1 AS sdk
 
 WORKDIR "/root/code/wyvern"
 
