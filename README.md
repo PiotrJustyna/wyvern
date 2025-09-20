@@ -5,26 +5,22 @@
     <td><img src="wyvern.png" alt="wyvern" style="width:300px;"/></td>
     <td>
       Simplified version of DRAKON diagramming language.
-      <br /> <br />
-      For a more faithful implementation of DRAKON, please visit: <a href="https://github.com/PiotrJustyna/drakon-renderer">PiotrJustyna/drakon-renderer</a>.
     </td>
   </tr>
 </table>
 
 ## constraints
 
-* only straight lines - no diagonal or curved lines, etc.
-* main direction: top-to-bottom, loopbacks possible
-* no arrows (direction is known and default) except loopbacks
-* default path on the main skewer - the further to the right, the less ideal the scenario
+* only horizontal or vertical lines
+* top-to-bottom as default direction
+* connections never cross
+* connections overlap only when it doesn't cause ambiguity
 * deterministic: input A will always produce output B
 
 ## how to use
 
-You can run wyvern:
-
-* either directly from the source having build it locally or in a container (see `development-environment`) - preferred if you'd also like to make code modification
-* or in a runtime container (see `runtime environment`) - preferred if you only want to render diagrams
+* [from source](https://github.com/PiotrJustyna/wyvern/?tab=readme-ov-file#development-environment)
+* [from runtime container](github.com/PiotrJustyna/wyvern/?tab=readme-ov-file#runtime-environment)
 
 ## development environment
 
