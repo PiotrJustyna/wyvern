@@ -104,31 +104,34 @@ renderSkewerBlocks connectionX lastY skewerBlocks mapOfOrigins existingLoopbacks
             preY2 = preY1 - defaultBoundingBoxHeight * 0.25
             postY1 = preY2 - defaultBoundingBoxHeight * 0.5
             postY2 = preY1 - defaultBoundingBoxHeight
-            (renderedSingleBlock, loopbackConnections) = render singleBlock mapOfOrigins accuLoopbackConnections
+            (P (V2 x y)) = getOrigin singleBlock
+            shiftedSingleBlock = if x == connectionX then singleBlock else (changeOrigin singleBlock (P (V2 (connectionX - defaultBoundingBoxWidth * 0.5) y)))
+            (renderedSingleBlock, loopbackConnections) = render shiftedSingleBlock mapOfOrigins accuLoopbackConnections
          in ( renderedConnection [p2 (connectionX, preY1), p2 (connectionX, preY2)]
                 <> diagram
                 <> renderedConnection [p2 (connectionX, postY1), p2 (connectionX, postY2)]
                 <> renderedSingleBlock,
-              preY1 - heightInUnits singleBlock * defaultBoundingBoxHeight,
+              preY1 - heightInUnits shiftedSingleBlock * defaultBoundingBoxHeight,
               loopbackConnections
             )
     )
     (mempty, lastY, existingLoopbacks)
     skewerBlocks
 
-render' ::
+renderLeft ::
   ConnectedSkewerBlocks ->
   Point V2 Double ->
   Map ID (Point V2 Double) ->
   [[Point V2 Double]] ->
   (Diagram B, Double, [[Point V2 Double]])
-render' (ConnectedSkewerBlocks skewerBlocks id) (P (V2 x y)) mapOfOrigins existingLoopbacks =
+renderLeft (ConnectedSkewerBlocks skewerBlocks id) (P (V2 x y)) mapOfOrigins existingLoopbacks =
   let skewerWidth = (widthInUnits' skewerBlocks) * defaultBoundingBoxWidth
    in if null skewerBlocks
         then
-          let (additionalConnection, loopbackConnections) =
+          let connectionX = x - defaultBoundingBoxWidth * (1 - widthRatio) / 2.0
+              (additionalConnection, loopbackConnections) =
                 renderAdditionalConnection
-                  (p2 (x - defaultBoundingBoxWidth * (1 - widthRatio) / 2.0, y + defaultBoundingBoxHeight * 0.5))
+                  (p2 (connectionX, y + defaultBoundingBoxHeight * 0.5))
                   id
                   mapOfOrigins
                   skewerWidth
@@ -146,6 +149,43 @@ render' (ConnectedSkewerBlocks skewerBlocks id) (P (V2 x y)) mapOfOrigins existi
                     innerLoopbackConnections
              in (renderedBlocks <> additionalConnection, lastY, loopbackConnections)
           )
+
+renderRight ::
+  ConnectedSkewerBlocks ->
+  Point V2 Double ->
+  Point V2 Double ->
+  Map ID (Point V2 Double) ->
+  [[Point V2 Double]] ->
+  (Diagram B, Double, [[Point V2 Double]])
+renderRight
+  (ConnectedSkewerBlocks skewerBlocks id)
+  leftOrigin@(P (V2 lx ly))
+  _rightOrigin@(P (V2 rx ry))
+  mapOfOrigins
+  existingLoopbacks =
+    if null skewerBlocks
+      then
+        let connectionX = lx + defaultBoundingBoxWidth * 0.5
+            (additionalConnection, loopbackConnections) =
+              renderAdditionalConnection
+                (p2 (connectionX, ry + defaultBoundingBoxHeight * 0.5))
+                id
+                mapOfOrigins
+                5.0 -- TODO
+                existingLoopbacks
+         in (additionalConnection, ry, loopbackConnections)
+      else
+        ( let connectionX = rx + defaultBoundingBoxWidth * 0.5
+              (renderedBlocks, lastY, innerLoopbackConnections) = renderSkewerBlocks rx ry skewerBlocks mapOfOrigins existingLoopbacks
+              (additionalConnection, loopbackConnections) =
+                renderAdditionalConnection
+                  (p2 (connectionX, lastY))
+                  id
+                  mapOfOrigins
+                  ((widthInUnits' skewerBlocks) * defaultBoundingBoxWidth)
+                  innerLoopbackConnections
+           in (renderedBlocks <> additionalConnection, lastY, loopbackConnections)
+        )
 
 renderIcons' :: [SkewerBlock] -> Map ID (Point V2 Double) -> (Diagram B, Double, [[Point V2 Double]])
 renderIcons' skewerBlocks mapOfOrigins =
@@ -427,9 +467,9 @@ render
   _mapOfOrigins
   existingLoopbacks =
     let lOrigin@(P (V2 _ lY)) = P (V2 x (y - defaultBoundingBoxHeight))
-        (renderedLBranch, _, lLoopbackConnections) = render' leftBranch lOrigin _mapOfOrigins existingLoopbacks
-        rOrigin@(P (V2 rX rY)) = P (V2 (x + widthInUnits' l * defaultBoundingBoxWidth) (y - defaultBoundingBoxHeight))
-        (renderedRBranch, _, rLoopbackConnections) = render' rightBranch rOrigin _mapOfOrigins lLoopbackConnections
+        (renderedLBranch, _, lLoopbackConnections) = renderLeft leftBranch lOrigin _mapOfOrigins existingLoopbacks
+        rOrigin@(P (V2 rX rY)) = P (V2 (1.9 + x + widthInUnits' l * defaultBoundingBoxWidth) (y - defaultBoundingBoxHeight))
+        (renderedRBranch, _, rLoopbackConnections) = renderRight rightBranch lOrigin rOrigin _mapOfOrigins lLoopbackConnections
         connectionLX = x + defaultBoundingBoxWidth * 0.5
      in ( renderQuestion forkId origin content _mapOfOrigins
             <> renderedLBranch

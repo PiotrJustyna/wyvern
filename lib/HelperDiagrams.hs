@@ -1,6 +1,6 @@
 module HelperDiagrams where
 
-import Constants (defaultFontSize, drakonStyle, fontColour, lineColour)
+import Constants (defaultBoundingBoxHeight, defaultBoundingBoxWidth, defaultFontSize, drakonStyle, fillColour, fontColour, heightRatio, lineColour, widthRatio)
 import Diagrams.Backend.SVG (B)
 import Diagrams.Prelude
   ( Diagram,
@@ -16,7 +16,10 @@ import Diagrams.Prelude
     light,
     local,
     lw,
+    p2,
     r2,
+    rect,
+    roundedRect,
     strokeLoop,
     text,
     translate,
@@ -72,6 +75,40 @@ renderText content translateX translateY =
     # font "helvetica"
     # fc fontColour
     # translate (r2 (translateX, translateY))
+
+renderText' :: String -> Diagram B
+renderText' x =
+  text x
+    # fontSize (local defaultFontSize)
+    # light
+    # font "helvetica"
+    # fc fontColour
+
+wyvernRoundedRect :: String -> Diagram B
+wyvernRoundedRect x =
+  renderText' x
+    <> roundedRect (defaultBoundingBoxWidth * widthRatio) (defaultBoundingBoxHeight * heightRatio) 0.5 # lw veryThin # lc lineColour # fc fillColour
+
+wyvernRect :: String -> Diagram B
+wyvernRect x =
+  renderText' x
+    <> rect (defaultBoundingBoxWidth * widthRatio) (defaultBoundingBoxHeight * heightRatio) # lw veryThin # lc lineColour # fc fillColour
+
+wyvernHeadline :: String -> Double -> Double -> Diagram B
+wyvernHeadline x w h =
+  renderText' x
+    <> fromVertices
+      [ p2 (w * (-0.5), h * 0.5),
+        p2 (w * 0.5, h * 0.5),
+        p2 (w * 0.5, h * (-0.5)),
+        p2 (0.0, (h * (-0.5) - 0.1)),
+        p2 (w * (-0.5), h * (-0.5))
+      ]
+      # closeLine
+      # strokeLoop
+      # lw veryThin
+      # lc lineColour
+      # fc fillColour
 
 renderedConnection :: [Point V2 Double] -> Diagram B
 renderedConnection coordinates = fromVertices coordinates # drakonStyle

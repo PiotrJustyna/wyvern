@@ -1,17 +1,26 @@
 module WyvernDiagram where
 
+import qualified Blocks (Block (..), render)
 import Constants (defaultBoundingBoxHeight, defaultBoundingBoxWidth)
+import Content (Content (Content))
 import Data.Map (empty)
 import Diagrams.Backend.SVG (B)
 import Diagrams.Prelude (Diagram, Point (..), V2 (..), p2)
-import EndTerminator (EndTerminator, changeOrigin, heightInUnits, render)
+import EndTerminator (EndTerminator (End), changeOrigin, heightInUnits, render)
 import HelperDiagrams (renderedConnection)
-import SkewerBlock (SkewerBlock, heightInUnits', position', renderIcons, toMap, widthInUnits')
-import StartTerminator (StartTerminator, changeOrigin, heightInUnits, render)
+import ID (ID (ID))
+import SkewerBlock (SkewerBlock, heightInUnits', position', render, renderIcons, toMap, widthInUnits')
+import StartTerminator (StartTerminator (Title), changeOrigin, heightInUnits, render)
 
 data WyvernDiagram
   = WyvernDiagram StartTerminator [[SkewerBlock]] EndTerminator
   deriving (Show)
+
+data WyvernDiagram'
+  = WyvernDiagram' [Blocks.Block]
+
+render' :: WyvernDiagram' -> Diagram B
+render' (WyvernDiagram' bs) = Blocks.render (Blocks.StartTerminator : bs <> [Blocks.EndTerminator]) (p2 (0.0, 0.0))
 
 renderSingleSkewer :: [SkewerBlock] -> Point V2 Double -> Double -> (Diagram B, Double)
 renderSingleSkewer skewerBlocks (P (V2 x y)) addressDepth =
@@ -60,7 +69,7 @@ render (WyvernDiagram startTerminator allSkewers endTerminator) addressY =
                     else 0.0
                 )
         )
-   in StartTerminator.render (StartTerminator.changeOrigin startTerminator (P (V2 0.0 0.0))) empty
+   in StartTerminator.render (StartTerminator.changeOrigin startTerminator (P (V2 0.0 0.0)))
         <> renderedConnection
           [ p2 (defaultBoundingBoxWidth * 0.5, defaultBoundingBoxHeight * (-0.75)),
             p2 (defaultBoundingBoxWidth * 0.5, defaultBoundingBoxHeight * (-1.0))
@@ -76,7 +85,6 @@ render (WyvernDiagram startTerminator allSkewers endTerminator) addressY =
           ]
         <> EndTerminator.render
           (EndTerminator.changeOrigin endTerminator (P (V2 endTerminatorXCoordinate (addressY - 1.0))))
-          empty
 
 widthInUnits :: WyvernDiagram -> Double
 widthInUnits (WyvernDiagram _ allSkewers _) = sum $ map widthInUnits' allSkewers

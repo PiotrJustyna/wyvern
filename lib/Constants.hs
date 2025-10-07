@@ -23,6 +23,9 @@ defaultBoundingBoxHeight = 1.0
 widthRatio :: Double
 widthRatio = 0.8
 
+heightRatio :: Double
+heightRatio = 0.5
+
 -- colours used:
 -- https://www.colourlovers.com/palette/541086/Loyal_Friends
 lineColour :: Colour Double

@@ -1,26 +1,29 @@
-"question"
+"headline"
 {
-  3 "action"
-  2 "action"
-  1 "question"
+  "first question"
   {
+    "question 1"
+    {
+    }
+    {
+      "action 1"
+    }
+    2 "question 2"
+    {
+    }
+    {
+      "action 2"
+      2
+    }
   }
   {
-    1
+    "question 3"
+    {
+      "action 3"
+    }
+    {
+      "action 4"
+    }
   }
-  "question"
-  {
-  }
-  {
-    2
-  }
-  "question"
-  {
-  }
-  {
-    3
-  }
-}
-{
-  "action"
+  5
 }

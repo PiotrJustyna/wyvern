@@ -10,20 +10,13 @@ import ID (ID)
 
 data StartTerminator
   = Title ID (Point V2 Double) Content
-  | CyclicStart ID (Point V2 Double) Content
-  | TitleWithParameters ID (Point V2 Double) Content
-  | CyclicStartWithParameters ID (Point V2 Double) Content
   deriving (Show)
 
 changeOrigin :: StartTerminator -> Point V2 Double -> StartTerminator
 changeOrigin (Title startId _ content) newOrigin = Title startId newOrigin content
-changeOrigin (CyclicStart startId _ content) newOrigin = CyclicStart startId newOrigin content
-changeOrigin (TitleWithParameters startId _ content) newOrigin = TitleWithParameters startId newOrigin content
-changeOrigin (CyclicStartWithParameters startId _ content) newOrigin =
-  CyclicStartWithParameters startId newOrigin content
 
-render :: StartTerminator -> Map ID (Point V2 Double) -> Diagram B
-render title@(Title titleId origin (Content content)) _ =
+render :: StartTerminator -> Diagram B
+render title@(Title titleId origin (Content content)) =
   position
     [ ( origin,
         renderText
@@ -51,7 +44,7 @@ render title@(Title titleId origin (Content content)) _ =
             else mempty
       )
     ]
-render _ _ = mempty
+render _ = mempty
 
 widthInUnits :: StartTerminator -> Double
 widthInUnits _ = 1.0
