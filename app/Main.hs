@@ -27,7 +27,12 @@ main = do
   let tokens = alexScanTokens fileContent
   case diagram tokens 1 of
     ParseOk d -> do
-      renderSVG' (outputPath input) svgOptions $ WyvernDiagram.render' (WyvernDiagram' (reverse' $ head d))
+      let (renderedDiagram, origins, connections) = WyvernDiagram.render' (WyvernDiagram' (reverse' $ head d))
+      renderSVG' (outputPath input) svgOptions renderedDiagram
+      putStrLn "origins:"
+      print origins
+      putStrLn "connections:"
+      print connections
     ParseFail s -> error s
   where
     options =
