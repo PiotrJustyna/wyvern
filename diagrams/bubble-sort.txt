@@ -1,16 +1,16 @@
-1 "question"
+1 "question 1"
 {
-  "question"
-  {
-    "action"
-    "action"
-  }
-  {
-    "action"
-    "action"
-  }
+  "action 1"
 }
 {
-  "action"
+  "action 2"
+  "question 2"
+  {
+    "action 3"
+  }
+  {
+    "action 4"
+  }
+  "action 5"
   1
 }

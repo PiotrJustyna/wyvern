@@ -1,6 +1,6 @@
 module WyvernDiagram where
 
-import qualified Blocks (Block (..), render)
+import qualified Blocks (Block (..), render, scout)
 import Constants (defaultBoundingBoxHeight, defaultBoundingBoxWidth)
 import Content (Content (Content))
 import Data.Map (Map, empty)
@@ -19,11 +19,11 @@ data WyvernDiagram
 data WyvernDiagram'
   = WyvernDiagram' [Blocks.Block]
 
-render' :: WyvernDiagram' -> (Diagram B, Map ID (Point V2 Double), [(Point V2 Double, Point V2 Double)])
-render' (WyvernDiagram' bs) =
-  let (x, y, z) = Blocks.render (Blocks.StartTerminator : bs <> [Blocks.EndTerminator]) (p2 (0.0, 0.0)) empty []
-   -- in (x <> position [(p2 (0.0, 0.0), wyvernRect "?")], y, z)
-   in (x, y, z)
+scout :: WyvernDiagram' -> [(String, Double)]
+scout (WyvernDiagram' bs) = Blocks.scout (Blocks.StartTerminator : bs <> [Blocks.EndTerminator])
+
+render' :: WyvernDiagram' -> (Diagram B, Map ID (Point V2 Double), [(String, Double)], [(Point V2 Double, Point V2 Double)], [[Point V2 Double]])
+render' (WyvernDiagram' bs) = Blocks.render (Blocks.StartTerminator : bs <> [Blocks.EndTerminator]) (p2 (0.0, 0.0)) empty [] [] []
 
 renderSingleSkewer :: [SkewerBlock] -> Point V2 Double -> Double -> (Diagram B, Double)
 renderSingleSkewer skewerBlocks (P (V2 x y)) addressDepth =

@@ -10,11 +10,11 @@ docker volume create wyvern-cabal-config
 docker volume create wyvern-cabal-cache
 docker volume create wyvern-cabal-state
 
-docker buildx build \
-  -t "wyvern:latest" \
-  -f "dockerfile-sdk" \
-  . \
-&& \
+# docker buildx build \
+#   -t "wyvern:latest" \
+#   -f "dockerfile-sdk" \
+#   . \
+# && \
 docker run \
   -it \
   -v "$HOME/.ssh/:/root/.ssh:ro" \
