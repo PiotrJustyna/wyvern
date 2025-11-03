@@ -17,7 +17,7 @@ import Options.Applicative (execParser, fullDesc, header, helper, info, (<**>))
 import Parser (ParseResult (..), diagram)
 import SkewerBlock (reverse'')
 import StartTerminator (StartTerminator (Title))
-import WyvernDiagram (WyvernDiagram (..), WyvernDiagram' (..), heightInUnits, render, render', scout)
+import WyvernDiagram (WyvernDiagram (..), WyvernDiagram' (..), blockDimensions, heightInUnits, render, render', renderAll)
 
 main :: IO ()
 main = do
@@ -27,20 +27,14 @@ main = do
   let tokens = alexScanTokens fileContent
   case diagram tokens 1 of
     ParseOk d -> do
-      let newMaxXs = scout (WyvernDiagram' (reverse' $ head d))
-      putStrLn "new max xs:"
-      print newMaxXs
+      let diagram = WyvernDiagram' (reverse' $ head d)
 
-      let (renderedDiagram, origins, maxXs, directGammaConnections, indirectGammaConnections) = WyvernDiagram.render' (WyvernDiagram' (reverse' $ head d))
+      let dimensions = blockDimensions diagram
+      putStrLn "block dimensions:"
+      print dimensions
+
+      let renderedDiagram = WyvernDiagram.renderAll diagram dimensions
       renderSVG' (outputPath input) svgOptions renderedDiagram
-      putStrLn "origins:"
-      print origins
-      putStrLn "max xs:"
-      print maxXs
-      putStrLn "direct gamma connections:"
-      print directGammaConnections
-      putStrLn "indirect gamma connections:"
-      print indirectGammaConnections
     ParseFail s -> error s
   where
     options =
