@@ -46,18 +46,6 @@ height (Fork _ _ l r _) =
       )
 height _ = defaultBoundingBoxHeight
 
-width' :: Map ID Double -> Block -> Double
-width' widths (Fork i _ _ _ _) = blockWidth i widths
-width' widths (Action i _) = blockWidth i widths
-width' widths (Headline i _) = blockWidth i widths
-width' widths _ = defaultBoundingBoxWidth
-
-width :: [Block] -> Map ID Double -> Double
-width x widths =
-  case x of
-    [] -> defaultBoundingBoxWidth
-    blocks -> maximum $ map (width' widths) blocks
-
 updateOrigins ::
   (Maybe ID) ->
   (Point V2 Double) ->
@@ -68,104 +56,33 @@ updateOrigins i o origins =
     Nothing -> origins
     Just i' -> insert i' o origins
 
-blocksOnlyWidth'' :: Block -> [(Maybe ID, Double)]
-blocksOnlyWidth'' (Action i _) = [(i, defaultBoundingBoxWidth)]
-blocksOnlyWidth'' (Headline i _) = [(i, defaultBoundingBoxWidth)]
-blocksOnlyWidth'' (Address i _) = [(i, defaultBoundingBoxWidth)]
-blocksOnlyWidth'' (Fork i _ l r _) =
-  let lW = blocksOnlyWidth' l
-      maxL = case lW of
-        [] -> 0.0
-        lW' -> maximum (map snd lW)
-      rW = blocksOnlyWidth' r
-      maxR = case rW of
-        [] -> 0.0
-        rW' -> maximum (map snd rW)
-   in (i, maxL + maxR) : lW <> rW
-blocksOnlyWidth'' _ = [(Nothing, defaultBoundingBoxWidth)]
+updateDimensions ::
+  (Maybe ID) ->
+  Double ->
+  Map ID Double ->
+  Map ID Double
+updateDimensions (Just i) w ds =
+  case Data.Map.lookup i ds of
+    Nothing -> Data.Map.insert i (w) ds
+    Just d -> Data.Map.insert i (d + w) ds
+updateDimensions _ _ ds = ds
 
-blocksOnlyWidth' :: [Block] -> [(Maybe ID, Double)]
-blocksOnlyWidth' blocks = foldl (\accuW block -> accuW <> blocksOnlyWidth'' block) [] blocks
-
-blocksOnlyWidth :: [Block] -> Map ID Double
-blocksOnlyWidth blocks =
-  foldl
-    ( \accu x ->
-        case x of
-          (Nothing, _) -> accu
-          (Just i, w) -> insert i w accu
-    )
-    empty
-    (blocksOnlyWidth' blocks)
-
-blocksOnlyWidthA :: [Block] -> Map ID [(Double, Bool)]
-blocksOnlyWidthA blocks =
-  foldl
-    ( \accu x ->
-        case x of
-          (Nothing, _) -> accu
-          (Just i, w) -> insert i [(w, True)] accu
-    )
-    empty
-    (blocksOnlyWidth' blocks)
-
-blocksAndGammaConnectionsWidthA' :: [Block] -> Map ID [(Double, Bool)] -> Map ID [(Double, Bool)]
-blocksAndGammaConnectionsWidthA' blocks widths =
-  foldl
-    ( \accu block ->
-        case block of
-          (Fork _ _ l r (Just gCI)) ->
-            let lWidths = blocksAndGammaConnectionsWidthA' l accu
-                rWidths = blocksAndGammaConnectionsWidthA' r lWidths
-             in case Data.Map.lookup gCI rWidths of
-                  Nothing -> error $ show gCI <> " does not exist in the collection of widths: " <> show rWidths
-                  Just [] -> error $ show gCI <> " does not contain any widths"
-                  Just widths'@((width, _) : _) -> insert gCI ((width + 0.1, False) : widths') rWidths
-          _ -> accu
-    )
-    widths
-    blocks
-
-blocksAndGammaConnectionsWidth' :: [Block] -> Map ID Double -> Map ID Double
-blocksAndGammaConnectionsWidth' blocks widths =
-  foldl
-    ( \accu block ->
-        case block of
-          (Fork _ _ l r (Just gCI)) ->
-            let lWidths = blocksAndGammaConnectionsWidth' l accu
-                rWidths = blocksAndGammaConnectionsWidth' r lWidths
-             in case Data.Map.lookup gCI rWidths of
-                  Nothing -> error $ show gCI <> " does not exist in the collection of widths: " <> show rWidths
-                  Just w' -> insert gCI (w' + 0.1) rWidths
-          _ -> accu
-    )
-    widths
-    blocks
-
-blocksAndGammaConnectionsWidthA :: [Block] -> Map ID [(Double, Bool)]
-blocksAndGammaConnectionsWidthA blocks =
-  let newWidths = Blocks.blocksOnlyWidthA blocks
-   in blocksAndGammaConnectionsWidthA' blocks newWidths
-
-blocksAndGammaConnectionsWidth :: [Block] -> Map ID Double
-blocksAndGammaConnectionsWidth blocks = blocksAndGammaConnectionsWidth' blocks (Blocks.blocksOnlyWidth blocks)
-
-width1' :: Map ID Double -> [Block] -> Double
-width1' gCs bs = case bs of
+width' :: Map ID Double -> [Block] -> Double
+width' gCs bs = case bs of
   [] -> defaultBoundingBoxWidth
-  bs' -> maximum $ map (width1 gCs) bs'
+  bs' -> maximum $ map (width gCs) bs'
 
-width1 :: Map ID Double -> Block -> Double
-width1 gCs (Fork i _ l r _) =
-  let lW = width1' gCs l
-      rW = width1' gCs r
+width :: Map ID Double -> Block -> Double
+width gCs (Fork i _ l r _) =
+  let lW = width' gCs l
+      rW = width' gCs r
       cW = case i of
         Nothing -> 0.0
         Just i' -> case Data.Map.lookup i' gCs of
           Nothing -> 0.0
           Just cW' -> cW'
    in lW + rW + cW
-width1 _ _ = defaultBoundingBoxWidth
+width _ _ = defaultBoundingBoxWidth
 
 dimensions' :: Map ID Double -> [Block] -> Map ID Double
 dimensions' ds bs =
@@ -194,13 +111,13 @@ updateGammaConnections ::
   [(Point V2 Double, Point V2 Double)] ->
   [[Point V2 Double]] ->
   ([(Point V2 Double, Point V2 Double)], [[Point V2 Double]])
-updateGammaConnections gammaConnectionOrigin i origins widths dGCs iGCs =
+updateGammaConnections gammaConnectionOrigin i origins dimensions dGCs iGCs =
   case i of
     Nothing -> (dGCs, iGCs)
     Just i' -> case Data.Map.lookup i' origins of
       Nothing -> error $ show i' <> " does not exist in the collection of origins: " <> show origins
-      Just gammaConnectionDestination -> case Data.Map.lookup i' widths of
-        Nothing -> error $ show i' <> " does not exist in the collection of widths: " <> show widths
+      Just gammaConnectionDestination -> case Data.Map.lookup i' dimensions of
+        Nothing -> error $ show i' <> " does not exist in the collection of dimensions: " <> show dimensions
         Just destinationWidth ->
           ( (gammaConnectionOrigin, gammaConnectionDestination) : dGCs,
             (formulateGammaConnection gammaConnectionOrigin gammaConnectionDestination destinationWidth) : iGCs
@@ -213,12 +130,13 @@ formulateGammaConnection gO@(P (V2 gOX gOY)) gD@(P (V2 gDX gDY)) dWidth =
       gammaMidpoint3 = p2 (gDX + dWidth - defaultBoundingBoxWidth * 0.5, gDY)
    in [gO, gammaMidpoint1, gammaMidpoint2, gammaMidpoint3, gD]
 
-blockWidth :: Maybe ID -> Map ID Double -> Double
-blockWidth Nothing _ = defaultBoundingBoxWidth
-blockWidth (Just i) widths = case Data.Map.lookup i widths of
-  Nothing -> 0.0
-  Just w -> w
-
+-- instead of this:
+-- [(Point V2 Double, Point V2 Double)], [[Point V2 Double]]
+-- track something like this:
+-- [(Point V2 Double, ID)]
+-- translates to:
+-- [(gamma connection origin coordinates, gamma connection destination ID)]
+-- maybe we can combine two maps? origins and widths into destinations: Map ID (Point V2 Double)
 render' ::
   Block ->
   (Point V2 Double) ->
@@ -226,23 +144,27 @@ render' ::
   Map ID Double ->
   [(Point V2 Double, Point V2 Double)] ->
   [[Point V2 Double]] ->
-  (Diagram B, Map ID (Point V2 Double), [(Point V2 Double, Point V2 Double)], [[Point V2 Double]])
-render' StartTerminator o@(P (V2 x _y)) _os widths _dGCs _iGCs = (position [(o, wyvernRoundedRect "start")], _os, _dGCs, _iGCs)
-render' EndTerminator o@(P (V2 x _y)) _os widths _dGCs _iGCs = (position [(o, wyvernRoundedRect "end")], _os, _dGCs, _iGCs)
-render' (Action i c) o@(P (V2 x _y)) os widths _dGCs _iGCs = (position [(o, wyvernRect c)], updateOrigins i o os, _dGCs, _iGCs)
-render' (Headline i c) o@(P (V2 x y)) os widths _dGCs _iGCs = (position [(o, wyvernRect c)], updateOrigins i o os, _dGCs, _iGCs)
-render' (Address i c) o@(P (V2 x y)) os widths _dGCs _iGCs = (position [(o, wyvernRect c)], updateOrigins i o os, _dGCs, _iGCs)
-render' fork@(Fork i c l r gCId) o@(P (V2 x y)) origins widths dGCs iGCs =
-  let lO = p2 (x, y - defaultBoundingBoxHeight)
-      rO@(P (V2 r0x r0y)) = p2 (x + width l widths, y - defaultBoundingBoxHeight)
+  (Diagram B, Map ID (Point V2 Double), Map ID Double, [(Point V2 Double, Point V2 Double)], [[Point V2 Double]])
+render' StartTerminator o@(P (V2 x _y)) _os _ds _dGCs _iGCs = (position [(o, wyvernRoundedRect "start")], _os, _ds, _dGCs, _iGCs)
+render' EndTerminator o@(P (V2 x _y)) _os _ds _dGCs _iGCs = (position [(o, wyvernRoundedRect "end")], _os, _ds, _dGCs, _iGCs)
+render' (Action i c) o@(P (V2 x _y)) os ds _dGCs _iGCs = (position [(o, wyvernRect c)], updateOrigins i o os, updateDimensions i defaultBoundingBoxWidth ds, _dGCs, _iGCs)
+render' (Headline i c) o@(P (V2 x y)) os ds _dGCs _iGCs = (position [(o, wyvernRect c)], updateOrigins i o os, updateDimensions i defaultBoundingBoxWidth ds, _dGCs, _iGCs)
+render' (Address i c) o@(P (V2 x y)) os ds _dGCs _iGCs = (position [(o, wyvernRect c)], updateOrigins i o os, updateDimensions i defaultBoundingBoxWidth ds, _dGCs, _iGCs)
+render' fork@(Fork i c l r gCId) o@(P (V2 x y)) origins ds dGCs iGCs =
+  let lW = width' ds l
+      rW = width' ds r
+      lO = p2 (x, y - defaultBoundingBoxHeight)
+      rO@(P (V2 r0x r0y)) = p2 (x + lW, y - defaultBoundingBoxHeight)
       origins' = updateOrigins i o origins
-      (dGCs', iGCs') = updateGammaConnections (p2 (r0x, y - heightInUnits' r)) gCId origins' widths dGCs iGCs
-      (renderedL, originsL, dGCsL, iGCsL) = render l lO origins' widths dGCs' iGCs'
-      (renderedR, originsLR, dGCsLR, iGCsLR) = render r rO originsL widths dGCsL iGCsL
+      ds' = updateDimensions i (lW + rW) ds
+      (dGCs', iGCs') = updateGammaConnections (p2 (r0x, y - heightInUnits' r)) gCId origins' ds' dGCs iGCs
+      (renderedL, originsL, dsL, dGCsL, iGCsL) = render l lO origins' ds' dGCs' iGCs'
+      (renderedR, originsLR, dsR, dGCsLR, iGCsLR) = render r rO originsL dsL dGCsL iGCsL
    in ( position [(p2 (x, y), wyvernRect c)]
           <> renderedL
           <> renderedR,
         originsLR,
+        dsR,
         dGCsLR,
         iGCsLR
       )
@@ -254,21 +176,21 @@ render ::
   Map ID Double ->
   [(Point V2 Double, Point V2 Double)] ->
   [[Point V2 Double]] ->
-  (Diagram B, Map ID (Point V2 Double), [(Point V2 Double, Point V2 Double)], [[Point V2 Double]])
-render blocks o origins widths dGCs iGCs =
-  let (diagram, _, origins', dGCs', iGCs') =
+  (Diagram B, Map ID (Point V2 Double), Map ID Double, [(Point V2 Double, Point V2 Double)], [[Point V2 Double]])
+render blocks o origins ds dGCs iGCs =
+  let (diagram, _, origins', accuDs', dGCs', iGCs') =
         foldl
-          ( \(d, (P (V2 x y)), accuOrigins, accuDGCs, accuIGCs) block ->
+          ( \(d, (P (V2 x y)), accuOrigins, accuDs, accuDGCs, accuIGCs) block ->
               let h = height block
                   x' = x
                   y' = y - h
-                  (d', accuOrigins', accuDGCs', accuIGCs') =
-                    render' block (p2 (x, y)) accuOrigins widths accuDGCs accuIGCs
-               in (d <> d', p2 (x', y'), accuOrigins', accuDGCs', accuIGCs')
+                  (d', accuOrigins', accuDs', accuDGCs', accuIGCs') =
+                    render' block (p2 (x, y)) accuOrigins accuDs accuDGCs accuIGCs
+               in (d <> d', p2 (x', y'), accuOrigins', accuDs', accuDGCs', accuIGCs')
           )
-          (mempty, o, origins, dGCs, iGCs)
+          (mempty, o, origins, ds, dGCs, iGCs)
           blocks
-   in (diagram, origins', dGCs', iGCs')
+   in (diagram, origins', accuDs', dGCs', iGCs')
 
 renderAll :: Diagram B -> [[Point V2 Double]] -> Diagram B
 renderAll d iGCs = d <> foldl (\accu x -> accu <> renderedConnection x) mempty iGCs

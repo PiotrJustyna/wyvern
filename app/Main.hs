@@ -5,7 +5,6 @@ import Constants (defaultBoundingBoxHeight, svgOptions)
 import Content (Content (Content))
 import Diagrams.Backend.SVG (renderSVG')
 import Diagrams.Prelude (p2)
-import EndTerminator (EndTerminator (End))
 import ID (ID (ID))
 import InputArguments
   ( inputPath,
@@ -16,8 +15,7 @@ import Lexer (alexScanTokens)
 import Options.Applicative (execParser, fullDesc, header, helper, info, (<**>))
 import Parser (ParseResult (..), diagram)
 import SkewerBlock (reverse'')
-import StartTerminator (StartTerminator (Title))
-import WyvernDiagram (WyvernDiagram (..), WyvernDiagram' (..), blockDimensions, heightInUnits, render, render', renderAll)
+import WyvernDiagram (WyvernDiagram' (..), peek, renderAll)
 
 main :: IO ()
 main = do
@@ -27,14 +25,14 @@ main = do
   let tokens = alexScanTokens fileContent
   case diagram tokens 1 of
     ParseOk d -> do
-      let diagram = WyvernDiagram' (reverse' $ head d)
+      let d' = WyvernDiagram' (reverse' $ head d)
+      let (os, ds) = WyvernDiagram.peek d'
 
-      let dimensions = blockDimensions diagram
-      putStrLn "block dimensions:"
-      print dimensions
+      putStrLn "dimensions:"
+      print ds
 
-      let renderedDiagram = WyvernDiagram.renderAll diagram dimensions
-      renderSVG' (outputPath input) svgOptions renderedDiagram
+      let rD = WyvernDiagram.renderAll d'
+      renderSVG' (outputPath input) svgOptions rD
     ParseFail s -> error s
   where
     options =
