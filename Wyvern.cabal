@@ -38,6 +38,7 @@ library
                       containers,
                       MissingH,
                       array,
+                      unordered-containers,
                       optparse-applicative
     default-language: Haskell2010
 

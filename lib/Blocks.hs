@@ -2,7 +2,10 @@ module Blocks where
 
 import Constants (defaultBoundingBoxHeight, defaultBoundingBoxWidth, heightRatio, widthRatio)
 import Content (Content (..))
+import Data.HashSet (HashSet, insert, member)
+import Data.List (groupBy, sortBy, sortOn)
 import Data.Map (Map, empty, insert, lookup)
+import Data.Ord (comparing)
 import Diagrams.Backend.SVG (B)
 import Diagrams.Prelude (Diagram, Point (..), V2 (..), p2, position, r2, translate, (#))
 import GHC.Float
@@ -46,26 +49,29 @@ height (Fork _ _ l r _) =
       )
 height _ = defaultBoundingBoxHeight
 
-updateOrigins ::
-  (Maybe ID) ->
-  (Point V2 Double) ->
-  Map ID (Point V2 Double) ->
-  Map ID (Point V2 Double)
+updateOrigins :: (Maybe ID) -> (Point V2 Double) -> Map ID (Point V2 Double) -> Map ID (Point V2 Double)
 updateOrigins i o origins =
   case i of
     Nothing -> origins
-    Just i' -> insert i' o origins
+    Just i' -> Data.Map.insert i' o origins
 
-updateDimensions ::
-  (Maybe ID) ->
-  Double ->
-  Map ID Double ->
-  Map ID Double
+updateDimensions :: (Maybe ID) -> Double -> Map ID Double -> Map ID Double
 updateDimensions (Just i) w ds =
   case Data.Map.lookup i ds of
     Nothing -> Data.Map.insert i (w) ds
     Just d -> Data.Map.insert i (d + w) ds
 updateDimensions _ _ ds = ds
+
+-- abc :: Block -> Block -> max width
+-- abc :: ID -> ID -> max width
+
+-- do it level by level
+-- actual: 2 levels
+-- expected: 20 levels
+width'' :: Map ID Double -> [Block] -> Map Double Double
+width'' gCs bs = case bs of
+  [] -> Data.Map.empty
+  bs' -> snd $ foldl (\(i, widths) w -> (i + 1, Data.Map.insert i w widths)) (0.0, Data.Map.empty) (map (width gCs) bs')
 
 width' :: Map ID Double -> [Block] -> Double
 width' gCs bs = case bs of
@@ -93,8 +99,8 @@ dimensions' ds bs =
             let lDs = dimensions' accu l
                 rDs = dimensions' lDs r
              in case Data.Map.lookup gCI rDs of
-                  Nothing -> insert gCI (0.1) rDs
-                  Just w -> insert gCI (w + 0.1) rDs
+                  Nothing -> Data.Map.insert gCI (0.1) rDs
+                  Just w -> Data.Map.insert gCI (w + 0.1) rDs
           _ -> accu
     )
     ds
@@ -103,25 +109,9 @@ dimensions' ds bs =
 dimensions :: [Block] -> Map ID Double
 dimensions = dimensions' empty
 
-updateGammaConnections ::
-  (Point V2 Double) ->
-  (Maybe ID) ->
-  Map ID (Point V2 Double) ->
-  Map ID Double ->
-  [(Point V2 Double, Point V2 Double)] ->
-  [[Point V2 Double]] ->
-  ([(Point V2 Double, Point V2 Double)], [[Point V2 Double]])
-updateGammaConnections gammaConnectionOrigin i origins dimensions dGCs iGCs =
-  case i of
-    Nothing -> (dGCs, iGCs)
-    Just i' -> case Data.Map.lookup i' origins of
-      Nothing -> error $ show i' <> " does not exist in the collection of origins: " <> show origins
-      Just gammaConnectionDestination -> case Data.Map.lookup i' dimensions of
-        Nothing -> error $ show i' <> " does not exist in the collection of dimensions: " <> show dimensions
-        Just destinationWidth ->
-          ( (gammaConnectionOrigin, gammaConnectionDestination) : dGCs,
-            (formulateGammaConnection gammaConnectionOrigin gammaConnectionDestination destinationWidth) : iGCs
-          )
+updateGammaConnections :: Point V2 Double -> Maybe ID -> [(Point V2 Double, ID)] -> [(Point V2 Double, ID)]
+updateGammaConnections gammaConnectionOrigin Nothing dGCs = dGCs
+updateGammaConnections gammaConnectionOrigin (Just i) dGCs = (gammaConnectionOrigin, i) : dGCs
 
 formulateGammaConnection :: Point V2 Double -> Point V2 Double -> Double -> [Point V2 Double]
 formulateGammaConnection gO@(P (V2 gOX gOY)) gD@(P (V2 gDX gDY)) dWidth =
@@ -130,67 +120,80 @@ formulateGammaConnection gO@(P (V2 gOX gOY)) gD@(P (V2 gDX gDY)) dWidth =
       gammaMidpoint3 = p2 (gDX + dWidth - defaultBoundingBoxWidth * 0.5, gDY)
    in [gO, gammaMidpoint1, gammaMidpoint2, gammaMidpoint3, gD]
 
--- instead of this:
--- [(Point V2 Double, Point V2 Double)], [[Point V2 Double]]
--- track something like this:
--- [(Point V2 Double, ID)]
--- translates to:
--- [(gamma connection origin coordinates, gamma connection destination ID)]
--- maybe we can combine two maps? origins and widths into destinations: Map ID (Point V2 Double)
-render' ::
-  Block ->
-  (Point V2 Double) ->
-  Map ID (Point V2 Double) ->
-  Map ID Double ->
-  [(Point V2 Double, Point V2 Double)] ->
-  [[Point V2 Double]] ->
-  (Diagram B, Map ID (Point V2 Double), Map ID Double, [(Point V2 Double, Point V2 Double)], [[Point V2 Double]])
-render' StartTerminator o@(P (V2 x _y)) _os _ds _dGCs _iGCs = (position [(o, wyvernRoundedRect "start")], _os, _ds, _dGCs, _iGCs)
-render' EndTerminator o@(P (V2 x _y)) _os _ds _dGCs _iGCs = (position [(o, wyvernRoundedRect "end")], _os, _ds, _dGCs, _iGCs)
-render' (Action i c) o@(P (V2 x _y)) os ds _dGCs _iGCs = (position [(o, wyvernRect c)], updateOrigins i o os, updateDimensions i defaultBoundingBoxWidth ds, _dGCs, _iGCs)
-render' (Headline i c) o@(P (V2 x y)) os ds _dGCs _iGCs = (position [(o, wyvernRect c)], updateOrigins i o os, updateDimensions i defaultBoundingBoxWidth ds, _dGCs, _iGCs)
-render' (Address i c) o@(P (V2 x y)) os ds _dGCs _iGCs = (position [(o, wyvernRect c)], updateOrigins i o os, updateDimensions i defaultBoundingBoxWidth ds, _dGCs, _iGCs)
-render' fork@(Fork i c l r gCId) o@(P (V2 x y)) origins ds dGCs iGCs =
+render' :: Block -> (Point V2 Double) -> Map ID (Point V2 Double) -> Map ID Double -> [(Point V2 Double, ID)] -> (Diagram B, Map ID (Point V2 Double), Map ID Double, [(Point V2 Double, ID)])
+render' StartTerminator o@(P (V2 x _y)) _os _ds _dGCs = (position [(o, wyvernRoundedRect "start")], _os, _ds, _dGCs)
+render' EndTerminator o@(P (V2 x _y)) _os _ds _dGCs = (position [(o, wyvernRoundedRect "end")], _os, _ds, _dGCs)
+render' (Action i c) o@(P (V2 x _y)) os ds _dGCs = (position [(o, wyvernRect c)], updateOrigins i o os, updateDimensions i defaultBoundingBoxWidth ds, _dGCs)
+render' (Headline i c) o@(P (V2 x y)) os ds _dGCs = (position [(o, wyvernRect c)], updateOrigins i o os, updateDimensions i defaultBoundingBoxWidth ds, _dGCs)
+render' (Address i c) o@(P (V2 x y)) os ds _dGCs = (position [(o, wyvernRect c)], updateOrigins i o os, updateDimensions i defaultBoundingBoxWidth ds, _dGCs)
+render' fork@(Fork i c l r gCId) o@(P (V2 x y)) origins ds dGCs =
   let lW = width' ds l
       rW = width' ds r
       lO = p2 (x, y - defaultBoundingBoxHeight)
       rO@(P (V2 r0x r0y)) = p2 (x + lW, y - defaultBoundingBoxHeight)
       origins' = updateOrigins i o origins
       ds' = updateDimensions i (lW + rW) ds
-      (dGCs', iGCs') = updateGammaConnections (p2 (r0x, y - heightInUnits' r)) gCId origins' ds' dGCs iGCs
-      (renderedL, originsL, dsL, dGCsL, iGCsL) = render l lO origins' ds' dGCs' iGCs'
-      (renderedR, originsLR, dsR, dGCsLR, iGCsLR) = render r rO originsL dsL dGCsL iGCsL
+      dGCs' = updateGammaConnections (p2 (r0x, y - heightInUnits' r)) gCId dGCs
+      (renderedL, originsL, dsL, dGCsL) = render l lO origins' ds' dGCs'
+      (renderedR, originsLR, dsR, dGCsLR) = render r rO originsL dsL dGCsL
    in ( position [(p2 (x, y), wyvernRect c)]
           <> renderedL
           <> renderedR,
         originsLR,
         dsR,
-        dGCsLR,
-        iGCsLR
+        dGCsLR
       )
 
-render ::
-  [Block] ->
-  (Point V2 Double) ->
-  Map ID (Point V2 Double) ->
-  Map ID Double ->
-  [(Point V2 Double, Point V2 Double)] ->
-  [[Point V2 Double]] ->
-  (Diagram B, Map ID (Point V2 Double), Map ID Double, [(Point V2 Double, Point V2 Double)], [[Point V2 Double]])
-render blocks o origins ds dGCs iGCs =
-  let (diagram, _, origins', accuDs', dGCs', iGCs') =
+render :: [Block] -> (Point V2 Double) -> Map ID (Point V2 Double) -> Map ID Double -> [(Point V2 Double, ID)] -> (Diagram B, Map ID (Point V2 Double), Map ID Double, [(Point V2 Double, ID)])
+render blocks o origins ds dGCs =
+  let (diagram, _, origins', accuDs', dGCs') =
         foldl
-          ( \(d, (P (V2 x y)), accuOrigins, accuDs, accuDGCs, accuIGCs) block ->
+          ( \(d, (P (V2 x y)), accuOrigins, accuDs, accuDGCs) block ->
               let h = height block
                   x' = x
                   y' = y - h
-                  (d', accuOrigins', accuDs', accuDGCs', accuIGCs') =
-                    render' block (p2 (x, y)) accuOrigins accuDs accuDGCs accuIGCs
-               in (d <> d', p2 (x', y'), accuOrigins', accuDs', accuDGCs', accuIGCs')
+                  (d', accuOrigins', accuDs', accuDGCs') =
+                    render' block (p2 (x, y)) accuOrigins accuDs accuDGCs
+               in (d <> d', p2 (x', y'), accuOrigins', accuDs', accuDGCs')
           )
-          (mempty, o, origins, ds, dGCs, iGCs)
+          (mempty, o, origins, ds, dGCs)
           blocks
-   in (diagram, origins', accuDs', dGCs', iGCs')
+   in (diagram, origins', accuDs', dGCs')
 
-renderAll :: Diagram B -> [[Point V2 Double]] -> Diagram B
-renderAll d iGCs = d <> foldl (\accu x -> accu <> renderedConnection x) mempty iGCs
+destinationLookup :: ID -> Map ID (Point V2 Double) -> Map ID Double -> (Point V2 Double, Double)
+destinationLookup i os ds =
+  case Data.Map.lookup i os of
+    Nothing -> error $ (show i) <> " does not exist in the list of origins: " <> show os
+    Just o -> case Data.Map.lookup i ds of
+      Nothing -> error $ (show i) <> " does not exist in the list of dimensions: " <> show ds
+      Just d -> (o, d)
+
+firstAvailableSpace :: Double -> Double -> HashSet Double -> Double
+firstAvailableSpace x w cs = case Data.HashSet.member (x + w) cs of
+  False -> w
+  _ -> firstAvailableSpace x (w - 0.1) cs
+
+getY :: Point V2 Double -> Double
+getY (P (V2 _ y)) = y
+
+groupAndSort :: [(Point V2 Double, ID)] -> [(Point V2 Double, ID)]
+groupAndSort xs =
+  concatMap (sortBy (comparing (getY . fst)))
+    . groupBy (\a b -> snd a == snd b)
+    . sortBy (comparing snd)
+    $ xs
+
+renderAll :: Diagram B -> Map ID (Point V2 Double) -> Map ID Double -> [(Point V2 Double, ID)] -> HashSet Double -> (Diagram B, HashSet Double)
+renderAll d os ds dGCs claimedSpace =
+  let (dGCs', claimedSpace') =
+        foldl
+          ( \(accuDGCs, accuClaimedSpace) dGC ->
+              let dGCO = fst dGC
+                  (dGCD@(P (V2 x _)), w) = destinationLookup (snd dGC) os ds
+                  w' = firstAvailableSpace x w accuClaimedSpace
+               in ((formulateGammaConnection dGCO dGCD (w' + 3.1)) : accuDGCs, Data.HashSet.insert (x + w') accuClaimedSpace)
+          )
+          ([], claimedSpace)
+          (groupAndSort dGCs)
+      c = foldl (\accu x -> accu <> renderedConnection x) d dGCs'
+   in (c, claimedSpace')

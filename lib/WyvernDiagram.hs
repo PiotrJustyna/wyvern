@@ -1,8 +1,9 @@
 module WyvernDiagram where
 
-import qualified Blocks (Block (..), dimensions, render, renderAll)
+import qualified Blocks (Block (..), dimensions, render, renderAll, width'', dimensions)
 import Constants (defaultBoundingBoxHeight, defaultBoundingBoxWidth)
 import Content (Content (Content))
+import Data.HashSet (HashSet, empty)
 import Data.Map (Map, empty)
 import Diagrams.Backend.SVG (B)
 import Diagrams.Prelude (Diagram, Point (..), V2 (..), p2, position)
@@ -20,21 +21,21 @@ data WyvernDiagram'
   = WyvernDiagram' [Blocks.Block]
   deriving (Show)
 
-render' :: WyvernDiagram' -> (Diagram B, Map ID (Point V2 Double), Map ID Double, [(Point V2 Double, Point V2 Double)], [[Point V2 Double]])
+render' :: WyvernDiagram' -> (Diagram B, Map ID (Point V2 Double), Map ID Double, [(Point V2 Double, ID)])
 render' (WyvernDiagram' bs) =
   let blocks = Blocks.StartTerminator : (bs <> [Blocks.EndTerminator])
       dimensions = Blocks.dimensions blocks
-   in Blocks.render blocks (p2 (0.0, 0.0)) empty dimensions [] []
+   in Blocks.render blocks (p2 (0.0, 0.0)) Data.Map.empty dimensions []
 
-peek :: WyvernDiagram' -> (Map ID (Point V2 Double), Map ID Double)
-peek d =
-  let (_, os, ds, _, _) = render' d
-   in (os, ds)
+peek :: WyvernDiagram' -> Map Double Double
+peek (WyvernDiagram' bs) =
+  let d = Blocks.dimensions bs
+  in Blocks.width'' d bs
 
-renderAll :: WyvernDiagram' -> Diagram B
+renderAll :: WyvernDiagram' -> (Diagram B, HashSet Double)
 renderAll d =
-  let (d', _, _, _, iGCs) = render' d
-   in Blocks.renderAll d' iGCs
+  let (d', os, ds, dGCs) = render' d
+   in Blocks.renderAll d' os ds dGCs Data.HashSet.empty
 
 renderSingleSkewer :: [SkewerBlock] -> Point V2 Double -> Double -> (Diagram B, Double)
 renderSingleSkewer skewerBlocks (P (V2 x y)) addressDepth =

@@ -26,12 +26,16 @@ main = do
   case diagram tokens 1 of
     ParseOk d -> do
       let d' = WyvernDiagram' (reverse' $ head d)
-      let (os, ds) = WyvernDiagram.peek d'
+      let widths = WyvernDiagram.peek d'
 
-      putStrLn "dimensions:"
-      print ds
+      putStrLn "widths:"
+      print widths
 
-      let rD = WyvernDiagram.renderAll d'
+      let (rD, dGCs) = WyvernDiagram.renderAll d'
+
+      putStrLn "direct gamma connections:"
+      print dGCs
+
       renderSVG' (outputPath input) svgOptions rD
     ParseFail s -> error s
   where
