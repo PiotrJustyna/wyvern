@@ -55,6 +55,12 @@ updateOrigins i o origins =
     Nothing -> origins
     Just i' -> Data.Map.insert i' o origins
 
+updateDestinations :: (Maybe ID) -> (Point V2 Double) -> Map ID (Point V2 Double) -> Map ID (Point V2 Double)
+updateDestinations i o origins =
+  case i of
+    Nothing -> origins
+    Just i' -> Data.Map.insert i' o origins
+
 updateDimensions :: (Maybe ID) -> Double -> Map ID Double -> Map ID Double
 updateDimensions (Just i) w ds =
   case Data.Map.lookup i ds of
@@ -113,6 +119,16 @@ updateGammaConnections :: Point V2 Double -> Maybe ID -> [(Point V2 Double, ID)]
 updateGammaConnections gammaConnectionOrigin Nothing dGCs = dGCs
 updateGammaConnections gammaConnectionOrigin (Just i) dGCs = (gammaConnectionOrigin, i) : dGCs
 
+updateGammaConnections' ::
+  Point V2 Double ->
+  Double ->
+  Double ->
+  Block ->
+  [(Point V2 Double, Double, Double, ID)] ->
+  [(Point V2 Double, Double, Double, ID)]
+updateGammaConnections' gCO maxX maxY (Fork _ _ _ _ (Just gCID)) gCs = (gCO, maxX, maxY, gCID) : gCs
+updateGammaConnections' _ _ _ _ gCs = gCs
+
 formulateGammaConnection :: Point V2 Double -> Point V2 Double -> Double -> [Point V2 Double]
 formulateGammaConnection gO@(P (V2 gOX gOY)) gD@(P (V2 gDX gDY)) dWidth =
   let gammaMidpoint1 = p2 (gOX, gOY - defaultBoundingBoxHeight * 0.5)
@@ -159,6 +175,84 @@ render blocks o origins ds dGCs =
           (mempty, o, origins, ds, dGCs)
           blocks
    in (diagram, origins', accuDs', dGCs')
+
+getContent :: Block -> String
+getContent StartTerminator = "start"
+getContent EndTerminator = "end"
+getContent (Action _ c) = c
+getContent (Headline _ c) = c
+getContent (Address _ c) = c
+getContent (Fork _ c _ _ _) = c
+
+getIdentifier :: Block -> Maybe ID
+getIdentifier StartTerminator = Nothing
+getIdentifier EndTerminator = Nothing
+getIdentifier (Action i _) = i
+getIdentifier (Headline i _) = i
+getIdentifier (Address i _) = i
+getIdentifier (Fork i _ _ _ _) = i
+
+newRender'' ::
+  Block ->
+  Point V2 Double ->
+  Map ID (Point V2 Double) ->
+  [(Point V2 Double, Double, Double, ID)] ->
+  (Diagram B, Map ID (Point V2 Double), [(Point V2 Double, Double, Double, ID)], Double, Double, Double, Double)
+newRender'' fork@(Fork i c l r gCId) o@(P (V2 oX oY)) ds gCs =
+  let gCW = case gCId of
+        Nothing -> 0.0
+        Just _ -> 0.1
+      (dQ, wQ, hQ) = (position [(o, wyvernRect c)], oX + defaultBoundingBoxWidth, oY - defaultBoundingBoxHeight)
+      (dL, dsL, gCsL, wL, hL, maxWL, maxHL) = newRender' l (p2 (oX, hQ)) ds gCs
+      (dR, dsR, gCsR, wR, hR, maxWR, maxHR) = newRender' r (p2 (maxWL, hQ)) dsL gCsL
+   in ( dQ <> dL <> dR,
+        dsR,
+        gCsR,
+        wR,
+        hR,
+        maxWR + gCW,
+        if maxHL < maxHR then maxHL else maxHR
+      )
+newRender'' b o@(P (V2 oX oY)) ds gCs =
+  ( position [(o, wyvernRect $ getContent b)],
+    ds,
+    gCs,
+    oX,
+    oY,
+    oX + defaultBoundingBoxWidth,
+    oY - defaultBoundingBoxHeight
+  )
+
+newRender' ::
+  [Block] ->
+  Point V2 Double ->
+  Map ID (Point V2 Double) ->
+  [(Point V2 Double, Double, Double, ID)] ->
+  (Diagram B, Map ID (Point V2 Double), [(Point V2 Double, Double, Double, ID)], Double, Double, Double, Double)
+newRender' [] o@(P (V2 oX oY)) ds gCs = (mempty, ds, gCs, oX, oY, oX, oY)
+newRender' (b : []) o@(P (V2 oX oY)) ds gCs =
+  let ds' = updateDestinations (getIdentifier b) o ds
+      (d, ds'', gCs', w, h, maxW, maxH) = newRender'' b o ds' gCs
+      gCs'' = updateGammaConnections' (p2 (w, h)) maxW maxH b gCs'
+   in (d, ds'', gCs'', w, h, maxW, maxH)
+newRender' (b : bs) o@(P (V2 oX _oY)) ds gCs =
+  let ds' = updateDestinations (getIdentifier b) o ds
+      (d, ds'', gCs', w, h, maxW, maxH) = newRender'' b o ds' gCs
+      gCs'' = updateGammaConnections' (p2 (w, h)) maxW maxH b gCs'
+      (d', ds''', gCs''', w', h', maxW', maxH') = newRender' bs (p2 (oX, maxH)) ds'' gCs''
+   in (d <> d', ds''', gCs''', w', h', if maxW > maxW' then maxW else maxW', maxH')
+
+newRender :: [Block] -> Diagram B
+newRender bs =
+  let (rD, ds, gCs, w, h, maxW, maxH) = newRender' bs (p2 (0.0, 0.0)) Data.Map.empty []
+   in foldl
+        ( \accu (gCO, maxX, maxY, i) ->
+            case Data.Map.lookup i ds of
+              Nothing -> error $ "gamma connection destination " <> (show i) <> "not found in the collection of destinations: " <> (show ds)
+              Just gCD -> accu <> (renderedConnection [gCO, gCD])
+        )
+        rD
+        gCs
 
 destinationLookup :: ID -> Map ID (Point V2 Double) -> Map ID Double -> (Point V2 Double, Double)
 destinationLookup i os ds =

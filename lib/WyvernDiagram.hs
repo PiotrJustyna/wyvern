@@ -1,6 +1,6 @@
 module WyvernDiagram where
 
-import qualified Blocks (Block (..), dimensions, render, renderAll, width'', dimensions)
+import qualified Blocks (Block (..), dimensions, newRender, newRender', render, width'')
 import Constants (defaultBoundingBoxHeight, defaultBoundingBoxWidth)
 import Content (Content (Content))
 import Data.HashSet (HashSet, empty)
@@ -21,21 +21,31 @@ data WyvernDiagram'
   = WyvernDiagram' [Blocks.Block]
   deriving (Show)
 
-render' :: WyvernDiagram' -> (Diagram B, Map ID (Point V2 Double), Map ID Double, [(Point V2 Double, ID)])
-render' (WyvernDiagram' bs) =
-  let blocks = Blocks.StartTerminator : (bs <> [Blocks.EndTerminator])
-      dimensions = Blocks.dimensions blocks
-   in Blocks.render blocks (p2 (0.0, 0.0)) Data.Map.empty dimensions []
+-- render' :: WyvernDiagram' -> (Diagram B, Map ID (Point V2 Double), Map ID Double, [(Point V2 Double, ID)])
+-- render' (WyvernDiagram' bs) =
+--   let blocks = Blocks.StartTerminator : (bs <> [Blocks.EndTerminator])
+--       dimensions = Blocks.dimensions blocks
+--    in Blocks.render blocks (p2 (0.0, 0.0)) Data.Map.empty dimensions []
+
+newRender' :: WyvernDiagram' -> (Diagram B, Map ID (Point V2 Double), [(Point V2 Double, Double, Double, ID)], Double, Double, Double, Double)
+newRender' (WyvernDiagram' bs) =
+  let bs' = Blocks.StartTerminator : (bs <> [Blocks.EndTerminator])
+   in Blocks.newRender' bs' (p2 (0.0, 0.0)) Data.Map.empty []
+
+newRender :: WyvernDiagram' -> Diagram B
+newRender (WyvernDiagram' bs) =
+  let bs' = Blocks.StartTerminator : (bs <> [Blocks.EndTerminator])
+   in Blocks.newRender bs'
 
 peek :: WyvernDiagram' -> Map Double Double
 peek (WyvernDiagram' bs) =
   let d = Blocks.dimensions bs
-  in Blocks.width'' d bs
+   in Blocks.width'' d bs
 
-renderAll :: WyvernDiagram' -> (Diagram B, HashSet Double)
-renderAll d =
-  let (d', os, ds, dGCs) = render' d
-   in Blocks.renderAll d' os ds dGCs Data.HashSet.empty
+-- renderAll :: WyvernDiagram' -> (Diagram B, HashSet Double)
+-- renderAll d =
+--   let (d', os, ds, dGCs) = render' d
+--    in Blocks.renderAll d' os ds dGCs Data.HashSet.empty
 
 renderSingleSkewer :: [SkewerBlock] -> Point V2 Double -> Double -> (Diagram B, Double)
 renderSingleSkewer skewerBlocks (P (V2 x y)) addressDepth =
