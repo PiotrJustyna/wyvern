@@ -15,7 +15,7 @@ import Lexer (alexScanTokens)
 import Options.Applicative (execParser, fullDesc, header, helper, info, (<**>))
 import Parser (ParseResult (..), diagram)
 import SkewerBlock (reverse'')
-import WyvernDiagram (WyvernDiagram' (..), newRender, newRender', peek)
+import WyvernDiagram (WyvernDiagram' (..), newRender, newRender')
 
 main :: IO ()
 main = do
@@ -57,7 +57,9 @@ main = do
       putStrLn "max height:"
       print maxH
 
-      renderSVG' (outputPath input) svgOptions rD
+      let rD' = WyvernDiagram.newRender d'
+
+      renderSVG' (outputPath input) svgOptions rD'
     ParseFail s -> error s
   where
     options =
