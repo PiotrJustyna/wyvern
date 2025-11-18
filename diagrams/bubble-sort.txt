@@ -63,6 +63,14 @@
       z5 "action z5"
       a
     }
+    oi1 "question oi1"
+    {
+      oi2 "action oi2"
+    }
+    {
+      oi3 "action oi3"
+      a
+    }
     a
   }
 }

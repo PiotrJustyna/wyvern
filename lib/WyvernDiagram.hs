@@ -24,7 +24,7 @@ data WyvernDiagram'
 newRender' :: WyvernDiagram' -> (Diagram B, Map ID (Point V2 Double), [(Point V2 Double, Double, Double, ID)], Double, Double, Double, Double)
 newRender' (WyvernDiagram' bs) =
   let bs' = Blocks.StartTerminator : (bs <> [Blocks.EndTerminator])
-   in Blocks.newRender' bs' (p2 (0.0, 0.0)) Data.Map.empty []
+   in Blocks.newRender' bs' (p2 (0.0, 0.0)) Data.Map.empty [] 0.0
 
 newRender :: WyvernDiagram' -> Diagram B
 newRender (WyvernDiagram' bs) =
