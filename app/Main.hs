@@ -39,23 +39,23 @@ main = do
       -- let rD = WyvernDiagram.newRender d'
       let (rD, ds, gCs, w, h, maxW, maxH) = WyvernDiagram.newRender' d'
 
-      putStrLn "gamma connections:"
-      print gCs
+      -- putStrLn "gamma connections:"
+      -- print gCs
 
-      putStrLn "destinations:"
-      print ds
+      -- putStrLn "destinations:"
+      -- print ds
 
-      putStrLn "width:"
-      print w
+      -- putStrLn "width:"
+      -- print w
 
-      putStrLn "height:"
-      print h
+      -- putStrLn "height:"
+      -- print h
 
-      putStrLn "max width:"
-      print maxW
+      -- putStrLn "max width:"
+      -- print maxW
 
-      putStrLn "max height:"
-      print maxH
+      -- putStrLn "max height:"
+      -- print maxH
 
       let rD' = WyvernDiagram.newRender d'
 

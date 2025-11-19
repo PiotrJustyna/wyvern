@@ -17,12 +17,15 @@ import Diagrams.Prelude
     local,
     lw,
     p2,
+    position,
     r2,
     rect,
+    rotateBy,
     roundedRect,
     strokeLoop,
     text,
     translate,
+    triangle,
     veryThin,
     (#),
   )
@@ -110,5 +113,9 @@ wyvernHeadline x w h =
       # lc lineColour
       # fc fillColour
 
-renderedConnection :: [Point V2 Double] -> Diagram B
-renderedConnection coordinates = fromVertices coordinates # drakonStyle
+renderConnection :: [Point V2 Double] -> Diagram B
+renderConnection coordinates = fromVertices coordinates # drakonStyle
+
+renderGammaConnection coordinates =
+  let gD@(P (V2 gDX gDY)) = last coordinates
+   in renderConnection coordinates <> position [(p2 (gDX - 0.02, gDY), rotateBy (1 / 4) $ triangle 0.1 # drakonStyle)]

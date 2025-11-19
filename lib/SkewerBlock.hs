@@ -63,7 +63,7 @@ renderAdditionalConnection sourceOrigin@(P (V2 x1 y1)) (Just destinationId) mapO
                   p2 (updatedMidpointX, y2'),
                   p2 (x2 + defaultBoundingBoxWidth * 0.5 + 0.087, y2')
                 ]
-           in ( renderedConnection points
+           in ( renderConnection points
                   <> position
                     [ ( p2 (x2 + defaultBoundingBoxWidth * 0.5 + (0.087 / 2.0) + 0.02, y2 - 0.1),
                         rotateBy (1 / 4) $ triangle 0.1 # drakonStyle
@@ -80,8 +80,8 @@ renderAdditionalConnection sourceOrigin@(P (V2 x1 y1)) (Just destinationId) mapO
                         p2 (x2 + defaultBoundingBoxWidth - 0.1, y2 + 0.1),
                         p2 (x2 + defaultBoundingBoxWidth * 0.5, y2 + 0.1)
                       ]
-                 in (renderedConnection points, points : existingLoopbacks)
-              else (renderedConnection [sourceOrigin, _destinationOrigin], [sourceOrigin, _destinationOrigin] : existingLoopbacks)
+                 in (renderConnection points, points : existingLoopbacks)
+              else (renderConnection [sourceOrigin, _destinationOrigin], [sourceOrigin, _destinationOrigin] : existingLoopbacks)
           )
     -- 0.087:   from Pythegorean theorem
     -- 0.02:  from line width?
@@ -107,9 +107,9 @@ renderSkewerBlocks connectionX lastY skewerBlocks mapOfOrigins existingLoopbacks
             (P (V2 x y)) = getOrigin singleBlock
             shiftedSingleBlock = if x == connectionX then singleBlock else (changeOrigin singleBlock (P (V2 (connectionX - defaultBoundingBoxWidth * 0.5) y)))
             (renderedSingleBlock, loopbackConnections) = render shiftedSingleBlock mapOfOrigins accuLoopbackConnections
-         in ( renderedConnection [p2 (connectionX, preY1), p2 (connectionX, preY2)]
+         in ( renderConnection [p2 (connectionX, preY1), p2 (connectionX, preY2)]
                 <> diagram
-                <> renderedConnection [p2 (connectionX, postY1), p2 (connectionX, postY2)]
+                <> renderConnection [p2 (connectionX, postY1), p2 (connectionX, postY2)]
                 <> renderedSingleBlock,
               preY1 - heightInUnits shiftedSingleBlock * defaultBoundingBoxHeight,
               loopbackConnections
@@ -200,12 +200,12 @@ renderIcons' skewerBlocks mapOfOrigins =
             (renderedSingleBlock, updatedLoopbackConnections) = render singleBlock mapOfOrigins accuLoopbackConnections
          in ( currentDiagram
                 <> ( case singleBlock of
-                       Address {} -> renderedConnection [p2 (connectionX, lastBlocksDepth), p2 (connectionX, preY1)]
+                       Address {} -> renderConnection [p2 (connectionX, lastBlocksDepth), p2 (connectionX, preY1)]
                        _ -> mempty
                    )
-                <> renderedConnection [p2 (connectionX, preY1), p2 (connectionX, preY2)]
+                <> renderConnection [p2 (connectionX, preY1), p2 (connectionX, preY2)]
                 <> renderedSingleBlock
-                <> renderedConnection [p2 (connectionX, postY1), p2 (connectionX, postY2)],
+                <> renderConnection [p2 (connectionX, postY1), p2 (connectionX, postY2)],
               postY2,
               updatedLoopbackConnections
             )
@@ -228,7 +228,7 @@ renderIcons skewerBlocks mapOfOrigins addressDepth =
             -- https://github.com/PiotrJustyna/wyvern/issues/24#issuecomment-3214758752
             -- move the second x by 0.1 and you'll see the problem
             -- for the linked input
-            renderedConnection
+            renderConnection
               [ p2 (firstBlockX + defaultBoundingBoxWidth * 0.5, skewerDepth),
                 p2 (firstBlockX + defaultBoundingBoxWidth * 0.5, addressDepth - defaultBoundingBoxHeight)
               ]
@@ -477,7 +477,7 @@ render
             <> renderText "yes" (x + defaultBoundingBoxWidth * 0.42) (y - defaultBoundingBoxHeight * 0.9)
             <> case lDetourId of
               Nothing ->
-                renderedConnection
+                renderConnection
                   [ p2 (connectionLX, lY - heightInUnits' l * defaultBoundingBoxHeight),
                     p2 (connectionLX, y - heightInUnits fork * defaultBoundingBoxHeight)
                   ]
@@ -486,7 +486,7 @@ render
                    then
                      ( case rDetourId of
                          Nothing ->
-                           renderedConnection
+                           renderConnection
                              [ p2 (x + defaultBoundingBoxWidth * (widthRatio + 1) / 2.0, y - defaultBoundingBoxHeight * 0.5),
                                p2 (rX - 0.1, y - defaultBoundingBoxHeight * 0.5),
                                p2 (rX - 0.1, rY - (if null l then 0.0 else defaultBoundingBoxHeight * 0.25))
@@ -494,7 +494,7 @@ render
                          Just _ -> renderedRBranch
                      )
                    else
-                     renderedConnection
+                     renderConnection
                        [ p2 (x + defaultBoundingBoxWidth * (widthRatio + 1) / 2.0, y - defaultBoundingBoxHeight * 0.5),
                          p2 (rX + defaultBoundingBoxWidth * 0.5, y - defaultBoundingBoxHeight * 0.5),
                          p2 (rX + defaultBoundingBoxWidth * 0.5, rY)
@@ -515,7 +515,7 @@ render
               Nothing ->
                 ( if null r
                     then
-                      renderedConnection
+                      renderConnection
                         [ p2
                             ( rX - 0.1,
                               y
@@ -529,7 +529,7 @@ render
                           p2 (x + defaultBoundingBoxWidth * 0.5, y - heightInUnits fork * defaultBoundingBoxHeight)
                         ]
                     else
-                      renderedConnection
+                      renderConnection
                         [ p2 (rX + defaultBoundingBoxWidth * 0.5, y - defaultBoundingBoxHeight),
                           p2 (rX + defaultBoundingBoxWidth * 0.5, y - heightInUnits fork * defaultBoundingBoxHeight),
                           p2 (x + defaultBoundingBoxWidth * 0.5, y - heightInUnits fork * defaultBoundingBoxHeight)
