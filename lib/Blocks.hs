@@ -9,7 +9,7 @@ import Data.Ord (comparing)
 import Diagrams.Backend.SVG (B)
 import Diagrams.Prelude (Diagram, Point (..), V2 (..), p2, position, r2, translate, (#))
 import GHC.Float
-import HelperDiagrams (renderConnection, renderGammaConnection, renderText', wyvernHeadline, wyvernRect, wyvernRoundedRect)
+import HelperDiagrams (renderAlphaConnection, renderGammaConnection, renderText', wyvernHeadline, wyvernHex, wyvernRect, wyvernRoundedRect)
 import ID
 import qualified SkewerBlock (SkewerBlock (Action))
 
@@ -22,15 +22,21 @@ data Block
   | EndTerminator
   deriving (Show)
 
-reverse' :: [Block] -> [Block]
-reverse' =
-  foldl
-    ( \accu x ->
-        case x of
-          Fork id content l r rId -> Fork id content (reverse' l) (reverse' r) rId : accu
-          _ -> x : accu
-    )
-    []
+reverse'' :: [Block] -> [Block]
+reverse'' bs =
+  let res =
+        foldl
+          ( \accu x ->
+              case x of
+                Fork id content l r rId -> Fork id content (reverse'' l) (reverse'' r) rId : accu
+                _ -> x : accu
+          )
+          []
+          bs
+   in res
+
+reverse' :: [[Block]] -> [[Block]]
+reverse' = foldl (\accu x -> reverse'' x : accu) []
 
 updateDestinations :: (Maybe ID) -> (Point V2 Double) -> Map ID (Point V2 Double) -> Map ID (Point V2 Double)
 updateDestinations i o origins =
@@ -50,7 +56,7 @@ updateGammaConnections' _ _ _ _ gCs = gCs
 
 formulateGammaConnection :: Point V2 Double -> Point V2 Double -> Double -> Double -> [Point V2 Double]
 formulateGammaConnection gO@(P (V2 gOX gOY)) gD@(P (V2 gDX gDY)) maxX minY =
-  let gD'@(P (V2 _gDX' gDY')) = p2 (gDX + (0.087 / 2.0) + 0.04, gDY + defaultBoundingBoxHeight * 0.5)
+  let gD'@(P (V2 _gDX' gDY')) = p2 (gDX + (0.087 / 2.0) + 0.07, gDY + defaultBoundingBoxHeight * 0.5)
       gammaMidpoint1 = p2 (gOX, minY)
       gammaMidpoint2 = p2 (maxX - defaultBoundingBoxWidth * 0.5, minY)
       gammaMidpoint3 = p2 (maxX - defaultBoundingBoxWidth * 0.5, gDY')
@@ -77,12 +83,21 @@ newRender'' fork@(Fork i c l r gCId) o@(P (V2 oX oY)) ds gCs abc =
   let (gCW, gCH) = case gCId of
         Nothing -> (0.1, 0.1)
         Just _ -> (0.1, 0.1)
-      (dQ, wQ, hQ) = (position [(o, wyvernRect c)], oX + defaultBoundingBoxWidth, oY - defaultBoundingBoxHeight)
+      (dQ, wQ, hQ) = (position [(o, wyvernHex c)], oX + defaultBoundingBoxWidth, oY - defaultBoundingBoxHeight)
       (dL, dsL, gCsL, wL, hL, maxWL, minHL) = newRender' l (p2 (oX, hQ)) ds gCs 0.0
       (dR, dsR, gCsR, wR, hR, maxWR, minHR) = newRender' r (p2 (maxWL, hQ)) dsL gCsL abc
       newMaxW = maxWR + gCW
       newMinH = (if minHL < minHR then minHL else minHR) - gCH
-   in ( dQ <> dL <> dR,
+   in ( dQ
+          <> dL
+          <> dR
+          <> (renderAlphaConnection [p2 (oX, hQ), o])
+          <> (renderAlphaConnection [p2 (oX, hQ), p2 (oX, hR + defaultBoundingBoxHeight - gCH)])
+          <> (renderAlphaConnection [p2 (maxWL, hQ), p2 (maxWL, oY), o])
+          <> ( case gCId of
+                 Nothing -> (renderAlphaConnection [p2 (oX, hR - gCH + defaultBoundingBoxHeight * 0.5), p2 (maxWL, hR - gCH + defaultBoundingBoxHeight * 0.5), p2 (maxWL, hQ)])
+                 _ -> mempty
+             ),
         dsR,
         gCsR,
         wR,
@@ -90,15 +105,9 @@ newRender'' fork@(Fork i c l r gCId) o@(P (V2 oX oY)) ds gCs abc =
         newMaxW,
         newMinH
       )
-newRender'' b o@(P (V2 oX oY)) ds gCs abc =
-  ( position [(o, wyvernRect $ getContent b)],
-    ds,
-    gCs,
-    oX,
-    oY,
-    oX + defaultBoundingBoxWidth,
-    oY - defaultBoundingBoxHeight
-  )
+newRender'' StartTerminator o@(P (V2 oX oY)) ds gCs abc = (position [(o, wyvernRoundedRect $ getContent StartTerminator)], ds, gCs, oX, oY, oX + defaultBoundingBoxWidth, oY - defaultBoundingBoxHeight)
+newRender'' EndTerminator o@(P (V2 oX oY)) ds gCs abc = (position [(o, wyvernRoundedRect $ getContent EndTerminator)], ds, gCs, oX, oY, oX + defaultBoundingBoxWidth, oY - defaultBoundingBoxHeight)
+newRender'' b o@(P (V2 oX oY)) ds gCs abc = (position [(o, wyvernRect $ getContent b)], ds, gCs, oX, oY, oX + defaultBoundingBoxWidth, oY - defaultBoundingBoxHeight)
 
 newRender' :: [Block] -> Point V2 Double -> Map ID (Point V2 Double) -> [(Point V2 Double, Double, Double, ID)] -> Double -> (Diagram B, Map ID (Point V2 Double), [(Point V2 Double, Double, Double, ID)], Double, Double, Double, Double)
 newRender' [] o@(P (V2 oX oY)) ds gCs abc =
@@ -119,13 +128,13 @@ newRender' (b : bs) o@(P (V2 oX _oY)) ds gCs abc =
       (d, ds'', gCs', w, h, maxW, minH) = newRender'' b o ds' gCs abc
       maxW' = if abc > maxW then abc else maxW
       gCs'' = updateGammaConnections' (p2 (w, h)) maxW' (minH + defaultBoundingBoxHeight * 0.5) b gCs'
-      (d', ds''', gCs''', w', h', maxW'', minH') = newRender' bs (p2 (oX, minH)) ds'' gCs'' maxW' -- used to be: maxW' + 0.1
+      (d', ds''', gCs''', w', h', maxW'', minH') = newRender' bs (p2 (oX, minH)) ds'' gCs'' maxW'
       maxW''' = if maxW' > maxW'' then maxW' else maxW''
-   in (d <> d', ds''', gCs''', w', h', maxW''', minH')
+   in (d <> d' <> (renderAlphaConnection [p2 (oX, minH), o]), ds''', gCs''', w', h', maxW''', minH')
 
-newRender :: [Block] -> Diagram B
+newRender :: [[Block]] -> Diagram B
 newRender bs =
-  let (rD, ds, gCs, w, h, maxW, maxH) = newRender' bs (p2 (0.0, 0.0)) Data.Map.empty [] 0.0
+  let (rD, ds, gCs, w, h, maxW, maxH) = newRender' (head bs) (p2 (0.0, 0.0)) Data.Map.empty [] 0.0
    in foldl
         ( \accu (gCO, maxX, maxY, i) ->
             case Data.Map.lookup i ds of

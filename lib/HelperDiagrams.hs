@@ -20,8 +20,10 @@ import Diagrams.Prelude
     position,
     r2,
     rect,
+    regPoly,
     rotateBy,
     roundedRect,
+    scaleY,
     strokeLoop,
     text,
     translate,
@@ -59,12 +61,12 @@ boundingBox x y =
 hex' :: Double -> Double -> Diagram B
 hex' x y =
   fromOffsets
-    [ V2 (x - 0.1 - 0.1) 0.0,
-      V2 0.1 (y * (-0.5)),
-      V2 (-0.1) (y * (-0.5)),
-      V2 ((x - 0.1 - 0.1) * (-1.0)) 0.0,
-      V2 (-0.1) (y * 0.5),
-      V2 0.1 (y * 0.5)
+    [ V2 (defaultBoundingBoxWidth * widthRatio - 0.1 - 0.1 - 1.5) 0.0,
+      V2 0.1 (defaultBoundingBoxHeight * heightRatio * (-0.5)),
+      V2 (-0.1) (defaultBoundingBoxHeight * heightRatio * (-0.5)),
+      V2 ((defaultBoundingBoxWidth * widthRatio - 0.1 - 0.1) * (-1.0)) 0.0,
+      V2 (-0.1) (defaultBoundingBoxHeight * heightRatio * 0.5),
+      V2 0.1 (defaultBoundingBoxHeight * heightRatio * 0.5)
     ]
     # closeLine
     # strokeLoop
@@ -113,9 +115,19 @@ wyvernHeadline x w h =
       # lc lineColour
       # fc fillColour
 
+wyvernHex :: String -> Diagram B
+wyvernHex x =
+  renderText' x
+    <> (regPoly 6 ((defaultBoundingBoxWidth * widthRatio) / 2))
+      # scaleY ((defaultBoundingBoxHeight * heightRatio) / (defaultBoundingBoxWidth * widthRatio))
+      # drakonStyle
+
 renderConnection :: [Point V2 Double] -> Diagram B
 renderConnection coordinates = fromVertices coordinates # drakonStyle
 
+renderAlphaConnection :: [Point V2 Double] -> Diagram B
+renderAlphaConnection coordinates = fromVertices coordinates # drakonStyle
+
 renderGammaConnection coordinates =
   let gD@(P (V2 gDX gDY)) = last coordinates
-   in renderConnection coordinates <> position [(p2 (gDX - 0.02, gDY), rotateBy (1 / 4) $ triangle 0.1 # drakonStyle)]
+   in renderAlphaConnection coordinates <> position [(p2 (gDX - 0.02, gDY), rotateBy (1 / 4) $ triangle 0.1 # drakonStyle)]

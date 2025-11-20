@@ -18,88 +18,10 @@ data WyvernDiagram
   deriving (Show)
 
 data WyvernDiagram'
-  = WyvernDiagram' [Blocks.Block]
+  = WyvernDiagram' [[Blocks.Block]]
   deriving (Show)
-
-newRender' :: WyvernDiagram' -> (Diagram B, Map ID (Point V2 Double), [(Point V2 Double, Double, Double, ID)], Double, Double, Double, Double)
-newRender' (WyvernDiagram' bs) =
-  let bs' = Blocks.StartTerminator : (bs <> [Blocks.EndTerminator])
-   in Blocks.newRender' bs' (p2 (0.0, 0.0)) Data.Map.empty [] 0.0
 
 newRender :: WyvernDiagram' -> Diagram B
 newRender (WyvernDiagram' bs) =
-  let bs' = Blocks.StartTerminator : (bs <> [Blocks.EndTerminator])
-   in Blocks.newRender bs'
-
-renderSingleSkewer :: [SkewerBlock] -> Point V2 Double -> Double -> (Diagram B, Double)
-renderSingleSkewer skewerBlocks (P (V2 x y)) addressDepth =
-  let connectionX = x + defaultBoundingBoxWidth * 0.5
-      skewerY = defaultBoundingBoxHeight
-      startY1 = y - skewerY
-      startY2 = y - defaultBoundingBoxHeight
-      positionedSkewerBlocks = position' skewerBlocks (p2 (x, y - skewerY)) addressDepth
-      mapOfOrigins = toMap positionedSkewerBlocks
-      renderedSkewerBlocks = renderIcons positionedSkewerBlocks mapOfOrigins addressDepth
-      finishY1 = y - skewerY - heightInUnits' positionedSkewerBlocks
-   in (renderConnection [p2 (connectionX, startY1), p2 (connectionX, startY2)] <> renderedSkewerBlocks, finishY1)
-
-render :: WyvernDiagram -> Double -> Diagram B
-render (WyvernDiagram startTerminator allSkewers endTerminator) addressY =
-  let (result, _unusedConnectionToPreviousSkewer, _unusedFinishY, finishX) =
-        if length allSkewers > 1
-          then
-            foldl
-              ( \(accuResult, connectionToPreviousSkewer, _, skewerOriginX) singleSkewer ->
-                  let (newResult, finishY) = renderSingleSkewer singleSkewer (p2 (skewerOriginX, 0.0)) addressY
-                      nextSkewerOriginX = skewerOriginX + defaultBoundingBoxWidth * widthInUnits' singleSkewer
-                   in ( accuResult <> newResult <> connectionToPreviousSkewer,
-                        renderConnection
-                          [ p2 (skewerOriginX + defaultBoundingBoxWidth * 0.5, defaultBoundingBoxHeight * (-1.0)),
-                            p2 (nextSkewerOriginX + defaultBoundingBoxWidth * 0.5, defaultBoundingBoxHeight * (-1.0))
-                          ]
-                          <> renderConnection
-                            [ p2 (skewerOriginX + defaultBoundingBoxWidth * 0.5, addressY - 1.0),
-                              p2 (nextSkewerOriginX + defaultBoundingBoxWidth * 0.5, addressY - 1.0)
-                            ],
-                        finishY,
-                        nextSkewerOriginX
-                      )
-              )
-              (mempty, mempty, 0.0, 0.0)
-              allSkewers
-          else
-            let (newResult, finishY) = renderSingleSkewer (head allSkewers) (p2 (0.0, 0.0)) addressY -- TODO: this probably should be made optional or we need another function for silhouette diagrams
-             in (newResult, mempty, finishY, 0.0)
-      endTerminatorXCoordinate =
-        ( finishX
-            - defaultBoundingBoxWidth
-              * ( if length allSkewers > 1
-                    then widthInUnits' (last allSkewers)
-                    else 0.0
-                )
-        )
-   in StartTerminator.render (StartTerminator.changeOrigin startTerminator (P (V2 0.0 0.0)))
-        <> renderConnection
-          [ p2 (defaultBoundingBoxWidth * 0.5, defaultBoundingBoxHeight * (-0.75)),
-            p2 (defaultBoundingBoxWidth * 0.5, defaultBoundingBoxHeight * (-1.0))
-          ]
-        <> result
-        <> renderConnection
-          [ p2
-              (endTerminatorXCoordinate + defaultBoundingBoxWidth * 0.5, defaultBoundingBoxHeight * (addressY - 1.0)),
-            p2
-              ( endTerminatorXCoordinate + defaultBoundingBoxWidth * 0.5,
-                defaultBoundingBoxHeight * (addressY - 1.25)
-              )
-          ]
-        <> EndTerminator.render
-          (EndTerminator.changeOrigin endTerminator (P (V2 endTerminatorXCoordinate (addressY - 1.0))))
-
-widthInUnits :: WyvernDiagram -> Double
-widthInUnits (WyvernDiagram _ allSkewers _) = sum $ map widthInUnits' allSkewers
-
-heightInUnits :: WyvernDiagram -> Double
-heightInUnits (WyvernDiagram startTerminator allSkewers endTerminator) =
-  StartTerminator.heightInUnits startTerminator
-    + EndTerminator.heightInUnits endTerminator
-    + maximum (map heightInUnits' allSkewers)
+  let bs' = Blocks.StartTerminator : ((head bs) <> [Blocks.EndTerminator])
+  in Blocks.newRender (bs' : [[Blocks.Action Nothing "huh"]])

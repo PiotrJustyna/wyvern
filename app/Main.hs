@@ -15,7 +15,7 @@ import Lexer (alexScanTokens)
 import Options.Applicative (execParser, fullDesc, header, helper, info, (<**>))
 import Parser (ParseResult (..), diagram)
 import SkewerBlock (reverse'')
-import WyvernDiagram (WyvernDiagram' (..), newRender, newRender')
+import WyvernDiagram (WyvernDiagram' (..), newRender)
 
 main :: IO ()
 main = do
@@ -25,7 +25,7 @@ main = do
   let tokens = alexScanTokens fileContent
   case diagram tokens 1 of
     ParseOk d -> do
-      let d' = WyvernDiagram' (reverse' $ head d)
+      let d' = WyvernDiagram' (reverse' d)
       -- let widths = WyvernDiagram.peek d'
 
       -- putStrLn "widths:"
@@ -37,7 +37,7 @@ main = do
       -- print dGCs
 
       -- let rD = WyvernDiagram.newRender d'
-      let (rD, ds, gCs, w, h, maxW, maxH) = WyvernDiagram.newRender' d'
+      -- let (rD, ds, gCs, w, h, maxW, maxH) = WyvernDiagram.newRender' d'
 
       -- putStrLn "gamma connections:"
       -- print gCs
