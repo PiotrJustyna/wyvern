@@ -143,3 +143,33 @@ newRender bs =
         )
         rD
         gCs
+
+newRender1 :: [[Block]] -> Diagram B
+newRender1 bs =
+  let (rD', ds', gCs', w', h', maxW', maxH') =
+        foldl
+          ( \(accuRD, accuDs, accuGCs, accuW, accuH, accuMaxW, accuMaxH) b ->
+              let (rD, ds, gCs, w, h, maxW, maxH) = newRender' b (p2 (accuW, accuH)) accuDs accuGCs accuMaxW
+               in (accuRD <> rD, ds, gCs, maxW, 0.0, maxW, 0.0)
+          )
+          (mempty, Data.Map.empty, [], 0.0, 0.0, 0.0, 0.0)
+          bs
+   in foldl
+        ( \accu (gCO, maxX, maxY, i) ->
+            case Data.Map.lookup i ds' of
+              Nothing -> error $ "gamma connection destination " <> (show i) <> "not found in the collection of destinations: " <> (show ds')
+              Just gCD -> accu <> (renderGammaConnection $ formulateGammaConnection gCO gCD maxX maxY)
+        )
+        rD'
+        gCs'
+
+alex :: [Integer]
+alex = [0, 1, 0, 1, 1, 0, 1, 1, 1]
+
+4123 = 4 * (10 ^ 3) + 1 * (10 ^ 2) + 2 * (10 ^ 1) + 3 * (10 ^ 0)
+
+10 = 1 * (2 ^ 1) + 0 * (2 ^ 0) = 2 + 0 = 2
+
+101 = 1 * (2 ^ 2) + 0 * (2 ^ 1) + 1 * (2 ^ 0)
+
+1000 = 10 ^ ?

@@ -20,6 +20,10 @@
 #    -i "./diagrams/simple-diagram-5.txt" \
 #    -o "./diagrams/simple-diagram-5.svg"
 
+# cabal run Wyvern -- \
+#    -i "./diagrams/simple-diagram-6.txt" \
+#    -o "./diagrams/simple-diagram-6.svg"
+
 cabal run Wyvern -- \
-   -i "./diagrams/simple-diagram-6.txt" \
-   -o "./diagrams/simple-diagram-6.svg"
+   -i "./diagrams/simple-diagram-7.txt" \
+   -o "./diagrams/simple-diagram-7.svg"

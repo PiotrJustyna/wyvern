@@ -15,7 +15,7 @@ import Lexer (alexScanTokens)
 import Options.Applicative (execParser, fullDesc, header, helper, info, (<**>))
 import Parser (ParseResult (..), diagram)
 import SkewerBlock (reverse'')
-import WyvernDiagram (WyvernDiagram' (..), newRender)
+import WyvernDiagram (WyvernDiagram' (..), newRender, newRender1)
 
 main :: IO ()
 main = do
@@ -25,7 +25,12 @@ main = do
   let tokens = alexScanTokens fileContent
   case diagram tokens 1 of
     ParseOk d -> do
-      let d' = WyvernDiagram' (reverse' d)
+      let d' = reverse' d
+
+      -- putStrLn "tokens:"
+      -- print d'
+
+      let d'' = WyvernDiagram' d'
       -- let widths = WyvernDiagram.peek d'
 
       -- putStrLn "widths:"
@@ -37,7 +42,8 @@ main = do
       -- print dGCs
 
       -- let rD = WyvernDiagram.newRender d'
-      -- let (rD, ds, gCs, w, h, maxW, maxH) = WyvernDiagram.newRender' d'
+      -- let (rD', ds, gCs, w, h, maxW, maxH) = WyvernDiagram.newRender1 d''
+      let rD' = WyvernDiagram.newRender1 d''
 
       -- putStrLn "gamma connections:"
       -- print gCs
@@ -56,8 +62,6 @@ main = do
 
       -- putStrLn "max height:"
       -- print maxH
-
-      let rD' = WyvernDiagram.newRender d'
 
       renderSVG' (outputPath input) svgOptions rD'
     ParseFail s -> error s

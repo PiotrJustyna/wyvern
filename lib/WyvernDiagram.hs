@@ -1,6 +1,6 @@
 module WyvernDiagram where
 
-import qualified Blocks (Block (..), newRender, newRender')
+import qualified Blocks (Block (..), newRender, newRender', newRender1)
 import Constants (defaultBoundingBoxHeight, defaultBoundingBoxWidth)
 import Content (Content (Content))
 import Data.HashSet (HashSet, empty)
@@ -22,6 +22,10 @@ data WyvernDiagram'
   deriving (Show)
 
 newRender :: WyvernDiagram' -> Diagram B
-newRender (WyvernDiagram' bs) =
-  let bs' = Blocks.StartTerminator : ((head bs) <> [Blocks.EndTerminator])
-  in Blocks.newRender (bs' : [[Blocks.Action Nothing "huh"]])
+newRender (WyvernDiagram' bs) = Blocks.newRender bs
+
+newRender1 :: WyvernDiagram' -> Diagram B
+newRender1 (WyvernDiagram' bs) = Blocks.newRender1 bs
+
+-- let bs' = Blocks.StartTerminator : ((head bs) <> [Blocks.EndTerminator])
+-- in Blocks.newRender (bs' : [[Blocks.Action Nothing "hello"]])
