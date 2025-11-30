@@ -1,0 +1,91 @@
+1 "question 1"
+{
+  a "question a"
+  {
+    b "action b"
+  }
+  {
+    c "action c"
+    d "question d"
+    {
+      e "action e"
+    }
+    {
+      f "question f"
+      {
+        g "action g"
+      }
+      {
+        h "action h"
+        f
+      }
+      d
+    }
+    a
+  }
+  y "action y"
+  z "question z"
+  {
+    "hello"
+  }
+  {
+    "world"
+    z1 "action z1"
+    z1a "question z1a"
+    {
+      z1b "action z1b"
+    }
+    {
+      z1c "question z1c"
+      {
+        z1d "action z1d"
+      }
+      {
+        z1e "action z1e"
+        z1f "question z1f"
+        {
+          z1g "action z1g"
+        }
+        {
+          z1h "action z1h"
+          a
+        }
+        a
+      }
+      a
+    }
+    z2 "question z2"
+    {
+      z3 "action z3"
+      z4 "action z4"
+    }
+    {
+      z5 "action z5"
+      a
+    }
+    a
+  }
+}
+{
+  "action 2"
+  2 "question 2"
+  {
+    "action 3"
+    "action 4"
+  }
+  {
+    "action 5"
+    6 "action 6"
+    1
+  }
+  "action 7"
+  1
+}
+3 "question 3"
+{
+  "action 8"
+}
+{
+  "action 9"
+  1
+}

@@ -23,6 +23,9 @@ defaultBoundingBoxHeight = 1.0
 widthRatio :: Double
 widthRatio = 0.8
 
+heightRatio :: Double
+heightRatio = 0.5
+
 -- colours used:
 -- https://www.colourlovers.com/palette/541086/Loyal_Friends
 lineColour :: Colour Double
@@ -46,7 +49,7 @@ drakonStyle = lw veryThin # lc lineColour # fc fillColour
 svgOptions :: (Num n) => Options SVG V2 n
 svgOptions =
   SVGOptions
-    { _size = mkSizeSpec $ V2 (Just 1000) (Just 1000),
+    { _size = mkSizeSpec $ V2 (Just 5000) (Just 5000),
       _idPrefix = empty,
       _svgDefinitions = Nothing,
       _svgAttributes = [],

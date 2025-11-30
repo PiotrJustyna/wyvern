@@ -1,10 +1,10 @@
 module Main where
 
+import Blocks (Block (Action, EndTerminator, Fork, StartTerminator), newRender, reverse')
 import Constants (defaultBoundingBoxHeight, svgOptions)
 import Content (Content (Content))
 import Diagrams.Backend.SVG (renderSVG')
 import Diagrams.Prelude (p2)
-import EndTerminator (EndTerminator (End))
 import ID (ID (ID))
 import InputArguments
   ( inputPath,
@@ -15,8 +15,7 @@ import Lexer (alexScanTokens)
 import Options.Applicative (execParser, fullDesc, header, helper, info, (<**>))
 import Parser (ParseResult (..), diagram)
 import SkewerBlock (reverse'')
-import StartTerminator (StartTerminator (Title))
-import WyvernDiagram (WyvernDiagram (..), heightInUnits, render)
+import WyvernDiagram (WyvernDiagram' (..), newRender, newRender1)
 
 main :: IO ()
 main = do
@@ -26,14 +25,45 @@ main = do
   let tokens = alexScanTokens fileContent
   case diagram tokens 1 of
     ParseOk d -> do
-      let blocks = reverse'' d
-          wyvernDiagram =
-            WyvernDiagram
-              (Title (ID "-1") (p2 (-1.0, -1.0)) (Content "start"))
-              blocks
-              (End (ID "-1") (p2 (-1.0, -1.0)) (Content "end"))
-          addressY = (-1.0) * WyvernDiagram.heightInUnits wyvernDiagram + defaultBoundingBoxHeight * 2.0 -- ignore the heights of start and end terminators
-      renderSVG' (outputPath input) svgOptions $ WyvernDiagram.render wyvernDiagram addressY
+      let d' = reverse' d
+
+      -- putStrLn "tokens:"
+      -- print d'
+
+      let d'' = WyvernDiagram' d'
+      -- let widths = WyvernDiagram.peek d'
+
+      -- putStrLn "widths:"
+      -- print widths
+
+      -- let (rD, dGCs) = WyvernDiagram.renderAll d'
+
+      -- putStrLn "direct gamma connections:"
+      -- print dGCs
+
+      -- let rD = WyvernDiagram.newRender d'
+      -- let (rD', ds, gCs, w, h, maxW, maxH) = WyvernDiagram.newRender1 d''
+      let rD' = WyvernDiagram.newRender1 d''
+
+      -- putStrLn "gamma connections:"
+      -- print gCs
+
+      -- putStrLn "destinations:"
+      -- print ds
+
+      -- putStrLn "width:"
+      -- print w
+
+      -- putStrLn "height:"
+      -- print h
+
+      -- putStrLn "max width:"
+      -- print maxW
+
+      -- putStrLn "max height:"
+      -- print maxH
+
+      renderSVG' (outputPath input) svgOptions rD'
     ParseFail s -> error s
   where
     options =

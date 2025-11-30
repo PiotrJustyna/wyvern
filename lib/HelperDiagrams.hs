@@ -1,6 +1,6 @@
 module HelperDiagrams where
 
-import Constants (defaultFontSize, drakonStyle, fontColour, lineColour)
+import Constants (defaultBoundingBoxHeight, defaultBoundingBoxWidth, defaultFontSize, drakonStyle, fillColour, fontColour, heightRatio, lineColour, widthRatio)
 import Diagrams.Backend.SVG (B)
 import Diagrams.Prelude
   ( Diagram,
@@ -16,10 +16,18 @@ import Diagrams.Prelude
     light,
     local,
     lw,
+    p2,
+    position,
     r2,
+    rect,
+    regPoly,
+    rotateBy,
+    roundedRect,
+    scaleY,
     strokeLoop,
     text,
     translate,
+    triangle,
     veryThin,
     (#),
   )
@@ -53,12 +61,12 @@ boundingBox x y =
 hex' :: Double -> Double -> Diagram B
 hex' x y =
   fromOffsets
-    [ V2 (x - 0.1 - 0.1) 0.0,
-      V2 0.1 (y * (-0.5)),
-      V2 (-0.1) (y * (-0.5)),
-      V2 ((x - 0.1 - 0.1) * (-1.0)) 0.0,
-      V2 (-0.1) (y * 0.5),
-      V2 0.1 (y * 0.5)
+    [ V2 (defaultBoundingBoxWidth * widthRatio - 0.1 - 0.1 - 1.5) 0.0,
+      V2 0.1 (defaultBoundingBoxHeight * heightRatio * (-0.5)),
+      V2 (-0.1) (defaultBoundingBoxHeight * heightRatio * (-0.5)),
+      V2 ((defaultBoundingBoxWidth * widthRatio - 0.1 - 0.1) * (-1.0)) 0.0,
+      V2 (-0.1) (defaultBoundingBoxHeight * heightRatio * 0.5),
+      V2 0.1 (defaultBoundingBoxHeight * heightRatio * 0.5)
     ]
     # closeLine
     # strokeLoop
@@ -73,5 +81,53 @@ renderText content translateX translateY =
     # fc fontColour
     # translate (r2 (translateX, translateY))
 
-renderedConnection :: [Point V2 Double] -> Diagram B
-renderedConnection coordinates = fromVertices coordinates # drakonStyle
+renderText' :: String -> Diagram B
+renderText' x =
+  text x
+    # fontSize (local defaultFontSize)
+    # light
+    # font "helvetica"
+    # fc fontColour
+
+wyvernRoundedRect :: String -> Diagram B
+wyvernRoundedRect x =
+  renderText' x
+    <> roundedRect (defaultBoundingBoxWidth * widthRatio) (defaultBoundingBoxHeight * heightRatio) 0.5 # lw veryThin # lc lineColour # fc fillColour
+
+wyvernRect :: String -> Diagram B
+wyvernRect x =
+  renderText' x
+    <> rect (defaultBoundingBoxWidth * widthRatio) (defaultBoundingBoxHeight * heightRatio) # lw veryThin # lc lineColour # fc fillColour
+
+wyvernHeadline :: String -> Double -> Double -> Diagram B
+wyvernHeadline x w h =
+  renderText' x
+    <> fromVertices
+      [ p2 (w * (-0.5), h * 0.5),
+        p2 (w * 0.5, h * 0.5),
+        p2 (w * 0.5, h * (-0.5)),
+        p2 (0.0, (h * (-0.5) - 0.1)),
+        p2 (w * (-0.5), h * (-0.5))
+      ]
+      # closeLine
+      # strokeLoop
+      # lw veryThin
+      # lc lineColour
+      # fc fillColour
+
+wyvernHex :: String -> Diagram B
+wyvernHex x =
+  renderText' x
+    <> (regPoly 6 ((defaultBoundingBoxWidth * widthRatio) / 2))
+      # scaleY ((defaultBoundingBoxHeight * heightRatio) / (defaultBoundingBoxWidth * widthRatio))
+      # drakonStyle
+
+renderConnection :: [Point V2 Double] -> Diagram B
+renderConnection coordinates = fromVertices coordinates # drakonStyle
+
+renderAlphaConnection :: [Point V2 Double] -> Diagram B
+renderAlphaConnection coordinates = fromVertices coordinates # drakonStyle
+
+renderGammaConnection coordinates =
+  let gD@(P (V2 gDX gDY)) = last coordinates
+   in renderAlphaConnection coordinates <> position [(p2 (gDX - 0.02, gDY), rotateBy (1 / 4) $ triangle 0.1 # drakonStyle)]

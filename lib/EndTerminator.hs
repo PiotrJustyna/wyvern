@@ -21,8 +21,8 @@ data EndTerminator
 changeOrigin :: EndTerminator -> Point V2 Double -> EndTerminator
 changeOrigin (End endId _ content) newOrigin = End endId newOrigin content
 
-render :: EndTerminator -> Map ID (Point V2 Double) -> Diagram B
-render end@(End endId origin (Content content)) _ =
+render :: EndTerminator -> Diagram B
+render end@(End endId origin (Content content)) =
   position
     [ ( origin,
         renderText
