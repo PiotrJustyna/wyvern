@@ -130,9 +130,14 @@ renderConnection coordinates = fromVertices coordinates # drakonStyle
 renderAlphaConnection :: [Point V2 Double] -> Diagram B
 renderAlphaConnection coordinates = fromVertices coordinates # drakonStyle
 
-renderGammaConnection coordinates =
-  let gD@(P (V2 gDX gDY)) = last coordinates
-   in renderAlphaConnection coordinates <> position [(p2 (gDX - 0.02, gDY), rotateBy (1 / 4) $ triangle 0.1 # drakonStyle)]
+renderGammaConnection :: Point V2 Double -> Point V2 Double -> Double -> Double -> Diagram B
+renderGammaConnection gO@(P (V2 gOX gOY)) gD@(P (V2 gDX gDY)) maxX minY =
+  let gD'@(P (V2 gDX' gDY')) = p2 (gDX + (0.1 * (sqrt 3.0) / 2.0) + 0.012, gDY + defaultBoundingBoxHeight * 0.5)
+      gammaMidpoint1 = p2 (gOX, minY)
+      gammaMidpoint2 = p2 (maxX - defaultBoundingBoxWidth * 0.5, minY)
+      gammaMidpoint3 = p2 (maxX - defaultBoundingBoxWidth * 0.5, gDY')
+      coordinates = [gO, gammaMidpoint1, gammaMidpoint2, gammaMidpoint3, gD']
+   in renderAlphaConnection coordinates <> position [(p2 (gDX' - 0.025, gDY'), rotateBy (1 / 4) $ triangle 0.1 # drakonStyle)]
 
 -- to points
 renderUpperBetaConnections :: [(Double, Double)] -> Diagram B

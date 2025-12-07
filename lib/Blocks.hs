@@ -53,14 +53,6 @@ updateGammaConnections' ::
 updateGammaConnections' gCO maxX maxY (Fork _ _ _ _ (Just gCID)) gCs = (gCO, maxX, maxY, gCID) : gCs
 updateGammaConnections' _ _ _ _ gCs = gCs
 
-formulateGammaConnection :: Point V2 Double -> Point V2 Double -> Double -> Double -> [Point V2 Double]
-formulateGammaConnection gO@(P (V2 gOX gOY)) gD@(P (V2 gDX gDY)) maxX minY =
-  let gD'@(P (V2 _gDX' gDY')) = p2 (gDX + (0.087 / 2.0) + 0.07, gDY + defaultBoundingBoxHeight * 0.5)
-      gammaMidpoint1 = p2 (gOX, minY)
-      gammaMidpoint2 = p2 (maxX - defaultBoundingBoxWidth * 0.5, minY)
-      gammaMidpoint3 = p2 (maxX - defaultBoundingBoxWidth * 0.5, gDY')
-   in [gO, gammaMidpoint1, gammaMidpoint2, gammaMidpoint3, gD']
-
 getContent :: Block -> String
 getContent StartTerminator = "start"
 getContent EndTerminator = "end"
@@ -187,7 +179,7 @@ newRender1 bs =
         ( \accu (gCO, maxX, maxY, i) ->
             case Data.Map.lookup i ds' of
               Nothing -> error $ "gamma connection destination " <> (show i) <> "not found in the collection of destinations: " <> (show ds')
-              Just gCD -> accu <> (renderGammaConnection $ formulateGammaConnection gCO gCD maxX maxY)
+              Just gCD -> accu <> (renderGammaConnection gCO gCD maxX maxY)
         )
         (rD' <> rUBCs <> rSBC <> rLBCs)
         gCs'
