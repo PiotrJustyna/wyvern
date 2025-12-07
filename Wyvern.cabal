@@ -1,0 +1,65 @@
+cabal-version:      3.4
+name:               wyvern
+version:            0.2.0.0
+synopsis:           wyvern - simplified version of DRAKON diagramming language
+-- description:
+homepage:           https://codeberg.org/458b33475c9e46ac972d172ac35cf24f/wyvern
+license:            NONE
+author:             458b33475c9e46ac972d172ac35cf24f
+maintainer:         a568adff447749e8a5c47cdf7f31ed11@proton.me
+-- copyright:
+category:           Development
+build-type:         Simple
+extra-doc-files:    CHANGELOG.md
+-- extra-source-files:
+
+common warnings
+    ghc-options: -Wall
+
+library
+    exposed-modules:  ID
+                      Content
+                      Constants
+                      Blocks
+                      HelperDiagrams
+                      StartTerminator
+                      EndTerminator
+                      Lexer
+                      Parser
+                      WyvernDiagram
+                      InputArguments
+    hs-source-dirs:   lib
+    build-depends:    base ^>=4.19.1.0,
+                      colour,
+                      text,
+                      diagrams-lib,
+                      diagrams-svg,
+                      containers,
+                      MissingH,
+                      array,
+                      unordered-containers,
+                      optparse-applicative
+    default-language: Haskell2010
+
+executable wyvern
+    import:           warnings
+    main-is:          Main.hs
+    build-depends:    base ^>=4.19.1.0,
+                      array,
+                      diagrams-lib,
+                      diagrams-svg,
+                      optparse-applicative,
+                      wyvern
+    hs-source-dirs:   app
+    default-language: Haskell2010
+
+test-suite WyvernTests
+    type:             exitcode-stdio-1.0
+    hs-source-dirs:   tests
+    main-is:          OverlappingLoopbacks.hs
+    build-depends:    base ^>=4.19.1.0,
+                      HUnit,
+                      diagrams-lib,
+                      containers,
+                      wyvern
+    default-language: Haskell2010

@@ -1,0 +1,6 @@
+.DS_Store
+*.hi
+*.o
+*.swp
+*.idea
+dist-newstyle

@@ -1,0 +1,71 @@
+module Main where
+
+import Blocks (Block (Action, EndTerminator, Fork, StartTerminator), reverse')
+import Constants (defaultBoundingBoxHeight, svgOptions)
+import Content (Content (Content))
+import Diagrams.Backend.SVG (renderSVG')
+import Diagrams.Prelude (p2)
+import ID (ID (ID))
+import InputArguments
+  ( inputPath,
+    outputPath,
+    parseInput,
+  )
+import Lexer (alexScanTokens)
+import Options.Applicative (execParser, fullDesc, header, helper, info, (<**>))
+import Parser (ParseResult (..), diagram)
+import WyvernDiagram (WyvernDiagram' (..), newRender1)
+
+main :: IO ()
+main = do
+  input <- execParser options
+  print input
+  fileContent <- readFile $ inputPath input
+  let tokens = alexScanTokens fileContent
+  case diagram tokens 1 of
+    ParseOk d -> do
+      let d' = Blocks.reverse' d
+
+      -- putStrLn "tokens:"
+      -- print d'
+
+      let d'' = WyvernDiagram' d'
+      -- let widths = WyvernDiagram.peek d'
+
+      -- putStrLn "widths:"
+      -- print widths
+
+      -- let (rD, dGCs) = WyvernDiagram.renderAll d'
+
+      -- putStrLn "direct gamma connections:"
+      -- print dGCs
+
+      -- let rD = WyvernDiagram.newRender d'
+      -- let (rD', ds, gCs, w, h, maxW, maxH) = WyvernDiagram.newRender1 d''
+      let rD' = WyvernDiagram.newRender1 d''
+
+      -- putStrLn "gamma connections:"
+      -- print gCs
+
+      -- putStrLn "destinations:"
+      -- print ds
+
+      -- putStrLn "width:"
+      -- print w
+
+      -- putStrLn "height:"
+      -- print h
+
+      -- putStrLn "max width:"
+      -- print maxW
+
+      -- putStrLn "max height:"
+      -- print maxH
+
+      renderSVG' (outputPath input) svgOptions rD'
+    ParseFail s -> error s
+  where
+    options =
+      info
+        (parseInput <**> helper)
+        (fullDesc <> header "Wyvern")

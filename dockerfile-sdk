@@ -1,0 +1,26 @@
+FROM alpine:3.22.1 AS sdk
+
+WORKDIR "/root/code/wyvern"
+
+RUN apk update
+RUN apk add --no-cache \
+    bash \
+    git \
+    openssh \
+    curl \
+    zlib-dev \
+    g++ \
+    ghc \
+    cabal \
+    ncurses-dev
+RUN git config --global --add safe.directory "/root/code/wyvern"
+
+RUN echo 'export PS1="\[\e[35m\]\u\[\e[32m\]@\W\[\e[35m\]\$\[\e[0m\] "' >> /root/.bashrc
+
+ENV PATH="${PATH}:/root/.local/bin"
+
+COPY ./setup-cabal.sh /root/code/wyvern/
+
+ENTRYPOINT ["/root/code/wyvern/setup-cabal.sh"]
+
+CMD [ "/bin/bash" ]
