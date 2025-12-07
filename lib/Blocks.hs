@@ -9,7 +9,7 @@ import Data.Ord (comparing)
 import Diagrams.Backend.SVG (B)
 import Diagrams.Prelude (Diagram, Point (..), V2 (..), p2, position, r2, translate, (#))
 import GHC.Float
-import HelperDiagrams (renderAlphaConnection, renderGammaConnection, renderText', wyvernHeadline, wyvernHex, wyvernRect, wyvernRoundedRect)
+import HelperDiagrams (renderAlphaConnection, renderGammaConnection, renderLowerBetaConnections, renderSideBetaConnection, renderText', renderUpperBetaConnections, wyvernHeadline, wyvernHex, wyvernRect, wyvernRoundedRect)
 import ID
 
 data Block
@@ -177,39 +177,17 @@ newRender accuRD accuDs (uBCs, lBCs, minD) accuGCs accuW accuH accuMaxH (b : bs)
         (if minD < maxH then minD else maxH)
         bs
 
-renderLowerBetaConnections' :: [(Double, Double, Double)] -> Double -> Diagram B
-renderLowerBetaConnections' [] _ = mempty
-renderLowerBetaConnections' (lBC@(lBCa, lBCb, lBCc) : lBCs) minD =
-        (renderAlphaConnection [ p2 (lBCa, lBCc + defaultBoundingBoxHeight), p2 (lBCa, minD + defaultBoundingBoxHeight * 0.5), p2 (lBCb, minD + defaultBoundingBoxHeight * 0.5)])
-        <> (renderLowerBetaConnections' lBCs minD)
-
-renderLowerBetaConnections :: [(Double, Double, Double)] -> Double -> Diagram B
-renderLowerBetaConnections (lBC@(lBCa, lBCb, lBCc) : lBCs) minD =
-        (renderAlphaConnection [p2 (lBCa, lBCc + defaultBoundingBoxHeight), p2 (lBCa, minD + defaultBoundingBoxHeight * 0.5)])
-        <> (renderLowerBetaConnections' lBCs minD)
-
 newRender1 :: [[Block]] -> Diagram B
 newRender1 bs =
   let (rD', ds', (uBCs, lBCs, minD), gCs', w', h', maxH', _) = newRender mempty Data.Map.empty ([], [], 0.0) [] 0.0 0.0 0.0 bs
-      rUBCs =
-        foldl
-          ( \accu (uBCa, uBCb) ->
-              accu
-                <> ( renderAlphaConnection
-                       [ p2 (uBCa, defaultBoundingBoxHeight * 0.5),
-                         p2 (uBCb, defaultBoundingBoxHeight * 0.5),
-                         p2 (uBCb, defaultBoundingBoxHeight * heightRatio * 0.5)
-                       ]
-                   )
-          )
-          mempty
-          uBCs
-      rLBCs = renderLowerBetaConnections lBCs maxH'
+      rUBCs = renderUpperBetaConnections uBCs
+      rSBC = renderSideBetaConnection (p2 (0.0, maxH' + defaultBoundingBoxHeight * 0.5)) (p2 (0.0, 0.0 + defaultBoundingBoxHeight * 0.5))
+      rLBCs = renderLowerBetaConnections lBCs (maxH' + defaultBoundingBoxHeight * 0.5)
    in foldl
         ( \accu (gCO, maxX, maxY, i) ->
             case Data.Map.lookup i ds' of
               Nothing -> error $ "gamma connection destination " <> (show i) <> "not found in the collection of destinations: " <> (show ds')
               Just gCD -> accu <> (renderGammaConnection $ formulateGammaConnection gCO gCD maxX maxY)
         )
-        (rD' <> rUBCs <> rLBCs)
+        (rD' <> rUBCs <> rSBC <> rLBCs)
         gCs'

@@ -133,3 +133,44 @@ renderAlphaConnection coordinates = fromVertices coordinates # drakonStyle
 renderGammaConnection coordinates =
   let gD@(P (V2 gDX gDY)) = last coordinates
    in renderAlphaConnection coordinates <> position [(p2 (gDX - 0.02, gDY), rotateBy (1 / 4) $ triangle 0.1 # drakonStyle)]
+
+-- to points
+renderUpperBetaConnections :: [(Double, Double)] -> Diagram B
+renderUpperBetaConnections [] = mempty
+renderUpperBetaConnections (uBC@(uBCa, uBCb) : []) =
+  ( renderAlphaConnection
+      [ p2 (uBCa, 0.0),
+        p2 (uBCa, 0.0 + defaultBoundingBoxHeight * 0.5),
+        p2 (uBCb, 0.0 + defaultBoundingBoxHeight * 0.5),
+        p2 (uBCb, 0.0 + defaultBoundingBoxHeight * heightRatio * 0.5)
+      ]
+  )
+renderUpperBetaConnections (uBC@(uBCa, uBCb) : uBCs) =
+  ( renderAlphaConnection
+      [ p2 (uBCa, defaultBoundingBoxHeight * 0.5),
+        p2 (uBCb, defaultBoundingBoxHeight * 0.5),
+        p2 (uBCb, defaultBoundingBoxHeight * heightRatio * 0.5)
+      ]
+  )
+    <> renderUpperBetaConnections uBCs
+
+renderSideBetaConnection :: Point V2 Double -> Point V2 Double -> Diagram B
+renderSideBetaConnection a@(P (V2 aX aY)) b@(P (V2 bX bY)) =
+  renderAlphaConnection
+    [ a,
+      p2 (aX - defaultBoundingBoxWidth * 0.5, aY),
+      p2 (aX - defaultBoundingBoxWidth * 0.5, bY),
+      p2 (bX - (0.1 * (sqrt 3.0) / 2.0), bY)
+    ]
+    <> position [(p2 (bX - 0.06, bY), rotateBy (3 / 4) $ triangle 0.1 # drakonStyle)]
+
+renderLowerBetaConnections' :: [(Double, Double, Double)] -> Double -> Diagram B
+renderLowerBetaConnections' [] _ = mempty
+renderLowerBetaConnections' (lBC@(lBCa, lBCb, lBCc) : lBCs) minD =
+  (renderAlphaConnection [p2 (lBCa, lBCc + defaultBoundingBoxHeight), p2 (lBCa, minD), p2 (lBCb, minD)])
+    <> (renderLowerBetaConnections' lBCs minD)
+
+renderLowerBetaConnections :: [(Double, Double, Double)] -> Double -> Diagram B
+renderLowerBetaConnections (lBC@(lBCa, lBCb, lBCc) : lBCs) minD =
+  (renderAlphaConnection [p2 (lBCa, lBCc + defaultBoundingBoxHeight), p2 (lBCa, minD)])
+    <> (renderLowerBetaConnections' lBCs minD)
