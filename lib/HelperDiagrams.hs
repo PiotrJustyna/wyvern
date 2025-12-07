@@ -171,6 +171,7 @@ renderLowerBetaConnections' (lBC@(lBCa, lBCb, lBCc) : lBCs) minD =
     <> (renderLowerBetaConnections' lBCs minD)
 
 renderLowerBetaConnections :: [(Double, Double, Double)] -> Double -> Diagram B
+renderLowerBetaConnections [] _ = mempty
 renderLowerBetaConnections (lBC@(lBCa, lBCb, lBCc) : lBCs) minD =
   (renderAlphaConnection [p2 (lBCa, lBCc + defaultBoundingBoxHeight), p2 (lBCa, minD)])
     <> (renderLowerBetaConnections' lBCs minD)
