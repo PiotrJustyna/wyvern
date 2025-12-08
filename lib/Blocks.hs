@@ -172,14 +172,18 @@ newRender accuRD accuDs (uBCs, lBCs, minD) accuGCs accuW accuH accuMaxH (b : bs)
 newRender1 :: [[Block]] -> Diagram B
 newRender1 bs =
   let (rD', ds', (uBCs, lBCs, minD), gCs', w', h', maxH', _) = newRender mempty Data.Map.empty ([], [], 0.0) [] 0.0 0.0 0.0 bs
-      rUBCs = renderUpperBetaConnections uBCs
-      rSBC = renderSideBetaConnection (p2 (0.0, maxH' + defaultBoundingBoxHeight * 0.5)) (p2 (0.0, 0.0 + defaultBoundingBoxHeight * 0.5))
-      rLBCs = renderLowerBetaConnections lBCs (maxH' + defaultBoundingBoxHeight * 0.5)
+      bCs = case length bs of
+        1 -> mempty
+        _ ->
+          let rUBCs = if null bs then mempty else renderUpperBetaConnections uBCs
+              rSBC = renderSideBetaConnection (p2 (0.0, maxH' + defaultBoundingBoxHeight * 0.5)) (p2 (0.0, 0.0 + defaultBoundingBoxHeight * 0.5))
+              rLBCs = renderLowerBetaConnections lBCs (maxH' + defaultBoundingBoxHeight * 0.5)
+           in rUBCs <> rSBC <> rLBCs
    in foldl
         ( \accu (gCO, maxX, maxY, i) ->
             case Data.Map.lookup i ds' of
               Nothing -> error $ "gamma connection destination " <> (show i) <> "not found in the collection of destinations: " <> (show ds')
               Just gCD -> accu <> (renderGammaConnection gCO gCD maxX maxY)
         )
-        (rD' <> rUBCs <> rSBC <> rLBCs)
+        (rD' <> bCs)
         gCs'
