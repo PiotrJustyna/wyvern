@@ -17,7 +17,12 @@ data WyvernDiagram'
   deriving (Show)
 
 newRender1 :: WyvernDiagram' -> Diagram B
-newRender1 (WyvernDiagram' bs) = Blocks.newRender1 bs
+newRender1 (WyvernDiagram' bs) =
+  let bs' = case bs of
+        [] -> mempty
+        (b : []) -> [(Blocks.StartTerminator : b) <> [Blocks.EndTerminator]]
+        otherwise -> (Blocks.StartTerminator : (head bs)) : (tail bs)
+   in Blocks.newRender1 bs'
 
 -- let bs' = Blocks.StartTerminator : ((head bs) <> [Blocks.EndTerminator])
 -- in Blocks.newRender (bs' : [[Blocks.Action Nothing "hello"]])

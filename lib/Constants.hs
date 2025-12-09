@@ -49,7 +49,7 @@ drakonStyle = lw veryThin # lc lineColour # fc fillColour
 svgOptions :: (Num n) => Options SVG V2 n
 svgOptions =
   SVGOptions
-    { _size = mkSizeSpec $ V2 (Just 2000) (Just 2000),
+    { _size = mkSizeSpec $ V2 (Just 500) (Just 500),
       _idPrefix = empty,
       _svgDefinitions = Nothing,
       _svgAttributes = [],

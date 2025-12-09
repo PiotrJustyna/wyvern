@@ -169,9 +169,15 @@ newRender accuRD accuDs (uBCs, lBCs, minD) accuGCs accuW accuH accuMaxH (b : bs)
         (if minD < maxH then minD else maxH)
         bs
 
+newRender1' :: [[Block]] -> (Diagram B, Map ID (Point V2 Double), ([(Double, Double)], [(Double, Double, Double)], Double), [(Point V2 Double, Double, Double, ID)], Double, Double, Double, [[Block]])
+newRender1' (b:bs) =
+    let (rD, ds, (uBCs, lBCs, minD), gCs, w, h, maxH, _) = newRender mempty Data.Map.empty ([], [], 0.0) [] 0.0 0.0 0.0 [b]
+        (rD', ds', (uBCs', lBCs', minD'), gCs', w', h', maxH', _) = newRender rD ds (uBCs, lBCs, minD) gCs w (0 - defaultBoundingBoxHeight) maxH bs
+        in (rD', ds', (uBCs', lBCs', minD'), gCs', w', h', maxH', (b:bs))
+
 newRender1 :: [[Block]] -> Diagram B
 newRender1 bs =
-  let (rD', ds', (uBCs, lBCs, minD), gCs', w', h', maxH', _) = newRender mempty Data.Map.empty ([], [], 0.0) [] 0.0 0.0 0.0 bs
+  let (rD', ds', (uBCs, lBCs, minD), gCs', w', h', maxH', _) = newRender1' bs
       bCs = case length bs of
         1 -> mempty
         _ ->
