@@ -21,8 +21,7 @@ newRender1 (WyvernDiagram' bs) =
   let bs' = case bs of
         [] -> mempty
         (b : []) -> [(Blocks.StartTerminator : b) <> [Blocks.EndTerminator]]
-        otherwise -> (Blocks.StartTerminator : (head bs)) : (tail bs)
+        otherwise ->
+            let bs' = tail bs
+            in ((Blocks.StartTerminator : (head bs)) : (init bs')) <> [(last bs') <> [Blocks.EndTerminator]]
    in Blocks.newRender1 bs'
-
--- let bs' = Blocks.StartTerminator : ((head bs) <> [Blocks.EndTerminator])
--- in Blocks.newRender (bs' : [[Blocks.Action Nothing "hello"]])
