@@ -151,7 +151,7 @@ newRender accuRD accuDs accuBCs@(uBCs, lBCs, minD) accuGCs accuW accuH accuMaxH 
    in newRender
         (accuRD <> rD)
         ds
-        accuBCs
+        (uBCs, lBCs, if minD < maxH then minD else maxH)
         gCs
         maxW
         accuH
@@ -170,19 +170,22 @@ newRender accuRD accuDs (uBCs, lBCs, minD) accuGCs accuW accuH accuMaxH (b : bs)
         bs
 
 newRender1' :: [[Block]] -> (Diagram B, Map ID (Point V2 Double), ([(Double, Double)], [(Double, Double, Double)], Double), [(Point V2 Double, Double, Double, ID)], Double, Double, Double, [[Block]])
-newRender1' (b:bs) =
-    let (rD, ds, (uBCs, lBCs, minD), gCs, w, h, maxH, _) = newRender mempty Data.Map.empty ([], [], 0.0) [] 0.0 0.0 0.0 [b]
-        (rD', ds', (uBCs', lBCs', minD'), gCs', w', h', maxH', _) = newRender rD ds (uBCs, lBCs, minD) gCs w (0 - defaultBoundingBoxHeight) maxH bs
-        in (rD', ds', (uBCs', lBCs', minD'), gCs', w', h', maxH', (b:bs))
+newRender1' (b : bs) =
+  let (rD, ds, (uBCs, lBCs, minD), gCs, w, h, maxH, _) = newRender mempty Data.Map.empty ([], [], 0.0) [] 0.0 0.0 0.0 [b]
+      uBCs' = if null bs then uBCs else (0.0, w) : uBCs
+      lBCs' = if null bs then lBCs else (0.0, w, maxH) : lBCs
+      (rD', ds', (uBCs'', lBCs'', minD'), gCs', w', h', maxH', _) = newRender rD ds (uBCs', lBCs', minD) gCs w (0 - defaultBoundingBoxHeight) maxH bs
+   in (rD', ds', (uBCs'', lBCs'', minD'), gCs', w', h', maxH', (b : bs))
 
 newRender1 :: [[Block]] -> Diagram B
+newRender1 [] = mempty
 newRender1 bs =
   let (rD', ds', (uBCs, lBCs, minD), gCs', w', h', maxH', _) = newRender1' bs
       bCs = case length bs of
         1 -> mempty
         _ ->
-          let rUBCs = if null bs then mempty else renderUpperBetaConnections uBCs
-              rSBC = renderSideBetaConnection (p2 (0.0, maxH' + defaultBoundingBoxHeight * 0.5)) (p2 (0.0, 0.0 + defaultBoundingBoxHeight * 0.5))
+          let rUBCs = renderUpperBetaConnections uBCs (0 - defaultBoundingBoxHeight)
+              rSBC = renderSideBetaConnection (p2 (0.0, maxH' + defaultBoundingBoxHeight * 0.5)) (p2 (0.0, 0.0 + defaultBoundingBoxHeight * 0.5 - defaultBoundingBoxHeight))
               rLBCs = renderLowerBetaConnections lBCs (maxH' + defaultBoundingBoxHeight * 0.5)
            in rUBCs <> rSBC <> rLBCs
    in foldl

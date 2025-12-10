@@ -139,25 +139,23 @@ renderGammaConnection gO@(P (V2 gOX gOY)) gD@(P (V2 gDX gDY)) maxX minY =
       coordinates = [gO, gammaMidpoint1, gammaMidpoint2, gammaMidpoint3, gD']
    in renderAlphaConnection coordinates <> position [(p2 (gDX' - 0.025, gDY'), rotateBy (1 / 4) $ triangle 0.1 # drakonStyle)]
 
--- to points
-renderUpperBetaConnections :: [(Double, Double)] -> Diagram B
-renderUpperBetaConnections [] = mempty
-renderUpperBetaConnections (uBC@(uBCa, uBCb) : []) =
+renderUpperBetaConnections :: [(Double, Double)] -> Double -> Diagram B
+renderUpperBetaConnections [] maxD = mempty
+renderUpperBetaConnections (uBC@(uBCa, uBCb) : []) maxD =
   ( renderAlphaConnection
-      [ p2 (uBCa, 0.0),
-        p2 (uBCa, 0.0 + defaultBoundingBoxHeight * 0.5),
-        p2 (uBCb, 0.0 + defaultBoundingBoxHeight * 0.5),
-        p2 (uBCb, 0.0 + defaultBoundingBoxHeight * heightRatio * 0.5)
+      [ p2 (uBCa, maxD + defaultBoundingBoxHeight * 0.5),
+        p2 (uBCb, maxD + defaultBoundingBoxHeight * 0.5),
+        p2 (uBCb, maxD + defaultBoundingBoxHeight * heightRatio * 0.5)
       ]
   )
-renderUpperBetaConnections (uBC@(uBCa, uBCb) : uBCs) =
+renderUpperBetaConnections (uBC@(uBCa, uBCb) : uBCs) maxD =
   ( renderAlphaConnection
-      [ p2 (uBCa, defaultBoundingBoxHeight * 0.5),
-        p2 (uBCb, defaultBoundingBoxHeight * 0.5),
-        p2 (uBCb, defaultBoundingBoxHeight * heightRatio * 0.5)
+      [ p2 (uBCa, maxD + defaultBoundingBoxHeight * 0.5),
+        p2 (uBCb, maxD + defaultBoundingBoxHeight * 0.5),
+        p2 (uBCb, maxD + defaultBoundingBoxHeight * heightRatio * 0.5)
       ]
   )
-    <> renderUpperBetaConnections uBCs
+    <> renderUpperBetaConnections uBCs maxD
 
 renderSideBetaConnection :: Point V2 Double -> Point V2 Double -> Diagram B
 renderSideBetaConnection a@(P (V2 aX aY)) b@(P (V2 bX bY)) =

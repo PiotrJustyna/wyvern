@@ -1,6 +1,8 @@
 h1 "headline 1"
 {
     "action 1"
+    "action 1 a"
+    "action 1 b"
     h2
 }
 h2 "headline 2"
