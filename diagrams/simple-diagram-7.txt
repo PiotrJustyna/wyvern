@@ -170,6 +170,22 @@ h2 "headline 2"
           z1fb "question z1f"
           {
             z1gb "action z1g"
+            "question x"
+            {
+                "hello"
+            }
+            {
+                "world"
+                z1gba "another"
+                {
+                    "hello"
+                }
+                {
+                    "world"
+                    z1gba
+                }
+                z1gb
+            }
           }
           {
             z1hb "action z1h"
