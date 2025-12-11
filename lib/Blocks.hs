@@ -83,22 +83,24 @@ newRender'' fork@(Fork i c l r gCId) o@(P (V2 oX oY)) ds gCs abc =
       (dQ, wQ, hQ) = (position [(o, wyvernHex c)], oX + defaultBoundingBoxWidth, oY - defaultBoundingBoxHeight)
       (dL, dsL, gCsL, wL, hL, maxWL, minHL) = newRender' l (p2 (oX, hQ)) ds gCs 0.0
       (dR, dsR, gCsR, wR, hR, maxWR, minHR) = newRender' r (p2 (maxWL, hQ)) dsL gCsL abc
+      hR' = if null r then hL else (hR - gCH)
+      minHR' = if null r then minHL else minHR
       newMaxW = maxWR + gCW
-      newMinH = (if minHL < minHR then minHL else minHR) - gCH
+      newMinH = (if minHL < minHR' then minHL else minHR') - gCH
    in ( dQ
           <> dL
           <> dR
           <> (renderAlphaConnection [p2 (oX, hQ), o])
-          <> (renderAlphaConnection [p2 (oX, hQ), p2 (oX, hR + defaultBoundingBoxHeight - gCH)])
+          <> (renderAlphaConnection [p2 (oX, hQ), p2 (oX, hR' + defaultBoundingBoxHeight)])
           <> (renderAlphaConnection [p2 (maxWL, hQ), p2 (maxWL, oY), o])
           <> ( case gCId of
-                 Nothing -> (renderAlphaConnection [p2 (oX, hR - gCH + defaultBoundingBoxHeight * 0.5), p2 (maxWL, hR - gCH + defaultBoundingBoxHeight * 0.5), p2 (maxWL, hQ)])
+                 Nothing -> (renderAlphaConnection [p2 (oX, hR' + defaultBoundingBoxHeight * 0.5), p2 (maxWL, hR' + defaultBoundingBoxHeight * 0.5), p2 (maxWL, hQ)])
                  _ -> mempty
              ),
         dsR,
         gCsR,
         wR,
-        hR + defaultBoundingBoxHeight,
+        hR', -- + defaultBoundingBoxHeight, TODO: this is correct, fix on receiving end
         newMaxW,
         newMinH
       )
@@ -124,13 +126,13 @@ newRender' (b : []) o@(P (V2 oX oY)) ds gCs abc =
   let ds' = updateDestinations (getIdentifier b) o ds
       (d, ds'', gCs', w, h, maxW, minH) = newRender'' b o ds' gCs abc
       maxW' = if abc > maxW then abc else maxW
-      gCs'' = updateGammaConnections' (p2 (w, h)) maxW' (minH + defaultBoundingBoxHeight * 0.5) b gCs'
+      gCs'' = updateGammaConnections' (p2 (w, h + defaultBoundingBoxHeight)) maxW' (minH + defaultBoundingBoxHeight * 0.5) b gCs'
    in (d, ds'', gCs'', oX, minH, maxW', minH)
 newRender' (b : bs) o@(P (V2 oX _oY)) ds gCs abc =
   let ds' = updateDestinations (getIdentifier b) o ds
       (d, ds'', gCs', w, h, maxW, minH) = newRender'' b o ds' gCs abc
       maxW' = if abc > maxW then abc else maxW
-      gCs'' = updateGammaConnections' (p2 (w, h)) maxW' (minH + defaultBoundingBoxHeight * 0.5) b gCs'
+      gCs'' = updateGammaConnections' (p2 (w, h + defaultBoundingBoxHeight)) maxW' (minH + defaultBoundingBoxHeight * 0.5) b gCs'
       (d', ds''', gCs''', w', h', maxW'', minH') = newRender' bs (p2 (oX, minH)) ds'' gCs'' maxW'
       maxW''' = if maxW' > maxW'' then maxW' else maxW''
    in (d <> d' <> (renderAlphaConnection [p2 (oX, minH), o]), ds''', gCs''', w', h', maxW''', minH')
