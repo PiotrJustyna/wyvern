@@ -43,16 +43,6 @@ updateDestinations i o origins =
     Nothing -> origins
     Just i' -> Data.Map.insert i' o origins
 
-updateGammaConnections' ::
-  Point V2 Double ->
-  Double ->
-  Double ->
-  Block ->
-  [(Point V2 Double, Double, Double, ID)] ->
-  [(Point V2 Double, Double, Double, ID)]
-updateGammaConnections' gCO maxX maxY (Fork _ _ _ _ (Just gCID)) gCs = (gCO, maxX, maxY, gCID) : gCs
-updateGammaConnections' _ _ _ _ gCs = gCs
-
 getContent :: Block -> String
 getContent StartTerminator = "start"
 getContent EndTerminator = "end"
@@ -87,23 +77,12 @@ newRender'' fork@(Fork i c l r gCId) o@(P (V2 oX oY)) ds gCs globalMaxWidth =
       rY = hQ
       (dL, dsL, gCsL, wL, hL, maxWL, minHL) = newRender' l (p2 (lX, lY)) ds gCs 0.0
       (dR, dsR, gCsR, wR, hR, maxWR, minHR) = newRender' r (p2 (rX, if null r then oY else rY)) dsL gCsL globalMaxWidth
-      -- hR' = if null r
-      --           then
-      --               case gCId of
-      --                   Nothing -> (if null l then (hQ - defaultBoundingBoxHeight) else hL)
-      --                   _ -> hR
-      --           else
-      --               (hR - gCH)
-      -- minHR' =
-      --       (if null r
-      --           then
-      --               case gCId of
-      --                   Nothing -> (if null l then (hQ - defaultBoundingBoxHeight) else minHL)
-      --                   _ -> minHR
-      --           else
-      --               minHR) - gCH
       newMaxW = maxWR + gCW
+      newMaxW' = if maxWR > globalMaxWidth then maxWR else globalMaxWidth
       newMinH = (if minHL < minHR then minHL else minHR) - gCH
+      gCs' = case gCId of
+                    Nothing -> gCsR
+                    Just gCId' -> (p2 (wR, hR), newMaxW', newMinH, gCId') : gCsR
    in ( dQ
           <> dL
           <> dR
@@ -122,10 +101,10 @@ newRender'' fork@(Fork i c l r gCId) o@(P (V2 oX oY)) ds gCs globalMaxWidth =
                  _ -> mempty
              ),
         dsR,
-        gCsR,
+        gCs',
         wR,
         hR,
-        newMaxW,
+        newMaxW',
         newMinH
       )
 newRender'' StartTerminator o@(P (V2 oX oY)) ds gCs abc = (position [(o, wyvernRoundedRect $ getContent StartTerminator)], ds, gCs, oX, oY, oX + defaultBoundingBoxWidth, oY - defaultBoundingBoxHeight)
@@ -148,20 +127,13 @@ newRender' [] o@(P (V2 oX oY)) ds gCs globalWidth =
 newRender' (b : []) o@(P (V2 oX oY)) ds gCs abc =
   let ds' = updateDestinations (getIdentifier b) o ds
       (d, ds'', gCs', w, h, maxW, minH) = newRender'' b o ds' gCs abc
-      maxW' = if abc > maxW then abc else maxW
-      -- gCs'' = updateGammaConnections' (p2 (w, h + defaultBoundingBoxHeight)) maxW' (minH + defaultBoundingBoxHeight * 0.5) b gCs'
-      gCs'' = updateGammaConnections' (p2 (w, h)) maxW' (minH) b gCs'
-      in (d, ds'', gCs'', oX, h, maxW', minH)
+      in (d, ds'', gCs', oX, h, maxW, minH)
 newRender' (b : bs) o@(P (V2 oX _oY)) ds gCs abc =
   let ds' = updateDestinations (getIdentifier b) o ds
       (d, ds'', gCs', w, h, maxW, minH) = newRender'' b o ds' gCs abc
-      maxW' = if abc > maxW then abc else maxW
-      -- gCs'' = updateGammaConnections' (p2 (w, h + defaultBoundingBoxHeight)) maxW' (minH + defaultBoundingBoxHeight * 0.5) b gCs'
-      gCs'' = updateGammaConnections' (p2 (w, h)) maxW' (minH) b gCs'
-      (d', ds''', gCs''', w', h', maxW'', minH') = newRender' bs (p2 (oX, minH)) ds'' gCs'' maxW'
-      maxW''' = if maxW' > maxW'' then maxW' else maxW''
-   in (d <> d' <> (renderAlphaConnection [p2 (oX, minH), p2 (oX, h)]), ds''', gCs''', w', h', maxW''', minH')
-   -- in (d <> d', ds''', gCs''', w', h', maxW''', minH')
+      (d', ds''', gCs'', w', h', maxW', minH') = newRender' bs (p2 (oX, minH)) ds'' gCs' maxW
+      maxW'' = if maxW > maxW' then maxW else maxW'
+   in (d <> d' <> (renderAlphaConnection [p2 (oX, minH), p2 (oX, h)]), ds''', gCs'', w', h', maxW'', minH')
 
 
 newRender ::
