@@ -76,51 +76,55 @@ newRender'' ::
   [(Point V2 Double, Double, Double, ID)] ->
   Double ->
   (Diagram B, Map ID (Point V2 Double), [(Point V2 Double, Double, Double, ID)], Double, Double, Double, Double)
-newRender'' fork@(Fork i c l r gCId) o@(P (V2 oX oY)) ds gCs abc =
+newRender'' fork@(Fork i c l r gCId) o@(P (V2 oX oY)) ds gCs globalMaxWidth =
   let (gCW, gCH) = case gCId of
         Nothing -> (0.0, 0.0)
         Just _ -> (0.1, 0.1)
       (dQ, wQ, hQ) = (position [(o, wyvernHex c)], oX + defaultBoundingBoxWidth, oY - defaultBoundingBoxHeight)
-      (dL, dsL, gCsL, wL, hL, maxWL, minHL) = newRender' l (p2 (oX, hQ)) ds gCs 0.0
-      (dR, dsR, gCsR, wR, hR, maxWR, minHR) = newRender' r (p2 (maxWL, hQ)) dsL gCsL abc
-      hR' = if null r
-                then
-                    case gCId of
-                        Nothing -> (if null l then (hQ - defaultBoundingBoxHeight) else hL)
-                        _ -> hR
-                else
-                    (hR - gCH)
-      minHR' =
-            (if null r
-                then
-                    case gCId of
-                        Nothing -> (if null l then (hQ - defaultBoundingBoxHeight) else minHL)
-                        _ -> minHR
-                else
-                    minHR) - gCH
+      lX = oX
+      lY = hQ
+      rX = maxWL
+      rY = hQ
+      (dL, dsL, gCsL, wL, hL, maxWL, minHL) = newRender' l (p2 (lX, lY)) ds gCs 0.0
+      (dR, dsR, gCsR, wR, hR, maxWR, minHR) = newRender' r (p2 (rX, if null r then oY else rY)) dsL gCsL globalMaxWidth
+      -- hR' = if null r
+      --           then
+      --               case gCId of
+      --                   Nothing -> (if null l then (hQ - defaultBoundingBoxHeight) else hL)
+      --                   _ -> hR
+      --           else
+      --               (hR - gCH)
+      -- minHR' =
+      --       (if null r
+      --           then
+      --               case gCId of
+      --                   Nothing -> (if null l then (hQ - defaultBoundingBoxHeight) else minHL)
+      --                   _ -> minHR
+      --           else
+      --               minHR) - gCH
       newMaxW = maxWR + gCW
-      newMinH = if minHL < minHR' then minHL else minHR'
+      newMinH = (if minHL < minHR then minHL else minHR) - gCH
    in ( dQ
           <> dL
           <> dR
-          <> (renderAlphaConnection [p2 (oX, hQ), o])                                                      -- question -> left branch connection
+          -- <> (renderAlphaConnection [p2 (oX, hQ), o])                                                      -- question -> left branch connection
           <> (renderAlphaConnection (case gCId of
-                                        Nothing -> [p2 (maxWL, hQ), p2 (maxWL, oY), o]
-                                        _ -> if null r then [p2 (maxWL, oY), o] else [p2 (maxWL, hQ), p2 (maxWL, oY), o]))                                    -- question -> right branch connection
-          <> (if hL > hR' then (renderAlphaConnection [p2 (oX, hL), p2 (oX, hR' - gCH + defaultBoundingBoxHeight)]) else mempty)     -- left branch -> bottom of the fork connection
+                                        Nothing -> if null r then [p2 (rX, oY), o] else [p2 (rX, rY), p2 (rX, oY), o]
+                                        _ -> if null r then [p2 (rX, oY), o] else [p2 (rX, rY), p2 (rX, oY), o]))     -- question -> right branch connection
+          -- <> (if hL > hR' then (renderAlphaConnection [p2 (oX, hL), p2 (oX, hR' - gCH + defaultBoundingBoxHeight)]) else mempty)     -- left branch -> bottom of the fork connection
           <> ( case gCId of
                  Nothing ->
                     (renderAlphaConnection
                         [
-                            p2 (oX, newMinH + defaultBoundingBoxHeight * 0.5),
-                            p2 (maxWL, newMinH + defaultBoundingBoxHeight * 0.5),
-                            p2 (maxWL, hR' + defaultBoundingBoxHeight)])            -- right branch -> bottom of the fork connection
+                            p2 (lX, newMinH + defaultBoundingBoxHeight * 0.5),
+                            p2 (rX, newMinH + defaultBoundingBoxHeight * 0.5),
+                            p2 (rX, hR)])            -- right branch -> bottom of the fork connection
                  _ -> mempty
              ),
         dsR,
         gCsR,
         wR,
-        hR',
+        hR,
         newMaxW,
         newMinH
       )
@@ -135,23 +139,25 @@ newRender' ::
   [(Point V2 Double, Double, Double, ID)] ->
   Double ->
   (Diagram B, Map ID (Point V2 Double), [(Point V2 Double, Double, Double, ID)], Double, Double, Double, Double)
-newRender' [] o@(P (V2 oX oY)) ds gCs abc =
+newRender' [] o@(P (V2 oX oY)) ds gCs globalWidth =
   let w = oX
       minD = oY
-      maxW = w + defaultBoundingBoxWidth
-      maxW' = if abc > maxW then abc else maxW
-   in (mempty, ds, gCs, w, minD, maxW', minD)
+      localWidth = w + defaultBoundingBoxWidth
+      localWidth' = if globalWidth > localWidth then globalWidth else localWidth
+   in (mempty, ds, gCs, w, minD, localWidth', minD)
 newRender' (b : []) o@(P (V2 oX oY)) ds gCs abc =
   let ds' = updateDestinations (getIdentifier b) o ds
       (d, ds'', gCs', w, h, maxW, minH) = newRender'' b o ds' gCs abc
       maxW' = if abc > maxW then abc else maxW
-      gCs'' = updateGammaConnections' (p2 (w, h + defaultBoundingBoxHeight)) maxW' (minH + defaultBoundingBoxHeight * 0.5) b gCs'
-   in (d, ds'', gCs'', oX, minH, maxW', minH)
+      -- gCs'' = updateGammaConnections' (p2 (w, h + defaultBoundingBoxHeight)) maxW' (minH + defaultBoundingBoxHeight * 0.5) b gCs'
+      gCs'' = updateGammaConnections' (p2 (w, h)) maxW' (minH) b gCs'
+      in (d, ds'', gCs'', oX, h, maxW', minH)
 newRender' (b : bs) o@(P (V2 oX _oY)) ds gCs abc =
   let ds' = updateDestinations (getIdentifier b) o ds
       (d, ds'', gCs', w, h, maxW, minH) = newRender'' b o ds' gCs abc
       maxW' = if abc > maxW then abc else maxW
-      gCs'' = updateGammaConnections' (p2 (w, h + defaultBoundingBoxHeight)) maxW' (minH + defaultBoundingBoxHeight * 0.5) b gCs'
+      -- gCs'' = updateGammaConnections' (p2 (w, h + defaultBoundingBoxHeight)) maxW' (minH + defaultBoundingBoxHeight * 0.5) b gCs'
+      gCs'' = updateGammaConnections' (p2 (w, h)) maxW' (minH) b gCs'
       (d', ds''', gCs''', w', h', maxW'', minH') = newRender' bs (p2 (oX, minH)) ds'' gCs'' maxW'
       maxW''' = if maxW' > maxW'' then maxW' else maxW''
    in (d <> d' <> (renderAlphaConnection [p2 (oX, minH), p2 (oX, h)]), ds''', gCs''', w', h', maxW''', minH')
