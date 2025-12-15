@@ -78,7 +78,7 @@ newRender'' fork@(Fork i c l r gCId) o@(P (V2 oX oY)) ds gCs globalMaxWidth =
       (dL, dsL, gCsL, wL, hL, maxWL, minHL) = newRender' l (p2 (lX, lY)) ds gCs 0.0
       (dR, dsR, gCsR, wR, hR, maxWR, minHR) = newRender' r (p2 (rX, if null r then oY else rY)) dsL gCsL globalMaxWidth
       newMaxW = maxWR + gCW
-      newMaxW' = if maxWR > globalMaxWidth then maxWR else globalMaxWidth
+      newMaxW' = if newMaxW > globalMaxWidth then newMaxW else globalMaxWidth
       newMinH = (if minHL < minHR then minHL else minHR) - gCH
       gCs' = case gCId of
                     Nothing -> gCsR
@@ -124,14 +124,14 @@ newRender' [] o@(P (V2 oX oY)) ds gCs globalWidth =
       localWidth = w + defaultBoundingBoxWidth
       localWidth' = if globalWidth > localWidth then globalWidth else localWidth
    in (mempty, ds, gCs, w, minD, localWidth', minD)
-newRender' (b : []) o@(P (V2 oX oY)) ds gCs abc =
+newRender' (b : []) o@(P (V2 oX oY)) ds gCs globalWidth =
   let ds' = updateDestinations (getIdentifier b) o ds
-      (d, ds'', gCs', w, h, maxW, minH) = newRender'' b o ds' gCs abc
+      (d, ds'', gCs', w, h, maxW, minH) = newRender'' b o ds' gCs globalWidth
       in (d, ds'', gCs', oX, h, maxW, minH)
-newRender' (b : bs) o@(P (V2 oX _oY)) ds gCs abc =
+newRender' (b : bs) o@(P (V2 oX _oY)) ds gCs globalWidth =
   let ds' = updateDestinations (getIdentifier b) o ds
-      (d, ds'', gCs', w, h, maxW, minH) = newRender'' b o ds' gCs abc
-      (d', ds''', gCs'', w', h', maxW', minH') = newRender' bs (p2 (oX, minH)) ds'' gCs' maxW
+      (d, ds'', gCs', w, h, maxW, minH) = newRender'' b o ds' gCs globalWidth
+      (d', ds''', gCs'', w', h', maxW', minH') = newRender' bs (p2 (oX, minH)) ds'' gCs' (maxW + 0.1)
       maxW'' = if maxW > maxW' then maxW else maxW'
    in (d <> d' <> (renderAlphaConnection [p2 (oX, minH), p2 (oX, h)]), ds''', gCs'', w', h', maxW'', minH')
 
