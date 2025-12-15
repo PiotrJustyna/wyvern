@@ -82,22 +82,15 @@ newRender'' fork@(Fork i c l r gCId) o@(P (V2 oX oY)) ds gCs globalMaxWidth =
       newMinH = (if minHL < minHR then minHL else minHR) - gCH
       gCs' = case gCId of
                     Nothing -> gCsR
-                    Just gCId' -> (p2 (wR, hR), newMaxW', if null r then hR else (newMinH + defaultBoundingBoxHeight * 0.5), gCId') : gCsR
+                    Just gCId' -> (p2 (wR, oY), newMaxW', if null r then hR else (newMinH + defaultBoundingBoxHeight * 0.5), gCId') : gCsR
    in ( dQ
           <> dL
           <> dR
-          <> (if null l then mempty else (renderAlphaConnection [p2 (oX, hQ), o])) -- question -> left branch connection
-          <> (renderAlphaConnection (case gCId of
-                                        Nothing -> if null r then [p2 (rX, oY), o] else [p2 (rX, rY), p2 (rX, oY), o]
-                                        _ -> if null r then [p2 (rX, oY), o] else [p2 (rX, rY), p2 (rX, oY), o]))     -- question -> right branch connection
-          -- <> (if hL > hR' then (renderAlphaConnection [p2 (oX, hL), p2 (oX, hR' - gCH + defaultBoundingBoxHeight)]) else mempty)     -- left branch -> bottom of the fork connection
+          <> (if null l then mempty else (renderAlphaConnection [p2 (oX, hQ), o]))                          -- question -> left branch connection
+          <> (renderAlphaConnection (if null r then [p2 (rX, oY), o] else [p2 (rX, rY), p2 (rX, oY), o]))   -- question -> right branch connection
+          -- <> (if hL > hR then (renderAlphaConnection [p2 (oX, hL), p2 (oX + 0.2, hR)]) else mempty)     -- left branch -> bottom of the fork connection
           <> ( case gCId of
-                 Nothing ->
-                    (renderAlphaConnection
-                        [
-                            p2 (lX, newMinH + defaultBoundingBoxHeight * 0.5),
-                            p2 (rX, newMinH + defaultBoundingBoxHeight * 0.5),
-                            p2 (rX + 0.2, hR)])            -- right branch -> bottom of the fork connection
+                 Nothing -> (renderAlphaConnection [p2 (lX, newMinH + defaultBoundingBoxHeight * 0.5), p2 (rX, newMinH + defaultBoundingBoxHeight * 0.5), p2 (rX, hR)]) -- right branch -> bottom of the fork connection
                  _ -> mempty
              ),
         dsR,
