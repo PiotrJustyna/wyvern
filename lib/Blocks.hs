@@ -82,11 +82,11 @@ newRender'' fork@(Fork i c l r gCId) o@(P (V2 oX oY)) ds gCs globalMaxWidth =
       newMinH = (if minHL < minHR then minHL else minHR) - gCH
       gCs' = case gCId of
                     Nothing -> gCsR
-                    Just gCId' -> (p2 (wR, hR), newMaxW', newMinH, gCId') : gCsR
+                    Just gCId' -> (p2 (wR, hR), newMaxW', if null r then hR else (newMinH + defaultBoundingBoxHeight * 0.5), gCId') : gCsR
    in ( dQ
           <> dL
           <> dR
-          -- <> (renderAlphaConnection [p2 (oX, hQ), o])                                                      -- question -> left branch connection
+          <> (if null l then mempty else (renderAlphaConnection [p2 (oX, hQ), o])) -- question -> left branch connection
           <> (renderAlphaConnection (case gCId of
                                         Nothing -> if null r then [p2 (rX, oY), o] else [p2 (rX, rY), p2 (rX, oY), o]
                                         _ -> if null r then [p2 (rX, oY), o] else [p2 (rX, rY), p2 (rX, oY), o]))     -- question -> right branch connection
@@ -97,7 +97,7 @@ newRender'' fork@(Fork i c l r gCId) o@(P (V2 oX oY)) ds gCs globalMaxWidth =
                         [
                             p2 (lX, newMinH + defaultBoundingBoxHeight * 0.5),
                             p2 (rX, newMinH + defaultBoundingBoxHeight * 0.5),
-                            p2 (rX, hR)])            -- right branch -> bottom of the fork connection
+                            p2 (rX + 0.2, hR)])            -- right branch -> bottom of the fork connection
                  _ -> mempty
              ),
         dsR,
@@ -128,12 +128,12 @@ newRender' (b : []) o@(P (V2 oX oY)) ds gCs globalWidth =
   let ds' = updateDestinations (getIdentifier b) o ds
       (d, ds'', gCs', w, h, maxW, minH) = newRender'' b o ds' gCs globalWidth
       in (d, ds'', gCs', oX, h, maxW, minH)
-newRender' (b : bs) o@(P (V2 oX _oY)) ds gCs globalWidth =
+newRender' (b : bs) o@(P (V2 oX oY)) ds gCs globalWidth =
   let ds' = updateDestinations (getIdentifier b) o ds
       (d, ds'', gCs', w, h, maxW, minH) = newRender'' b o ds' gCs globalWidth
       (d', ds''', gCs'', w', h', maxW', minH') = newRender' bs (p2 (oX, minH)) ds'' gCs' (maxW + 0.1)
       maxW'' = if maxW > maxW' then maxW else maxW'
-   in (d <> d' <> (renderAlphaConnection [p2 (oX, minH), p2 (oX, h)]), ds''', gCs'', w', h', maxW'', minH')
+   in (d <> d' <> (renderAlphaConnection [p2 (oX, minH), p2 (oX, oY)]), ds''', gCs'', w', h', maxW'', minH')
 
 
 newRender ::
@@ -193,7 +193,6 @@ newRender1 bs =
         ( \accu (gCO, maxX, maxY, i) ->
             case Data.Map.lookup i ds' of
               Nothing -> error $ "gamma connection destination " <> (show i) <> "not found in the collection of destinations: " <> (show ds')
-              -- Just gCD -> accu
               Just gCD -> accu <> (renderGammaConnection gCO gCD maxX maxY)
         )
         (rD' <> bCs)
