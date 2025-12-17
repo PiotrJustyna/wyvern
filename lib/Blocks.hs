@@ -81,13 +81,13 @@ newRender'' fork@(Fork i c l r gCId) o@(P (V2 oX oY)) ds gCs globalMaxWidth =
       newMaxW' = if newMaxW > globalMaxWidth then newMaxW else globalMaxWidth
       newMinH = (if minHL < minHR then minHL else minHR) - gCH
       gCs' = case gCId of
-                    Nothing -> gCsR
-                    Just gCId' -> (p2 (wR, oY), newMaxW', if null r then hR else (newMinH + defaultBoundingBoxHeight * 0.5), gCId') : gCsR
+        Nothing -> gCsR
+        Just gCId' -> (p2 (wR, oY), newMaxW', if null r then hR else (newMinH + defaultBoundingBoxHeight * 0.5), gCId') : gCsR
    in ( dQ
           <> dL
           <> dR
-          <> (if null l then mempty else (renderAlphaConnection [p2 (oX, hQ), o]))                          -- question -> left branch connection
-          <> (renderAlphaConnection (if null r then [p2 (rX, oY), o] else [p2 (rX, rY), p2 (rX, oY), o]))   -- question -> right branch connection
+          <> (if null l then mempty else (renderAlphaConnection [p2 (oX, hQ), o])) -- question -> left branch connection
+          <> (renderAlphaConnection (if null r then [p2 (rX, oY), o] else [p2 (rX, rY), p2 (rX, oY), o])) -- question -> right branch connection
           -- <> (if hL > hR then (renderAlphaConnection [p2 (oX, hL), p2 (oX + 0.2, hR)]) else mempty)     -- left branch -> bottom of the fork connection
           <> ( case gCId of
                  Nothing -> (renderAlphaConnection [p2 (lX, newMinH + defaultBoundingBoxHeight * 0.5), p2 (rX, newMinH + defaultBoundingBoxHeight * 0.5), p2 (rX, hR)]) -- right branch -> bottom of the fork connection
@@ -120,14 +120,13 @@ newRender' [] o@(P (V2 oX oY)) ds gCs globalWidth =
 newRender' (b : []) o@(P (V2 oX oY)) ds gCs globalWidth =
   let ds' = updateDestinations (getIdentifier b) o ds
       (d, ds'', gCs', w, h, maxW, minH) = newRender'' b o ds' gCs globalWidth
-      in (d, ds'', gCs', oX, h, maxW, minH)
+   in (d, ds'', gCs', oX, h, maxW, minH)
 newRender' (b : bs) o@(P (V2 oX oY)) ds gCs globalWidth =
   let ds' = updateDestinations (getIdentifier b) o ds
       (d, ds'', gCs', w, h, maxW, minH) = newRender'' b o ds' gCs globalWidth
       (d', ds''', gCs'', w', h', maxW', minH') = newRender' bs (p2 (oX, minH)) ds'' gCs' (maxW + 0.1)
       maxW'' = if maxW > maxW' then maxW else maxW'
    in (d <> d' <> (renderAlphaConnection [p2 (oX, minH), p2 (oX, oY)]), ds''', gCs'', w', h', maxW'', minH')
-
 
 newRender ::
   Diagram B ->

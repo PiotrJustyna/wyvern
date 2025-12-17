@@ -22,14 +22,12 @@ library
                       Constants
                       Blocks
                       HelperDiagrams
-                      StartTerminator
-                      EndTerminator
                       Lexer
                       Parser
                       WyvernDiagram
                       InputArguments
     hs-source-dirs:   lib
-    build-depends:    base ^>=4.19.1.0,
+    build-depends:    base ^>=4.18.3.0,
                       colour,
                       text,
                       diagrams-lib,
@@ -44,7 +42,7 @@ library
 executable wyvern
     import:           warnings
     main-is:          Main.hs
-    build-depends:    base ^>=4.19.1.0,
+    build-depends:    base ^>=4.18.3.0,
                       array,
                       diagrams-lib,
                       diagrams-svg,
@@ -57,7 +55,7 @@ test-suite WyvernTests
     type:             exitcode-stdio-1.0
     hs-source-dirs:   tests
     main-is:          OverlappingLoopbacks.hs
-    build-depends:    base ^>=4.19.1.0,
+    build-depends:    base ^>=4.18.3.0,
                       HUnit,
                       diagrams-lib,
                       containers,

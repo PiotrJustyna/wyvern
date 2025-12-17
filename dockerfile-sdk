@@ -2,6 +2,8 @@ FROM alpine:3.22.1 AS sdk
 
 WORKDIR "/root/code/wyvern"
 
+RUN chown root /root/code/wyvern
+
 RUN apk update
 RUN apk add --no-cache \
     bash \
@@ -21,6 +23,6 @@ ENV PATH="${PATH}:/root/.local/bin"
 
 COPY ./setup-cabal.sh /root/code/wyvern/
 
-ENTRYPOINT ["/root/code/wyvern/setup-cabal.sh"]
+# ENTRYPOINT ["/root/code/wyvern/setup-cabal.sh"]
 
 CMD [ "/bin/bash" ]
