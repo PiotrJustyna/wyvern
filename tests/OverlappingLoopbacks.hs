@@ -4,7 +4,6 @@ import Content
 import Data.Map
 import Diagrams.Prelude
 import ID
-import SkewerBlock
 import Test.HUnit
 
 helloWorldTest :: Test

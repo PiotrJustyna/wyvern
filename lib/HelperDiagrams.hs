@@ -106,7 +106,7 @@ wyvernHeadline x w h =
       [ p2 (w * (-0.5), h * 0.5),
         p2 (w * 0.5, h * 0.5),
         p2 (w * 0.5, h * (-0.5)),
-        p2 (0.0, (h * (-0.5) - 0.1)),
+        p2 (0.0, h * (-0.5) - 0.1),
         p2 (w * (-0.5), h * (-0.5))
       ]
       # closeLine
@@ -118,7 +118,7 @@ wyvernHeadline x w h =
 wyvernHex :: String -> Diagram B
 wyvernHex x =
   renderText' x
-    <> (regPoly 6 ((defaultBoundingBoxWidth * widthRatio) / 2))
+    <> regPoly 6 ((defaultBoundingBoxWidth * widthRatio) / 2)
       # scaleY ((defaultBoundingBoxHeight * heightRatio) / (defaultBoundingBoxWidth * widthRatio))
       # drakonStyle
     <> renderText' "yes" # translate (r2 (-0.2, defaultBoundingBoxHeight * (-0.35)))
@@ -132,7 +132,7 @@ renderAlphaConnection coordinates = fromVertices coordinates # drakonStyle
 
 renderGammaConnection :: Point V2 Double -> Point V2 Double -> Double -> Double -> Diagram B
 renderGammaConnection gO@(P (V2 gOX gOY)) gD@(P (V2 gDX gDY)) maxX minY =
-  let gD'@(P (V2 gDX' gDY')) = p2 (gDX + (0.1 * (sqrt 3.0) / 2.0) + 0.012, gDY + defaultBoundingBoxHeight * 0.5)
+  let gD'@(P (V2 gDX' gDY')) = p2 (gDX + (0.1 * sqrt 3.0 / 2.0) + 0.012, gDY + defaultBoundingBoxHeight * 0.5)
       gammaMidpoint1 = p2 (gOX, minY)
       gammaMidpoint2 = p2 (maxX - defaultBoundingBoxWidth * 0.5, minY)
       gammaMidpoint3 = p2 (maxX - defaultBoundingBoxWidth * 0.5, gDY')
@@ -141,20 +141,18 @@ renderGammaConnection gO@(P (V2 gOX gOY)) gD@(P (V2 gDX gDY)) maxX minY =
 
 renderUpperBetaConnections :: [(Double, Double)] -> Double -> Diagram B
 renderUpperBetaConnections [] maxD = mempty
-renderUpperBetaConnections (uBC@(uBCa, uBCb) : []) maxD =
-  ( renderAlphaConnection
-      [ p2 (uBCa, maxD + defaultBoundingBoxHeight * 0.5),
-        p2 (uBCb, maxD + defaultBoundingBoxHeight * 0.5),
-        p2 (uBCb, maxD + defaultBoundingBoxHeight * heightRatio * 0.5)
-      ]
-  )
+renderUpperBetaConnections [uBC@(uBCa, uBCb)] maxD =
+  renderAlphaConnection
+    [ p2 (uBCa, maxD + defaultBoundingBoxHeight * 0.5),
+      p2 (uBCb, maxD + defaultBoundingBoxHeight * 0.5),
+      p2 (uBCb, maxD + defaultBoundingBoxHeight * heightRatio * 0.5)
+    ]
 renderUpperBetaConnections (uBC@(uBCa, uBCb) : uBCs) maxD =
-  ( renderAlphaConnection
-      [ p2 (uBCa, maxD + defaultBoundingBoxHeight * 0.5),
-        p2 (uBCb, maxD + defaultBoundingBoxHeight * 0.5),
-        p2 (uBCb, maxD + defaultBoundingBoxHeight * heightRatio * 0.5)
-      ]
-  )
+  renderAlphaConnection
+    [ p2 (uBCa, maxD + defaultBoundingBoxHeight * 0.5),
+      p2 (uBCb, maxD + defaultBoundingBoxHeight * 0.5),
+      p2 (uBCb, maxD + defaultBoundingBoxHeight * heightRatio * 0.5)
+    ]
     <> renderUpperBetaConnections uBCs maxD
 
 renderSideBetaConnection :: Point V2 Double -> Point V2 Double -> Diagram B
@@ -163,18 +161,18 @@ renderSideBetaConnection a@(P (V2 aX aY)) b@(P (V2 bX bY)) =
     [ a,
       p2 (aX - defaultBoundingBoxWidth * 0.5, aY),
       p2 (aX - defaultBoundingBoxWidth * 0.5, bY),
-      p2 (bX - (0.1 * (sqrt 3.0) / 2.0), bY)
+      p2 (bX - (0.1 * sqrt 3.0 / 2.0), bY)
     ]
     <> position [(p2 (bX - 0.06, bY), rotateBy (3 / 4) $ triangle 0.1 # drakonStyle)]
 
 renderLowerBetaConnections' :: [(Double, Double, Double)] -> Double -> Diagram B
 renderLowerBetaConnections' [] _ = mempty
 renderLowerBetaConnections' (lBC@(lBCa, lBCb, lBCc) : lBCs) minD =
-  (renderAlphaConnection [p2 (lBCa, lBCc + defaultBoundingBoxHeight), p2 (lBCa, minD), p2 (lBCb, minD)])
-    <> (renderLowerBetaConnections' lBCs minD)
+  renderAlphaConnection [p2 (lBCa, lBCc + defaultBoundingBoxHeight), p2 (lBCa, minD), p2 (lBCb, minD)]
+    <> renderLowerBetaConnections' lBCs minD
 
 renderLowerBetaConnections :: [(Double, Double, Double)] -> Double -> Diagram B
 renderLowerBetaConnections [] _ = mempty
 renderLowerBetaConnections (lBC@(lBCa, lBCb, lBCc) : lBCs) minD =
-  (renderAlphaConnection [p2 (lBCa, lBCc + defaultBoundingBoxHeight), p2 (lBCa, minD)])
-    <> (renderLowerBetaConnections' lBCs minD)
+  renderAlphaConnection [p2 (lBCa, lBCc + defaultBoundingBoxHeight), p2 (lBCa, minD)]
+    <> renderLowerBetaConnections' lBCs minD

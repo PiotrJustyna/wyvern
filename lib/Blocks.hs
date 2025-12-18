@@ -37,7 +37,7 @@ reverse'' bs =
 reverse' :: [[Block]] -> [[Block]]
 reverse' = foldl (\accu x -> reverse'' x : accu) []
 
-updateDestinations :: (Maybe ID) -> (Point V2 Double) -> Map ID (Point V2 Double) -> Map ID (Point V2 Double)
+updateDestinations :: Maybe ID -> Point V2 Double -> Map ID (Point V2 Double) -> Map ID (Point V2 Double)
 updateDestinations i o origins =
   case i of
     Nothing -> origins
@@ -78,19 +78,18 @@ newRender'' fork@(Fork i c l r gCId) o@(P (V2 oX oY)) ds gCs globalMaxWidth =
       (dL, dsL, gCsL, wL, hL, maxWL, minHL) = newRender' l (p2 (lX, lY)) ds gCs 0.0
       (dR, dsR, gCsR, wR, hR, maxWR, minHR) = newRender' r (p2 (rX, if null r then oY else rY)) dsL gCsL globalMaxWidth
       newMaxW = maxWR + gCW
-      newMaxW' = if newMaxW > globalMaxWidth then newMaxW else globalMaxWidth
-      newMinH = (if minHL < minHR then minHL else minHR) - gCH
+      newMaxW' = max newMaxW globalMaxWidth
+      newMinH = min minHL minHR - gCH
       gCs' = case gCId of
         Nothing -> gCsR
-        Just gCId' -> (p2 (wR, oY), newMaxW', if null r then hR else (newMinH + defaultBoundingBoxHeight * 0.5), gCId') : gCsR
+        Just gCId' -> (p2 (wR, oY), newMaxW', if null r then hR else newMinH + defaultBoundingBoxHeight * 0.5, gCId') : gCsR
    in ( dQ
           <> dL
           <> dR
-          <> (if null l then mempty else (renderAlphaConnection [p2 (oX, hQ), o])) -- question -> left branch connection
-          <> (renderAlphaConnection (if null r then [p2 (rX, oY), o] else [p2 (rX, rY), p2 (rX, oY), o])) -- question -> right branch connection
-          -- <> (if hL > hR then (renderAlphaConnection [p2 (oX, hL), p2 (oX + 0.2, hR)]) else mempty)     -- left branch -> bottom of the fork connection
+          <> (if null l then mempty else renderAlphaConnection [p2 (oX, hQ), o]) -- question -> left branch connection
+          <> renderAlphaConnection (if null r then [p2 (rX, oY), o] else [p2 (rX, rY), p2 (rX, oY), o]) -- question -> right branch connection
           <> ( case gCId of
-                 Nothing -> (renderAlphaConnection [p2 (lX, newMinH + defaultBoundingBoxHeight * 0.5), p2 (rX, newMinH + defaultBoundingBoxHeight * 0.5), p2 (rX, hR)]) -- right branch -> bottom of the fork connection
+                 Nothing -> renderAlphaConnection [p2 (lX, newMinH + defaultBoundingBoxHeight * 0.5), p2 (rX, newMinH + defaultBoundingBoxHeight * 0.5), p2 (rX, hR)] -- right branch -> bottom of the fork connection
                  _ -> mempty
              ),
         dsR,
@@ -115,9 +114,9 @@ newRender' [] o@(P (V2 oX oY)) ds gCs globalWidth =
   let w = oX
       minD = oY
       localWidth = w + defaultBoundingBoxWidth
-      localWidth' = if globalWidth > localWidth then globalWidth else localWidth
+      localWidth' = max globalWidth localWidth
    in (mempty, ds, gCs, w, minD, localWidth', minD)
-newRender' (b : []) o@(P (V2 oX oY)) ds gCs globalWidth =
+newRender' [b] o@(P (V2 oX oY)) ds gCs globalWidth =
   let ds' = updateDestinations (getIdentifier b) o ds
       (d, ds'', gCs', w, h, maxW, minH) = newRender'' b o ds' gCs globalWidth
    in (d, ds'', gCs', oX, h, maxW, minH)
@@ -125,8 +124,8 @@ newRender' (b : bs) o@(P (V2 oX oY)) ds gCs globalWidth =
   let ds' = updateDestinations (getIdentifier b) o ds
       (d, ds'', gCs', w, h, maxW, minH) = newRender'' b o ds' gCs globalWidth
       (d', ds''', gCs'', w', h', maxW', minH') = newRender' bs (p2 (oX, minH)) ds'' gCs' (maxW + 0.1)
-      maxW'' = if maxW > maxW' then maxW else maxW'
-   in (d <> d' <> (renderAlphaConnection [p2 (oX, minH), p2 (oX, oY)]), ds''', gCs'', w', h', maxW'', minH')
+      maxW'' = max maxW maxW'
+   in (d <> d' <> renderAlphaConnection [p2 (oX, minH), p2 (oX, oY)], ds''', gCs'', w', h', maxW'', minH')
 
 newRender ::
   Diagram B ->
@@ -139,27 +138,27 @@ newRender ::
   [[Block]] ->
   (Diagram B, Map ID (Point V2 Double), ([(Double, Double)], [(Double, Double, Double)], Double), [(Point V2 Double, Double, Double, ID)], Double, Double, Double, [[Block]])
 newRender rD ds bCs gCs w h maxH [] = (rD, ds, bCs, gCs, w, h, maxH, [])
-newRender accuRD accuDs accuBCs@(uBCs, lBCs, minD) accuGCs accuW accuH accuMaxH (b : []) =
+newRender accuRD accuDs accuBCs@(uBCs, lBCs, minD) accuGCs accuW accuH accuMaxH [b] =
   let (rD, ds, gCs, w, h, maxW, maxH) = newRender' b (p2 (accuW, accuH)) accuDs accuGCs accuW
    in newRender
         (accuRD <> rD)
         ds
-        (uBCs, lBCs, if minD < maxH then minD else maxH)
+        (uBCs, lBCs, min minD maxH)
         gCs
         maxW
         accuH
-        (if minD < maxH then minD else maxH)
+        (min minD maxH)
         []
 newRender accuRD accuDs (uBCs, lBCs, minD) accuGCs accuW accuH accuMaxH (b : bs) =
   let (rD, ds, gCs, w, h, maxW, maxH) = newRender' b (p2 (accuW, accuH)) accuDs accuGCs accuW
    in newRender
         (accuRD <> rD)
         ds
-        (((accuW, maxW) : uBCs), ((accuW, maxW, h) : lBCs), if minD < maxH then minD else maxH)
+        ((accuW, maxW) : uBCs, (accuW, maxW, h) : lBCs, min minD maxH)
         gCs
         maxW
         accuH
-        (if minD < maxH then minD else maxH)
+        (min minD maxH)
         bs
 
 newRender1' :: [[Block]] -> (Diagram B, Map ID (Point V2 Double), ([(Double, Double)], [(Double, Double, Double)], Double), [(Point V2 Double, Double, Double, ID)], Double, Double, Double, [[Block]])
@@ -167,8 +166,8 @@ newRender1' (b : bs) =
   let (rD, ds, (uBCs, lBCs, minD), gCs, w, h, maxH, _) = newRender mempty Data.Map.empty ([], [], 0.0) [] 0.0 0.0 0.0 [b]
       uBCs' = if null bs then uBCs else (0.0, w) : uBCs
       lBCs' = if null bs then lBCs else (0.0, w, maxH) : lBCs
-      (rD', ds', (uBCs'', lBCs'', minD'), gCs', w', h', maxH', _) = newRender rD ds (uBCs', lBCs', minD) gCs w (0 - defaultBoundingBoxHeight) maxH bs
-   in (rD', ds', (uBCs'', lBCs'', minD'), gCs', w', h', maxH', (b : bs))
+      (rD', ds', (uBCs'', lBCs'', minD'), gCs', w', h', maxH', _) = newRender rD ds (uBCs', lBCs', minD) gCs w (negate defaultBoundingBoxHeight) maxH bs
+   in (rD', ds', (uBCs'', lBCs'', minD'), gCs', w', h', maxH', b : bs)
 
 newRender1 :: [[Block]] -> Diagram B
 newRender1 [] = mempty
@@ -177,15 +176,15 @@ newRender1 bs =
       bCs = case length bs of
         1 -> mempty
         _ ->
-          let rUBCs = renderUpperBetaConnections uBCs (0 - defaultBoundingBoxHeight)
+          let rUBCs = renderUpperBetaConnections uBCs (negate defaultBoundingBoxHeight)
               rSBC = renderSideBetaConnection (p2 (0.0, maxH' + defaultBoundingBoxHeight * 0.5)) (p2 (0.0, 0.0 + defaultBoundingBoxHeight * 0.5 - defaultBoundingBoxHeight))
               rLBCs = renderLowerBetaConnections lBCs (maxH' + defaultBoundingBoxHeight * 0.5)
            in rUBCs <> rSBC <> rLBCs
    in foldl
         ( \accu (gCO, maxX, maxY, i) ->
             case Data.Map.lookup i ds' of
-              Nothing -> error $ "gamma connection destination " <> (show i) <> "not found in the collection of destinations: " <> (show ds')
-              Just gCD -> accu <> (renderGammaConnection gCO gCD maxX maxY)
+              Nothing -> error $ "gamma connection destination " <> show i <> "not found in the collection of destinations: " <> show ds'
+              Just gCD -> accu <> renderGammaConnection gCO gCD maxX maxY
         )
         (rD' <> bCs)
         gCs'
