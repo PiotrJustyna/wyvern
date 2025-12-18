@@ -4,7 +4,7 @@
 {-# OPTIONS_GHC -fno-warn-unused-imports #-}
 {-# LANGUAGE CPP #-}
 {-# LANGUAGE MagicHash #-}
-{-# LINE 1 "./lib/Lexer.x" #-}
+{-# LINE 1 "./src/lib/Lexer.x" #-}
 module Lexer
   (alexScanTokens,
   Token(TokenAction,
@@ -888,7 +888,7 @@ alexRightContext IBOX(sc) user__ _ _ input__ =
         -- match when checking the right context, just
         -- the first match will do.
 #endif
-{-# LINE 30 "./lib/Lexer.x" #-}
+{-# LINE 30 "./src/lib/Lexer.x" #-}
 data Token
   = TokenAction String
   | TokenSoloIdentifier String
