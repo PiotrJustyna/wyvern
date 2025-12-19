@@ -4,3 +4,8 @@
 *.swp
 *.idea
 dist-newstyle
+.zed
+Parser.info
+Parser.hs
+Lexer.info
+Lexer.hs
