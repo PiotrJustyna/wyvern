@@ -20,21 +20,15 @@ RUN echo 'export PS1="\[\e[32m\]\w\[\e[35m\]\$\[\e[0m\] "' >> /root/.bashrc
 
 ENV PATH="${PATH}:/root/.local/bin"
 
-COPY ./setup-cabal.sh /root/code/wyvern/
+COPY ./wyvern.cabal /root/code/wyvern/
 
-COPY ./build-code.sh /root/code/wyvern/
+COPY ./src /root/code/wyvern/src/
 
-COPY Wyvern.cabal /root/code/wyvern/
+RUN cabal update
 
-COPY ./app /root/code/wyvern/app/
+RUN cabal build --enable-executable-stripping
 
-COPY ./lib /root/code/wyvern/lib/
-
-RUN /root/code/wyvern/setup-cabal.sh
-
-RUN /root/code/wyvern/build-code.sh
-
-RUN find /root/code/wyvern/dist-newstyle -name Wyvern -type f -exec cp {} /tmp/ \;
+RUN find /root/code/wyvern/dist-newstyle -name wyvern -type f -exec cp {} /tmp/ \;
 
 FROM alpine:3.22.1
 
@@ -45,10 +39,10 @@ RUN apk add --no-cache \
 
 RUN addgroup -S appgroup && adduser -S runtime -G appgroup -D
 
-COPY --from=sdk /tmp/Wyvern /usr/local/bin/
+COPY --from=sdk /tmp/wyvern /usr/local/bin/
 
 USER runtime
 
-ENTRYPOINT [ "/usr/local/bin/Wyvern" ]
+ENTRYPOINT [ "/usr/local/bin/wyvern" ]
 
 CMD [ "--help" ]

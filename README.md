@@ -1,13 +1,8 @@
 # wyvern
 
-<table>
-  <tr>
-    <td><img src="wyvern.png" alt="wyvern" style="width:100px;"/></td>
-    <td>
-      Simplified version of DRAKON diagramming language.
-    </td>
-  </tr>
-</table>
+**wyvern**: a simplified version of DRAKON diagramming language.
+
+![](./img/wyvern-small.png)
 
 ## goals
 
@@ -49,13 +44,25 @@ Having compiled the project, simply execute:
 ./run.sh
 ```
 
-## how to run
+## how to test
 
 Having compiled the project, simply execute:
 
 ```bash
 ./test.sh
 ```
+
+## how to build runtime image
+
+Having compiled the project, simply execute:
+
+```bash
+./ops/build-runtime-image.sh
+```
+
+TODO:
+
+* implement lexing and parsing in runtime image building process
 
 ### debugging
 
@@ -93,6 +100,8 @@ DRAKON is wyvern's big brother - more complex, steeper learning curve, more term
 * [drakon](https://drakonhub.com/read/docs)
 
 ### haskell
+
+* [ghcup](https://www.haskell.org/ghcup)
 
 * [diagrams](https://archives.haskell.org/projects.haskell.org/diagrams/doc/quickstart.html#introduction)
 

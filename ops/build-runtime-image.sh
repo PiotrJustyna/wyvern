@@ -2,5 +2,5 @@
 
 docker buildx build \
   -t "wyvern-runtime:latest" \
-  -f "dockerfile-runtime" \
+  -f "./ops/dockerfile-runtime" \
   .
