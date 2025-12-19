@@ -144,12 +144,13 @@ renderAllSkewers' accuRD accuDs (uBCs, lBCs, minD) accuGCs accuW accuH accuMaxH 
    in renderAllSkewers' (accuRD <> rD) ds ((accuW, maxW) : uBCs, (accuW, maxW, h) : lBCs, min minD maxH) gCs maxW accuH (min minD maxH) bs
 
 renderAllSkewers :: [[Block]] -> (Diagram B, Map ID (Point V2 Double), ([(Double, Double)], [(Double, Double, Double)], Double), [(Point V2 Double, Double, Double, ID)], Double, Double, Double, [[Block]])
-renderAllSkewers (b : bs) =
-  let (rD, ds, (uBCs, lBCs, minD), gCs, w, h, maxH, _) = renderAllSkewers' mempty Data.Map.empty ([], [], 0.0) [] 0.0 0.0 0.0 [b]
+renderAllSkewers blocks@(b : bs) =
+  let manyBlocks = length blocks > 2
+      (rD, ds, (uBCs, lBCs, minD), gCs, w, h, maxH, _) = renderAllSkewers' mempty Data.Map.empty ([], [], 0.0) [] 0.0 0.0 0.0 [b]
       uBCs' = if null bs then uBCs else (0.0, w) : uBCs
       lBCs' = if null bs then lBCs else (0.0, w, maxH) : lBCs
       (rD', ds', (uBCs'', lBCs'', minD'), gCs', w', h', maxH', _) = renderAllSkewers' rD ds (uBCs', lBCs', minD) gCs w (negate defaultBoundingBoxHeight) maxH bs
-   in (rD', ds', (uBCs'', lBCs'', minD'), gCs', w', h', maxH', b : bs)
+   in (rD', ds', (uBCs'', lBCs'', minD'), gCs', w', h', if manyBlocks then maxH' else maxH, b : bs)
 
 render' :: [[Block]] -> Diagram B
 render' [] = mempty

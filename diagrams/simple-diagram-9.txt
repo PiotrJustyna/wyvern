@@ -1,0 +1,266 @@
+h1 "headline 1"
+{
+  0a "action 0"
+  1a "question 1"
+  {
+    aa "question a"
+    {
+      ba "action b"
+    }
+    {
+      ca "action c"
+      da "question d"
+      {
+        ea "action e"
+      }
+      {
+        fa "question f"
+        {
+          ga "action g"
+        }
+        {
+          fa
+        }
+        da
+      }
+      aa
+    }
+    ya "action y"
+    za "question z"
+    {
+      "hello"
+    }
+    {
+      "world"
+      z1a "action z1"
+      z1aa "question z1a"
+      {
+        z1ba "action z1b"
+      }
+      {
+        z1ca "question z1c"
+        {
+          z1da "action z1d"
+        }
+        {
+          z1ea "action z1e"
+          z1fa "question z1f"
+          {
+            z1ga "action z1g"
+          }
+          {
+            z1ha "action z1h"
+            aa
+          }
+          aa
+        }
+        aa
+      }
+      z2a "question z2"
+      {
+        z3a "action z3"
+        z4a "action z4"
+      }
+      {
+        z5a "action z5"
+        aa
+      }
+      oi1a "question oi1"
+      {
+        oi2a "action oi2"
+      }
+      {
+        oi3a "action oi3"
+        aa
+      }
+      aa
+    }
+  }
+  {
+    "action 2"
+    2a "question 2"
+    {
+      "action 3"
+      "action 4"
+    }
+    {
+      "action 5"
+      6a "action 6"
+      1a
+    }
+    7a "action 7"
+    8a "question 8"
+    {
+      "action 9"
+      "action 10"
+      "action 11"
+      "action 12"
+    }
+    {
+      "action 9"
+      10a "action 10"
+      12a "question 12"
+      {
+        "action 13"
+      }
+      {
+        "action 13"
+      }
+      10a
+    }
+    1a
+  }
+  3a "question 3"
+  {
+    "action 8"
+  }
+  {
+    9a "action 9"
+    1a
+  }
+  "final action"
+  h2
+}
+h2 "headline 2"
+{
+    "Hello, World!"
+    h3
+}
+h3 "headline 3"
+{
+  0b "action 0"
+  1b "question 1"
+  {
+    ab "question a"
+    {
+      bb "action b"
+    }
+    {
+      cb "action c"
+      db "question d"
+      {
+        eb "action e"
+      }
+      {
+        fb "question f"
+        {
+          gb "action g"
+        }
+        {
+          fb
+        }
+        db
+      }
+      ab
+    }
+    yb "action y"
+    zb "question z"
+    {
+      "hello"
+    }
+    {
+      "world"
+      z1b "action z1"
+      z1ab "question z1a"
+      {
+        z1bb "action z1b"
+      }
+      {
+        z1cb "question z1c"
+        {
+          z1db "action z1d"
+        }
+        {
+          z1eb "action z1e"
+          z1fb "question z1f"
+          {
+            z1gb "action z1g"
+            "question x"
+            {
+                "hello"
+            }
+            {
+                "world"
+                z1gba "another"
+                {
+                    "hello"
+                }
+                {
+                    "world"
+                    z1gba
+                }
+                z1gb
+            }
+          }
+          {
+            z1hb "action z1h"
+            ab
+          }
+          ab
+        }
+        ab
+      }
+      z2b "question z2"
+      {
+        z3b "action z3"
+        z4b "action z4"
+      }
+      {
+        z5b "action z5"
+        ab
+      }
+      oi1b "question oi1"
+      {
+        oi2b "action oi2"
+      }
+      {
+        oi3b "action oi3"
+        ab
+      }
+      ab
+    }
+  }
+  {
+    "action 2"
+    2b "question 2"
+    {
+      "action 3"
+      "action 4"
+    }
+    {
+      "action 5"
+      6b "action 6"
+      1b
+    }
+    7b "action 7"
+    8b "question 8"
+    {
+      "action 9"
+      "action 10"
+      "action 11"
+      "action 12"
+    }
+    {
+      "action 9"
+      10b "action 10"
+      12b "question 12"
+      {
+        "action 13"
+      }
+      {
+        "action 13"
+      }
+      10b
+    }
+    1b
+  }
+  3b "question 3"
+  {
+    "action 8"
+  }
+  {
+    9b "action 9"
+    1b
+  }
+  "final action"
+}

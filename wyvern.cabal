@@ -1,6 +1,6 @@
 cabal-version:      3.4
 name:               wyvern
-version:            0.2.0.0
+version:            0.3.0.0
 synopsis:           wyvern - simplified version of DRAKON diagramming language
 -- description:
 homepage:           https://codeberg.org/458b33475c9e46ac972d172ac35cf24f/wyvern
