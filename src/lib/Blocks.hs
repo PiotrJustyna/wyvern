@@ -9,7 +9,7 @@ import Data.Ord (comparing)
 import Diagrams.Backend.SVG (B)
 import Diagrams.Prelude (Diagram, Point (..), V2 (..), p2, position, r2, translate, (#))
 import GHC.Float
-import HelperDiagrams (renderConnection, renderGammaConnection, renderLowerBetaConnections, renderSideBetaConnection, renderText, renderUpperBetaConnections, wyvernAddress, wyvernHeadline, wyvernHex, wyvernRect, wyvernRoundedRect)
+import HelperDiagrams (renderConnection, renderGammaConnection, renderLowerBetaConnections, renderSideBetaConnection, renderText, renderUpperBetaConnections, wyvernAddress, wyvernHeadline, wyvernQuestion, wyvernRect, wyvernRoundedRect)
 import ID
 
 data Block
@@ -67,7 +67,7 @@ newRender'' fork@(Fork i c l r gCId) o@(P (V2 oX oY)) ds gCs globalMaxWidth =
   let (gCW, gCH) = case gCId of
         Nothing -> (0.0, 0.0)
         Just _ -> (0.1, 0.1)
-      (dQ, wQ, hQ) = (position [(o, wyvernHex c)], oX + defaultBoundingBoxWidth, oY - defaultBoundingBoxHeight)
+      (dQ, wQ, hQ) = (position [(o, wyvernQuestion c)], oX + defaultBoundingBoxWidth, oY - defaultBoundingBoxHeight)
       lX = oX
       lY = hQ
       rX = maxWL

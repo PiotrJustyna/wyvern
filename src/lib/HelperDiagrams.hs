@@ -98,6 +98,24 @@ wyvernAddress x =
       # wyvernStyle
       # translate (r2 (defaultBoundingBoxWidth * widthRatio * (-0.5), defaultBoundingBoxHeight * heightRatio * (-0.5)))
 
+wyvernQuestion :: String -> Diagram B
+wyvernQuestion x =
+  renderText x
+    <> fromOffsets
+      [ V2 (-0.1) (defaultBoundingBoxHeight * heightRatio * 0.5),
+        V2 0.1 (defaultBoundingBoxHeight * heightRatio * 0.5),
+        V2 (defaultBoundingBoxWidth * widthRatio - 0.2) 0.0,
+        V2 0.1 (defaultBoundingBoxHeight * heightRatio * (-0.5)),
+        V2 (-0.1) (defaultBoundingBoxHeight * heightRatio * (-0.5)),
+        V2 (defaultBoundingBoxWidth * widthRatio * (-1.0) + 0.2) 0.0
+      ]
+      # closeLine
+      # strokeLoop
+      # wyvernStyle
+      # translate (r2 (defaultBoundingBoxWidth * widthRatio * (-0.5) + 0.1, defaultBoundingBoxHeight * heightRatio * (-0.5)))
+    <> renderText "yes" # translate (r2 (-0.2, defaultBoundingBoxHeight * (-0.4)))
+    <> renderText "no" # translate (r2 (defaultBoundingBoxWidth * 0.45, 0.1))
+
 wyvernHex :: String -> Diagram B
 wyvernHex x =
   renderText x
