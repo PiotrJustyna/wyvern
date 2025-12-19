@@ -9,7 +9,7 @@ import Data.Ord (comparing)
 import Diagrams.Backend.SVG (B)
 import Diagrams.Prelude (Diagram, Point (..), V2 (..), p2, position, r2, translate, (#))
 import GHC.Float
-import HelperDiagrams (renderAlphaConnection, renderGammaConnection, renderLowerBetaConnections, renderSideBetaConnection, renderText', renderUpperBetaConnections, wyvernHeadline, wyvernHex, wyvernRect, wyvernRoundedRect)
+import HelperDiagrams (renderConnection, renderGammaConnection, renderLowerBetaConnections, renderSideBetaConnection, renderText', renderUpperBetaConnections, wyvernHeadline, wyvernHex, wyvernRect, wyvernRoundedRect)
 import ID
 
 data Block
@@ -22,17 +22,14 @@ data Block
   deriving (Show)
 
 reverse'' :: [Block] -> [Block]
-reverse'' bs =
-  let res =
-        foldl
-          ( \accu x ->
-              case x of
-                Fork id content l r rId -> Fork id content (reverse'' l) (reverse'' r) rId : accu
-                _ -> x : accu
-          )
-          []
-          bs
-   in res
+reverse'' =
+  foldl
+    ( \accu x ->
+        case x of
+          Fork id content l r rId -> Fork id content (reverse'' l) (reverse'' r) rId : accu
+          _ -> x : accu
+    )
+    []
 
 reverse' :: [[Block]] -> [[Block]]
 reverse' = foldl (\accu x -> reverse'' x : accu) []
@@ -86,10 +83,10 @@ newRender'' fork@(Fork i c l r gCId) o@(P (V2 oX oY)) ds gCs globalMaxWidth =
    in ( dQ
           <> dL
           <> dR
-          <> (if null l then mempty else renderAlphaConnection [p2 (oX, hQ), o]) -- question -> left branch connection
-          <> renderAlphaConnection (if null r then [p2 (rX, oY), o] else [p2 (rX, rY), p2 (rX, oY), o]) -- question -> right branch connection
+          <> (if null l then mempty else renderConnection [p2 (oX, hQ), o]) -- question -> left branch connection
+          <> renderConnection (if null r then [p2 (rX, oY), o] else [p2 (rX, rY), p2 (rX, oY), o]) -- question -> right branch connection
           <> ( case gCId of
-                 Nothing -> renderAlphaConnection [p2 (lX, newMinH + defaultBoundingBoxHeight * 0.5), p2 (rX, newMinH + defaultBoundingBoxHeight * 0.5), p2 (rX, hR)] -- right branch -> bottom of the fork connection
+                 Nothing -> renderConnection [p2 (lX, newMinH + defaultBoundingBoxHeight * 0.5), p2 (rX, newMinH + defaultBoundingBoxHeight * 0.5), p2 (rX, hR)] -- right branch -> bottom of the fork connection
                  _ -> mempty
              ),
         dsR,
@@ -124,8 +121,7 @@ newRender' (b : bs) o@(P (V2 oX oY)) ds gCs globalWidth =
   let ds' = updateDestinations (getIdentifier b) o ds
       (d, ds'', gCs', w, h, maxW, minH) = newRender'' b o ds' gCs globalWidth
       (d', ds''', gCs'', w', h', maxW', minH') = newRender' bs (p2 (oX, minH)) ds'' gCs' (maxW + 0.1)
-      maxW'' = max maxW maxW'
-   in (d <> d' <> renderAlphaConnection [p2 (oX, minH), p2 (oX, oY)], ds''', gCs'', w', h', maxW'', minH')
+   in (d <> d' <> renderConnection [p2 (oX, minH), p2 (oX, oY)], ds''', gCs'', w', h', max maxW maxW', minH')
 
 newRender ::
   Diagram B ->
@@ -140,26 +136,10 @@ newRender ::
 newRender rD ds bCs gCs w h maxH [] = (rD, ds, bCs, gCs, w, h, maxH, [])
 newRender accuRD accuDs accuBCs@(uBCs, lBCs, minD) accuGCs accuW accuH accuMaxH [b] =
   let (rD, ds, gCs, w, h, maxW, maxH) = newRender' b (p2 (accuW, accuH)) accuDs accuGCs accuW
-   in newRender
-        (accuRD <> rD)
-        ds
-        (uBCs, lBCs, min minD maxH)
-        gCs
-        maxW
-        accuH
-        (min minD maxH)
-        []
+   in newRender (accuRD <> rD) ds (uBCs, lBCs, min minD maxH) gCs maxW accuH (min minD maxH) []
 newRender accuRD accuDs (uBCs, lBCs, minD) accuGCs accuW accuH accuMaxH (b : bs) =
   let (rD, ds, gCs, w, h, maxW, maxH) = newRender' b (p2 (accuW, accuH)) accuDs accuGCs accuW
-   in newRender
-        (accuRD <> rD)
-        ds
-        ((accuW, maxW) : uBCs, (accuW, maxW, h) : lBCs, min minD maxH)
-        gCs
-        maxW
-        accuH
-        (min minD maxH)
-        bs
+   in newRender (accuRD <> rD) ds ((accuW, maxW) : uBCs, (accuW, maxW, h) : lBCs, min minD maxH) gCs maxW accuH (min minD maxH) bs
 
 newRender1' :: [[Block]] -> (Diagram B, Map ID (Point V2 Double), ([(Double, Double)], [(Double, Double, Double)], Double), [(Point V2 Double, Double, Double, ID)], Double, Double, Double, [[Block]])
 newRender1' (b : bs) =

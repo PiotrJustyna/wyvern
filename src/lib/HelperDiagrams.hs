@@ -1,6 +1,6 @@
 module HelperDiagrams where
 
-import Constants (defaultBoundingBoxHeight, defaultBoundingBoxWidth, defaultFontSize, drakonStyle, fillColour, fontColour, heightRatio, lineColour, widthRatio)
+import Constants (defaultBoundingBoxHeight, defaultBoundingBoxWidth, defaultFontSize, fillColour, fontColour, heightRatio, lineColour, widthRatio, wyvernStyle)
 import Diagrams.Backend.SVG (B)
 import Diagrams.Prelude
   ( Diagram,
@@ -34,21 +34,21 @@ import Diagrams.Prelude
 
 rect' :: Double -> Double -> Diagram B
 rect' x y =
-  fromOffsets [V2 x 0.0, V2 0.0 (y * (-1.0)), V2 (x * (-1.0)) 0.0, V2 0.0 y] # closeLine # strokeLoop # drakonStyle
+  fromOffsets [V2 x 0.0, V2 0.0 (y * (-1.0)), V2 (x * (-1.0)) 0.0, V2 0.0 y] # closeLine # strokeLoop # wyvernStyle
 
 headlineShape :: Double -> Double -> Diagram B
 headlineShape x y =
   fromOffsets [V2 x 0.0, V2 0.0 (y * (-1.0)), V2 (x * (-0.5)) (-0.1), V2 (x * (-0.5)) 0.1, V2 0.0 y]
     # closeLine
     # strokeLoop
-    # drakonStyle
+    # wyvernStyle
 
 addressShape :: Double -> Double -> Diagram B
 addressShape x y =
   fromOffsets [V2 (x * 0.5) 0.1, V2 (x * 0.5) (-0.1), V2 0.0 (y * (-1.0)), V2 (x * (-1.0)) 0.0]
     # closeLine
     # strokeLoop
-    # drakonStyle
+    # wyvernStyle
 
 boundingBox :: Double -> Double -> Diagram B
 boundingBox x y =
@@ -70,7 +70,7 @@ hex' x y =
     ]
     # closeLine
     # strokeLoop
-    # drakonStyle
+    # wyvernStyle
 
 renderText :: String -> Double -> Double -> Diagram B
 renderText content translateX translateY =
@@ -120,15 +120,12 @@ wyvernHex x =
   renderText' x
     <> regPoly 6 ((defaultBoundingBoxWidth * widthRatio) / 2)
       # scaleY ((defaultBoundingBoxHeight * heightRatio) / (defaultBoundingBoxWidth * widthRatio))
-      # drakonStyle
+      # wyvernStyle
     <> renderText' "yes" # translate (r2 (-0.2, defaultBoundingBoxHeight * (-0.35)))
     <> renderText' "no" # translate (r2 (defaultBoundingBoxWidth * 0.45, 0.1))
 
 renderConnection :: [Point V2 Double] -> Diagram B
-renderConnection coordinates = fromVertices coordinates # drakonStyle
-
-renderAlphaConnection :: [Point V2 Double] -> Diagram B
-renderAlphaConnection coordinates = fromVertices coordinates # drakonStyle
+renderConnection coordinates = fromVertices coordinates # wyvernStyle
 
 renderGammaConnection :: Point V2 Double -> Point V2 Double -> Double -> Double -> Diagram B
 renderGammaConnection gO@(P (V2 gOX gOY)) gD@(P (V2 gDX gDY)) maxX minY =
@@ -137,18 +134,18 @@ renderGammaConnection gO@(P (V2 gOX gOY)) gD@(P (V2 gDX gDY)) maxX minY =
       gammaMidpoint2 = p2 (maxX - defaultBoundingBoxWidth * 0.5, minY)
       gammaMidpoint3 = p2 (maxX - defaultBoundingBoxWidth * 0.5, gDY')
       coordinates = [gO, gammaMidpoint1, gammaMidpoint2, gammaMidpoint3, gD']
-   in renderAlphaConnection coordinates <> position [(p2 (gDX' - 0.025, gDY'), rotateBy (1 / 4) $ triangle 0.1 # drakonStyle)]
+   in renderConnection coordinates <> position [(p2 (gDX' - 0.025, gDY'), rotateBy (1 / 4) $ triangle 0.1 # wyvernStyle)]
 
 renderUpperBetaConnections :: [(Double, Double)] -> Double -> Diagram B
 renderUpperBetaConnections [] maxD = mempty
 renderUpperBetaConnections [uBC@(uBCa, uBCb)] maxD =
-  renderAlphaConnection
+  renderConnection
     [ p2 (uBCa, maxD + defaultBoundingBoxHeight * 0.5),
       p2 (uBCb, maxD + defaultBoundingBoxHeight * 0.5),
       p2 (uBCb, maxD + defaultBoundingBoxHeight * heightRatio * 0.5)
     ]
 renderUpperBetaConnections (uBC@(uBCa, uBCb) : uBCs) maxD =
-  renderAlphaConnection
+  renderConnection
     [ p2 (uBCa, maxD + defaultBoundingBoxHeight * 0.5),
       p2 (uBCb, maxD + defaultBoundingBoxHeight * 0.5),
       p2 (uBCb, maxD + defaultBoundingBoxHeight * heightRatio * 0.5)
@@ -157,22 +154,22 @@ renderUpperBetaConnections (uBC@(uBCa, uBCb) : uBCs) maxD =
 
 renderSideBetaConnection :: Point V2 Double -> Point V2 Double -> Diagram B
 renderSideBetaConnection a@(P (V2 aX aY)) b@(P (V2 bX bY)) =
-  renderAlphaConnection
+  renderConnection
     [ a,
       p2 (aX - defaultBoundingBoxWidth * 0.5, aY),
       p2 (aX - defaultBoundingBoxWidth * 0.5, bY),
       p2 (bX - (0.1 * sqrt 3.0 / 2.0), bY)
     ]
-    <> position [(p2 (bX - 0.06, bY), rotateBy (3 / 4) $ triangle 0.1 # drakonStyle)]
+    <> position [(p2 (bX - 0.06, bY), rotateBy (3 / 4) $ triangle 0.1 # wyvernStyle)]
 
 renderLowerBetaConnections' :: [(Double, Double, Double)] -> Double -> Diagram B
 renderLowerBetaConnections' [] _ = mempty
 renderLowerBetaConnections' (lBC@(lBCa, lBCb, lBCc) : lBCs) minD =
-  renderAlphaConnection [p2 (lBCa, lBCc + defaultBoundingBoxHeight), p2 (lBCa, minD), p2 (lBCb, minD)]
+  renderConnection [p2 (lBCa, lBCc + defaultBoundingBoxHeight), p2 (lBCa, minD), p2 (lBCb, minD)]
     <> renderLowerBetaConnections' lBCs minD
 
 renderLowerBetaConnections :: [(Double, Double, Double)] -> Double -> Diagram B
 renderLowerBetaConnections [] _ = mempty
 renderLowerBetaConnections (lBC@(lBCa, lBCb, lBCc) : lBCs) minD =
-  renderAlphaConnection [p2 (lBCa, lBCc + defaultBoundingBoxHeight), p2 (lBCa, minD)]
+  renderConnection [p2 (lBCa, lBCc + defaultBoundingBoxHeight), p2 (lBCa, minD)]
     <> renderLowerBetaConnections' lBCs minD

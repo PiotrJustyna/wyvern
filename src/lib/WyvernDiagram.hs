@@ -7,7 +7,6 @@ import Data.HashSet (HashSet, empty)
 import Data.Map (Map, empty)
 import Diagrams.Backend.SVG (B)
 import Diagrams.Prelude (Diagram, Point (..), V2 (..), p2, position)
-import HelperDiagrams (renderConnection, wyvernRect)
 import ID (ID (ID))
 
 newtype WyvernDiagram'

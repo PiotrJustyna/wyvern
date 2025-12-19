@@ -43,13 +43,13 @@ troubleshootingMode = False
 defaultFontSize :: Double
 defaultFontSize = defaultBoundingBoxHeight / 8.0
 
-drakonStyle :: Diagram B -> Diagram B
-drakonStyle = lw veryThin # lc lineColour # fc fillColour
+wyvernStyle :: Diagram B -> Diagram B
+wyvernStyle = lw veryThin # lc lineColour # fc fillColour
 
 svgOptions :: (Num n) => Options SVG V2 n
 svgOptions =
   SVGOptions
-    { _size = mkSizeSpec $ V2 (Just 500) (Just 500),
+    { _size = mkSizeSpec $ V2 (Just 1920) (Just 1080),
       _idPrefix = empty,
       _svgDefinitions = Nothing,
       _svgAttributes = [],
