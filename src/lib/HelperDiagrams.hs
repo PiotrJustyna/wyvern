@@ -50,20 +50,6 @@ addressShape x y =
     # strokeLoop
     # wyvernStyle
 
-hex' :: Double -> Double -> Diagram B
-hex' x y =
-  fromOffsets
-    [ V2 (defaultBoundingBoxWidth * widthRatio - 0.1 - 0.1 - 1.5) 0.0,
-      V2 0.1 (defaultBoundingBoxHeight * heightRatio * (-0.5)),
-      V2 (-0.1) (defaultBoundingBoxHeight * heightRatio * (-0.5)),
-      V2 ((defaultBoundingBoxWidth * widthRatio - 0.1 - 0.1) * (-1.0)) 0.0,
-      V2 (-0.1) (defaultBoundingBoxHeight * heightRatio * 0.5),
-      V2 0.1 (defaultBoundingBoxHeight * heightRatio * 0.5)
-    ]
-    # closeLine
-    # strokeLoop
-    # wyvernStyle
-
 renderText :: String -> Diagram B
 renderText x =
   text x
@@ -82,36 +68,35 @@ wyvernRect x =
   renderText x
     <> rect (defaultBoundingBoxWidth * widthRatio) (defaultBoundingBoxHeight * heightRatio) # lw veryThin # lc lineColour # fc fillColour
 
-wyvernHeadline :: String -> Double -> Double -> Diagram B
-wyvernHeadline x w h =
+wyvernHeadline :: String -> Diagram B
+wyvernHeadline x =
   renderText x
-    <> fromVertices
-      [ p2 (w * (-0.5), h * 0.5),
-        p2 (w * 0.5, h * 0.5),
-        p2 (w * 0.5, h * (-0.5)),
-        p2 (0.0, h * (-0.5) - 0.1),
-        p2 (w * (-0.5), h * (-0.5))
+    <> fromOffsets
+      [ V2 0.0 (defaultBoundingBoxHeight * heightRatio),
+        V2 (defaultBoundingBoxWidth * widthRatio) 0.0,
+        V2 0.0 (defaultBoundingBoxHeight * heightRatio * (-1.0)),
+        V2 (defaultBoundingBoxWidth * widthRatio * (-0.5)) (-0.1),
+        V2 (defaultBoundingBoxWidth * widthRatio * (-0.5)) 0.1
       ]
       # closeLine
       # strokeLoop
       # wyvernStyle
+      # translate (r2 (defaultBoundingBoxWidth * widthRatio * (-0.5), defaultBoundingBoxHeight * heightRatio * (-0.5)))
 
 wyvernAddress :: String -> Diagram B
 wyvernAddress x =
-  let w = defaultBoundingBoxWidth
-      h = defaultBoundingBoxHeight
-   in (renderText x # translate (r2 (0.0, 0.0)))
-        <> fromOffsets
-          [ V2 0.0 (defaultBoundingBoxHeight * heightRatio),
-            V2 (defaultBoundingBoxWidth * widthRatio * 0.5) 0.1,
-            V2 (defaultBoundingBoxWidth * widthRatio * 0.5) (-0.1),
-            V2 0.0 (defaultBoundingBoxHeight * heightRatio * (-1.0)),
-            V2 (defaultBoundingBoxWidth * widthRatio * (-1.0)) 0.0
-          ]
-          # closeLine
-          # strokeLoop
-          # wyvernStyle
-          # translate (r2 (defaultBoundingBoxWidth * widthRatio * (-0.5), defaultBoundingBoxHeight * heightRatio * (-0.5)))
+  renderText x
+    <> fromOffsets
+      [ V2 0.0 (defaultBoundingBoxHeight * heightRatio),
+        V2 (defaultBoundingBoxWidth * widthRatio * 0.5) 0.1,
+        V2 (defaultBoundingBoxWidth * widthRatio * 0.5) (-0.1),
+        V2 0.0 (defaultBoundingBoxHeight * heightRatio * (-1.0)),
+        V2 (defaultBoundingBoxWidth * widthRatio * (-1.0)) 0.0
+      ]
+      # closeLine
+      # strokeLoop
+      # wyvernStyle
+      # translate (r2 (defaultBoundingBoxWidth * widthRatio * (-0.5), defaultBoundingBoxHeight * heightRatio * (-0.5)))
 
 wyvernHex :: String -> Diagram B
 wyvernHex x =
