@@ -24,7 +24,6 @@ library
                       HelperDiagrams
                       Lexer
                       Parser
-                      WyvernDiagram
                       InputArguments
     hs-source-dirs:   src/lib
     build-depends:    base ^>=4.18.3.0,

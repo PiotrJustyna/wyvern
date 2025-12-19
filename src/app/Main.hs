@@ -1,17 +1,12 @@
 module Main where
 
-import Blocks (reverse')
+import Blocks (render)
 import Constants (svgOptions)
 import Diagrams.Backend.SVG (renderSVG')
-import InputArguments
-  ( inputPath,
-    outputPath,
-    parseInput,
-  )
+import InputArguments (inputPath, outputPath, parseInput)
 import Lexer (alexScanTokens)
 import Options.Applicative (execParser, fullDesc, header, helper, info, (<**>))
 import Parser (ParseResult (..), diagram)
-import WyvernDiagram (WyvernDiagram' (..), newRender1)
 
 main :: IO ()
 main = do
@@ -20,11 +15,7 @@ main = do
   fileContent <- readFile $ inputPath input
   let tokens = alexScanTokens fileContent
   case diagram tokens 1 of
-    ParseOk d -> do
-      let d' = Blocks.reverse' d
-      let d'' = WyvernDiagram' d'
-      let rD' = WyvernDiagram.newRender1 d''
-      renderSVG' (outputPath input) svgOptions rD'
+    ParseOk d -> renderSVG' (outputPath input) svgOptions (Blocks.render d)
     ParseFail s -> error s
   where
     options =
