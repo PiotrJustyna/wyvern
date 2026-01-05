@@ -18,7 +18,6 @@ common warnings
 
 library
     exposed-modules:  ID
-                      Content
                       Constants
                       Blocks
                       HelperDiagrams

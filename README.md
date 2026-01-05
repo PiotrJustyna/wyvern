@@ -1,23 +1,21 @@
 # wyvern
 
-**wyvern**: a simplified version of DRAKON diagramming language.
-
 ![](./img/wyvern-small.png)
+
+Simple flowchart diagrams. Inspired by DRAKON.
 
 ## goals
 
-* no ambiguity block diagrams
-* accessible - easy to:
-  * build
-  * run
-  * troubleshoot
+* no ambiguity, easy to ready flowcharts
+* flowcharts easy to build manually or programmatically
+* code easy to build and run
 
 ## constraints
 
+* connections never cross or overlap anything else
+* connections overlap only when it doesn't cause ambiguity
 * only horizontal and vertical lines
 * default direction: top-to-bottom
-* connections never cross
-* connections overlap only when it doesn't cause ambiguity
 * deterministic: input A will always produce output B
 
 ## how to compile
@@ -52,38 +50,12 @@ Having compiled the project, simply execute:
 ./test.sh
 ```
 
-## how to build runtime image
-
-Having compiled the project, simply execute:
-
-```bash
-./ops/build-runtime-image.sh
-```
-
-TODO:
-
-* implement lexing and parsing in runtime image building process
-
 ### debugging
 
 * `cabal repl wyvern --repl-options="-fbreak-on-error -fbreak-on-exception"`
 * `:load app/Main`
 * `:break Blocks 365`
 * `:main -i "./diagrams/simple-diagram-1.txt" -o "./diagrams/simple-diagram-1.svg"`
-
-## runtime environment
-
-TODO
-
-For those looking to only run a compiled version of wyvern in a container, there is a runtime image I prepared (only `arm64` version for now):
-
-```
-docker pull TODO
-```
-
-| command | description |
-| --- | --- |
-| `./ops/run-in-container.sh` | runs code |
 
 ## resources
 

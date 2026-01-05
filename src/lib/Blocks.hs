@@ -1,7 +1,6 @@
 module Blocks where
 
 import Constants (defaultBoundingBoxHeight, defaultBoundingBoxWidth, heightRatio, widthRatio)
-import Content (Content (..))
 import Data.HashSet (HashSet, insert, member)
 import Data.List (groupBy, sortBy, sortOn)
 import Data.Map (Map, empty, insert, lookup)
