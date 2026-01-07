@@ -6,15 +6,14 @@ Simple flowchart diagrams. Inspired by DRAKON.
 
 ## goals
 
-* no ambiguity, easy to ready flowcharts
-* flowcharts easy to build manually or programmatically
+* no ambiguity in produced flowcharts
+* simple flowchart syntax
 * code easy to build and run
 
 ## constraints
 
-* connections never cross or overlap anything else
-* connections overlap only when it doesn't cause ambiguity
-* only horizontal and vertical lines
+* connections never cross
+* connections are comprised only of horizontal and vertical lines
 * default direction: top-to-bottom
 * deterministic: input A will always produce output B
 
@@ -27,6 +26,8 @@ Simple flowchart diagrams. Inspired by DRAKON.
     * happy
     * hlint
     * ormolu
+
+For local installation, [ghcup](https://www.haskell.org/ghcup/) is the most reasonable choice on amd64 machines.
 
 Simply execute:
 
