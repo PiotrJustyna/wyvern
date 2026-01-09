@@ -1,4 +1,4 @@
-FROM alpine:3.22.1 AS sdk
+FROM alpine:3.23.2 AS sdk
 
 WORKDIR "/root/code/wyvern"
 
@@ -30,7 +30,7 @@ RUN cabal build --enable-executable-stripping
 
 RUN find /root/code/wyvern/dist-newstyle -name wyvern -type f -exec cp {} /tmp/ \;
 
-FROM alpine:3.22.1
+FROM alpine:3.23.2
 
 RUN apk update
 RUN apk add --no-cache \

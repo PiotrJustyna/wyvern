@@ -173,7 +173,7 @@ render' bs =
 
 render :: [[Block]] -> Diagram B
 render [] = mempty
-render [b] = render' $ Blocks.reverse [(Blocks.StartTerminator : b) <> [Blocks.EndTerminator]]
+render [b] = render' $ Blocks.reverse [(EndTerminator : b) <> [StartTerminator]]
 render bs =
   let bs' = tail bs
-   in render' . Blocks.reverse $ ((StartTerminator : head bs) : init bs') <> [last bs' <> [EndTerminator]]
+   in render' . Blocks.reverse $ ((EndTerminator : head bs) : init bs') <> [last bs' <> [StartTerminator]]
