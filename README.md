@@ -21,6 +21,8 @@ Simple flowchart diagrams. Inspired by DRAKON.
 
 ## terminology
 
+TODO: code syntax.
+
 * `start/end terminator` - consecutively, start and end blocks of any diagram
 * `action block` - basic building block of any diagram, illustrating an individual action
 * `fork block` - a yes/no questions starting two branching paths:
@@ -44,7 +46,7 @@ In silhouette diagrams, `headline blocks` and `address blocks` divide the diagra
 
 ## examples
 
-### simple diagram 1
+### simple diagrams
 
 <table>
 <tr>
@@ -61,6 +63,45 @@ In silhouette diagrams, `headline blocks` and `address blocks` divide the diagra
 <td>
 
 ![](./diagrams/examples/simple-diagram-1.svg)
+
+</td>
+</tr>
+<tr>
+<td>
+
+```
+1 "action 1"
+2 "action 2"
+3 "action 3"
+```
+
+</td>
+<td>
+
+![](./diagrams/examples/simple-diagram-2.svg)
+
+</td>
+</tr>
+<tr>
+<td>
+
+```
+a1 "action 1"
+a2 "action 2"
+q1 "question 1"
+{
+    a2a "action 2a"
+}
+{
+    a2b "action 2b"
+}
+a3 "action 3"
+```
+
+</td>
+<td>
+
+![](./diagrams/examples/simple-diagram-3.svg)
 
 </td>
 </tr>

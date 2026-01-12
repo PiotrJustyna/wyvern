@@ -43,3 +43,11 @@ cabal run wyvern -- \
 cabal run wyvern -- \
    -i "./diagrams/examples/simple-diagram-1.txt" \
    -o "./diagrams/examples/simple-diagram-1.svg"
+
+cabal run wyvern -- \
+   -i "./diagrams/examples/simple-diagram-2.txt" \
+   -o "./diagrams/examples/simple-diagram-2.svg"
+
+cabal run wyvern -- \
+   -i "./diagrams/examples/simple-diagram-3.txt" \
+   -o "./diagrams/examples/simple-diagram-3.svg"
