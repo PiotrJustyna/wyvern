@@ -46,39 +46,21 @@ In silhouette diagrams, `headline blocks` and `address blocks` divide the diagra
 
 ### simple diagram 1
 
+<table>
+<tr>
+<td> code </td> <td> rendered flowchart </td>
+</tr>
+<tr>
+<td>
+
 ```
 1 "action 1"
 ```
 
-![](./diagrams/examples/simple-diagram-1.svg)
-
-<table>
-<tr>
-<td> Status </td> <td> Response </td>
-</tr>
-<tr>
-<td> 200 </td>
-<td>
-
-```
-{
-    "id": 10,
-    "username": "alanpartridge",
-    "email": "alan@alan.com",
-    "password_hash": "$2a$10$uhUIUmVWVnrBWx9rrDWhS.CPCWCZsyqqa8./whhfzBZydX7yvahHS",
-    "password_salt": "$2a$10$uhUIUmVWVnrBWx9rrDWhS.",
-    "created_at": "2015-02-14T20:45:26.433Z",
-    "updated_at": "2015-02-14T20:45:26.540Z"
-}
-```
-
 </td>
-</tr>
-<tr>
-<td> 400 </td>
 <td>
 
-**Markdown** _here_.
+![](./diagrams/examples/simple-diagram-1.svg)
 
 </td>
 </tr>
