@@ -39,3 +39,7 @@ cabal run wyvern -- \
 cabal run wyvern -- \
    -i "./diagrams/development-environment.txt" \
    -o "./diagrams/development-environment.svg"
+
+cabal run wyvern -- \
+   -i "./diagrams/examples/simple-diagram-1.txt" \
+   -o "./diagrams/examples/simple-diagram-1.svg"

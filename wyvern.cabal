@@ -7,7 +7,7 @@ description:        Wyvern combines syntax and rendering engine
                     Lines never cross, there is no ambiguity - even at scale,
                     flow direction is always constant.
 homepage:           https://github.com/PiotrJustyna/wyvern
-license:            NONE
+license:            BSD-3-Clause
 author:             Piotr Justyna
 maintainer:         a568adff447749e8a5c47cdf7f31ed11@proton.me
 copyright:          Piotr Justyna
