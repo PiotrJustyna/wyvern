@@ -4,6 +4,8 @@
 
 Simple flowchart diagrams. Inspired by DRAKON.
 
+![](./diagrams/cover-diagram.svg)
+
 ## goals
 
 * no ambiguity in produced flowcharts
@@ -16,6 +18,94 @@ Simple flowchart diagrams. Inspired by DRAKON.
 * connections are comprised only of horizontal and vertical lines
 * default direction: top-to-bottom
 * deterministic: input A will always produce output B
+
+## terminology
+
+TODO: code syntax.
+
+* `start/end terminator` - consecutively, start and end blocks of any diagram
+* `action block` - basic building block of any diagram, illustrating an individual action
+* `fork block` - a yes/no questions starting two branching paths:
+  * `yes` - default direction - down, the preferred outcome
+  * `no` - the alternative outcome, not as optimal
+* `skewer` - vertical line on which blocks are placed in linear progression. Each fork block has the ability to introduce an alternative/no path which eventually merges back into the skewer on which their fork block is placed. The merging point can be placed in three different locations:
+  * immediately after the fork block from which it originates
+  * the fork block from which it originates forming a loop
+  * before the fork block from which it originates forming a loop - the thing to note here is these connections are not restricted (yet) and it is possible to formulate a loop where connections cross. This is going to be addressed in future releases of the code as lines should never cross and the library should be able to enforce it by validation or syntax.
+* `headline block` - a block serving as an identifier of a skewer grouping a sequence of blocks.
+* `address block` - a block concluding a skewer grouping a sequence of blocks and containing the identifier of a headline block which we should visit next when following the flowchart
+* `primitive diagram` - a diagram which only leverages blocks of type:
+  * `start/end terminator`
+  * `action block`
+  * `fork block`
+* `silhouette diagram` - a diagram which contains the same types of block as the `primitive diagram` but which can also contain `headline blocks` and `address block`.
+
+In primitive diagrams, blocks are arranged in a linear fashion: action C follows action B and action B follows action A (think 1D list of blocks).
+
+In silhouette diagrams, `headline blocks` and `address blocks` divide the diagrams into individual skewers/smaller tasks that can be represented as a sequence of blocks (think 2D list of blocks).
+
+## examples
+
+### simple diagrams
+
+<table>
+<tr>
+<td> code </td> <td> rendered flowchart </td>
+</tr>
+<tr>
+<td>
+
+```
+1 "action 1"
+```
+
+</td>
+<td>
+
+![](./diagrams/examples/simple-diagram-1.svg)
+
+</td>
+</tr>
+<tr>
+<td>
+
+```
+1 "action 1"
+2 "action 2"
+3 "action 3"
+```
+
+</td>
+<td>
+
+![](./diagrams/examples/simple-diagram-2.svg)
+
+</td>
+</tr>
+<tr>
+<td>
+
+```
+a1 "action 1"
+a2 "action 2"
+q1 "question 1"
+{
+    a2a "action 2a"
+}
+{
+    a2b "action 2b"
+}
+a3 "action 3"
+```
+
+</td>
+<td>
+
+![](./diagrams/examples/simple-diagram-3.svg)
+
+</td>
+</tr>
+</table>
 
 ## how to compile
 
@@ -38,6 +128,12 @@ Simply execute:
 ## how to run
 
 Having compiled the project, simply execute:
+
+```bash
+cabal run wyvern -- -i "./diagram.txt" -o "./diagram.svg"
+```
+
+Or, to see some sample diagrams, execute:
 
 ```bash
 ./run.sh

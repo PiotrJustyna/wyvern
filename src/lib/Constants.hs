@@ -49,7 +49,7 @@ wyvernStyle = lw veryThin # lc lineColour # fc fillColour
 svgOptions :: (Num n) => Options SVG V2 n
 svgOptions =
   SVGOptions
-    { _size = mkSizeSpec $ V2 (Just 3840) (Just 2160),
+    { _size = mkSizeSpec $ V2 (Just 1920) (Just 1080),
       _idPrefix = empty,
       _svgDefinitions = Nothing,
       _svgAttributes = [],
