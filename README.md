@@ -60,8 +60,7 @@ In silhouette diagrams, `headline blocks` and `address blocks` divide the diagra
 <td> 200 </td>
 <td>
 
-```json
-json
+```
 {
     "id": 10,
     "username": "alanpartridge",
