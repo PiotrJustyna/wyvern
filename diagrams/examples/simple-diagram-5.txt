@@ -1,0 +1,33 @@
+h1 "headline 1"
+{
+    "action 1"
+    "action 1 a"
+    "action 1 b"
+    h2
+}
+h2 "headline 2"
+{
+    "action 2"
+    "action 2a"
+    "action 2b"
+    h3
+}
+h3 "headline 3"
+{
+    "action 3"
+    "action 3a"
+    "action 3b"
+    "action 3c"
+    "action 3d"
+    h4
+}
+h4 "headline 4"
+{
+    "action 4"
+    "action 4a"
+    h5
+}
+h5 "headline 5"
+{
+    "action 5"
+}

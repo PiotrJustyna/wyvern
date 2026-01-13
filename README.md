@@ -19,34 +19,9 @@ Simple flowchart diagrams. Inspired by DRAKON.
 * default direction: top-to-bottom
 * deterministic: input A will always produce output B
 
-## terminology
-
-TODO: code syntax.
-
-* `start/end terminator` - consecutively, start and end blocks of any diagram
-* `action block` - basic building block of any diagram, illustrating an individual action
-* `fork block` - a yes/no questions starting two branching paths:
-  * `yes` - default direction - down, the preferred outcome
-  * `no` - the alternative outcome, not as optimal
-* `skewer` - vertical line on which blocks are placed in linear progression. Each fork block has the ability to introduce an alternative/no path which eventually merges back into the skewer on which their fork block is placed. The merging point can be placed in three different locations:
-  * immediately after the fork block from which it originates
-  * the fork block from which it originates forming a loop
-  * before the fork block from which it originates forming a loop - the thing to note here is these connections are not restricted (yet) and it is possible to formulate a loop where connections cross. This is going to be addressed in future releases of the code as lines should never cross and the library should be able to enforce it by validation or syntax.
-* `headline block` - a block serving as an identifier of a skewer grouping a sequence of blocks.
-* `address block` - a block concluding a skewer grouping a sequence of blocks and containing the identifier of a headline block which we should visit next when following the flowchart
-* `primitive diagram` - a diagram which only leverages blocks of type:
-  * `start/end terminator`
-  * `action block`
-  * `fork block`
-* `silhouette diagram` - a diagram which contains the same types of block as the `primitive diagram` but which can also contain `headline blocks` and `address block`.
-
-In primitive diagrams, blocks are arranged in a linear fashion: action C follows action B and action B follows action A (think 1D list of blocks).
-
-In silhouette diagrams, `headline blocks` and `address blocks` divide the diagrams into individual skewers/smaller tasks that can be represented as a sequence of blocks (think 2D list of blocks).
-
 ## examples
 
-### simple diagrams
+Wyvern uses plain text files as input, extensions are not relevant. You can copy and paste the examples below to individual files with no alterations.
 
 <table>
 <tr>
@@ -105,7 +80,143 @@ a3 "action 3"
 
 </td>
 </tr>
+<tr>
+<td>
+
+```
+1 "action 1"
+2 "question 2"
+{
+  21 "question 21"
+  {
+    211 "action 211"
+    212 "action 212"
+    213 "action 213"
+  }
+  {
+    214 "action 214"
+    21
+  }
+}
+{
+  22 "question 22"
+  {
+    221 "action 221"
+    222 "action 222"
+    223 "action 223"
+    224 "action 224"
+  }
+  {
+    225 "action 225"
+    22
+  }
+  2
+}
+5 "action 5"
+```
+
+</td>
+<td>
+
+![](./diagrams/examples/simple-diagram-4.svg)
+
+</td>
+</tr>
+<tr>
+<td>
+
+```
+h1 "headline 1"
+{
+    "action 1"
+    "action 1 a"
+    "action 1 b"
+    h2
+}
+h2 "headline 2"
+{
+    "action 2"
+    "action 2a"
+    "action 2b"
+    h3
+}
+h3 "headline 3"
+{
+    "action 3"
+    "action 3a"
+    "action 3b"
+    "action 3c"
+    "action 3d"
+    h4
+}
+h4 "headline 4"
+{
+    "action 4"
+    "action 4a"
+    h5
+}
+h5 "headline 5"
+{
+    "action 5"
+}
+```
+
+</td>
+<td>
+
+![](./diagrams/examples/simple-diagram-5.svg)
+
+</td>
+</tr>
 </table>
+
+## terminology
+
+* `start/end terminator` - consecutively, start and end blocks of any diagram
+  * code: not represented in the code
+* `action block` - basic building block of any diagram, illustrating an individual action
+  * code:
+    ```
+    [action id] "caption"
+    ```
+* `fork block` - a yes/no questions starting two branching paths:
+  * `yes` - default direction - down, the preferred outcome
+  * `no` - the alternative outcome, not as optimal. The no branch can optionally end with an id of another block on the fork skewer forming a gamma connection.
+  * code:
+  ```
+  [fork id] "caption"
+  {
+    ... yes branch ...
+  }
+  {
+    ... no branch ...
+    [gamma connection id]
+  }
+  ```
+* `gamma connection` - line connecting no branch with another block placed on fork's skewer - it can either be the fork id itself or a block preceding the fork, provided that would not cause any connections to clash.
+* `skewer` - vertical line on which blocks are placed in linear progression. Each fork block has the ability to introduce an alternative/no path which eventually merges back into the skewer on which their fork block is placed. The merging point can be placed in three different locations:
+  * immediately after the fork block from which it originates
+  * the fork block from which it originates forming a loop
+  * before the fork block from which it originates forming a loop - the thing to note here is these connections are not restricted (yet) and it is possible to formulate a loop where connections cross. This is going to be addressed in future releases of the code as lines should never cross and the library should be able to enforce it by validation or syntax.
+* `headline block` - a block serving as an identifier of a skewer grouping a sequence of blocks.
+* `address block` - a block concluding a skewer grouping a sequence of blocks and containing the identifier of a headline block which we should visit next when following the flowchart.
+  * code:
+    ```
+    [headline id] "caption"
+    {
+      ... skewer blocks ...
+      [address id] ... id of another headline
+    }
+    ```
+* `primitive diagram` - a diagram which only leverages blocks of type:
+  * `start/end terminator`
+  * `action block`
+  * `fork block`
+* `silhouette diagram` - a diagram which contains the same types of block as the `primitive diagram` but which can also contain `headline blocks` and `address block`.
+
+In primitive diagrams, blocks are arranged in a linear fashion: action C follows action B and action B follows action A (think 1D list of blocks).
+
+In silhouette diagrams, `headline blocks` and `address blocks` divide the diagrams into individual skewers/smaller tasks that can be represented as a sequence of blocks (think 2D list of blocks).
 
 ## how to compile
 
