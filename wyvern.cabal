@@ -1,6 +1,6 @@
 cabal-version:      3.4
 name:               wyvern
-version:            0.3.0.4
+version:            0.3.0.5
 synopsis:           Simple flowchart diagrams. Inspired by DRAKON.
 description:        Wyvern combines syntax and rendering engine
                     for simple, DRAKON-like flowcharts.
@@ -8,13 +8,15 @@ description:        Wyvern combines syntax and rendering engine
                     flow direction is always constant.
 homepage:           https://github.com/PiotrJustyna/wyvern
 license:            BSD-3-Clause
+License-file:       LICENSE
 author:             Piotr Justyna
 maintainer:         a568adff447749e8a5c47cdf7f31ed11@proton.me
 copyright:          Piotr Justyna
+Bug-reports:        https://github.com/PiotrJustyna/wyvern/issues
 category:           Development
 build-type:         Simple
+extra-source-files: diagrams/*.svg, diagrams/*.txt
 -- extra-doc-files:    CHANGELOG.md
--- extra-source-files:
 
 source-repository head
   type:     git
