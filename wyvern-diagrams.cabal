@@ -4,8 +4,6 @@ version:            0.3.0.6
 synopsis:           Simple flowchart diagrams. Inspired by DRAKON.
 description:        Wyvern combines syntax and rendering engine
                     for simple, DRAKON-like flowcharts.
-                    Lines never cross, there is no ambiguity - even at scale,
-                    flow direction is always constant.
 homepage:           https://github.com/PiotrJustyna/wyvern
 license:            BSD-3-Clause
 License-file:       LICENSE
