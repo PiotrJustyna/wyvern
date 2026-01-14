@@ -241,7 +241,7 @@ Simply execute:
 Having compiled the project, simply execute:
 
 ```bash
-cabal run wyvern -- -i "./diagram.txt" -o "./diagram.svg"
+cabal run wyvern-diagrams -- -i "./diagram.txt" -o "./diagram.svg"
 ```
 
 Or, to see some sample diagrams, execute:
@@ -266,6 +266,10 @@ Having compiled the project, simply execute:
 * `:main -i "./diagrams/simple-diagram-1.txt" -o "./diagrams/simple-diagram-1.svg"`
 
 ## resources
+
+### community
+
+* [youtube](https://www.youtube.com/@sitsuj)
 
 ### DRAKON
 
