@@ -16,7 +16,7 @@ Bug-reports:        https://github.com/PiotrJustyna/wyvern/issues
 category:           Development
 build-type:         Simple
 extra-source-files: diagrams/*.svg, diagrams/*.txt
--- extra-doc-files:    CHANGELOG.md
+extra-doc-files:    CHANGELOG.md
 
 source-repository head
   type:     git
