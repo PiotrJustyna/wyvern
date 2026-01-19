@@ -83,6 +83,7 @@ renderSingleBlock fork@(Fork i c l r gCId) o@(P (V2 oX oY)) ds gCs globalMaxWidt
           <> dL
           <> dR
           <> (if null l then mempty else renderConnection [p2 (oX, hQ), o]) -- question -> left branch connection
+          <> renderConnection (if null r then mempty else [p2 (oX, newMinH + defaultBoundingBoxHeight), p2 (oX, hQ)]) -- left branch -> bottom of the fork connection
           <> renderConnection (if null r then [p2 (rX, oY), o] else [p2 (rX, rY), p2 (rX, oY), o]) -- question -> right branch connection
           <> ( case gCId of
                  Nothing -> renderConnection [p2 (lX, newMinH + defaultBoundingBoxHeight * 0.5), p2 (rX, newMinH + defaultBoundingBoxHeight * 0.5), p2 (rX, hR)] -- right branch -> bottom of the fork connection
