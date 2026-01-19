@@ -1,3 +1,7 @@
+## [0.3.1.0](https://github.com/PiotrJustyna/wyvern/tree/0.3.1.0) (2026-01-19)
+
+- resolved issue 474 - a problem with connections in tested forks: https://github.com/PiotrJustyna/wyvern/issues/47
+
 ## [0.3.0.7](https://github.com/PiotrJustyna/wyvern/tree/0.3.0.7) (2026-01-15)
 
 - support for ghc 9.8.4 and base 4.19.2.0 for hackage
