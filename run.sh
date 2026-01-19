@@ -40,26 +40,30 @@
 #    -i "./diagrams/development-environment.txt" \
 #    -o "./diagrams/development-environment.svg"
 
-cabal run wyvern-diagrams -- \
-   -i "./diagrams/examples/simple-diagram-1.txt" \
-   -o "./diagrams/examples/simple-diagram-1.svg"
+# cabal run wyvern-diagrams -- \
+#    -i "./diagrams/examples/simple-diagram-1.txt" \
+#    -o "./diagrams/examples/simple-diagram-1.svg"
+
+# cabal run wyvern-diagrams -- \
+#    -i "./diagrams/examples/simple-diagram-2.txt" \
+#    -o "./diagrams/examples/simple-diagram-2.svg"
+
+# cabal run wyvern-diagrams -- \
+#    -i "./diagrams/examples/simple-diagram-3.txt" \
+#    -o "./diagrams/examples/simple-diagram-3.svg"
+
+# cabal run wyvern-diagrams -- \
+#     -i "./diagrams/examples/simple-diagram-4.txt" \
+#     -o "./diagrams/examples/simple-diagram-4.svg"
+
+# cabal run wyvern-diagrams -- \
+#     -i "./diagrams/examples/simple-diagram-5.txt" \
+#     -o "./diagrams/examples/simple-diagram-5.svg"
+
+# cabal run wyvern-diagrams -- \
+#     -i "./diagrams/examples/simple-diagram-6.txt" \
+#     -o "./diagrams/examples/simple-diagram-6.svg"
 
 cabal run wyvern-diagrams -- \
-   -i "./diagrams/examples/simple-diagram-2.txt" \
-   -o "./diagrams/examples/simple-diagram-2.svg"
-
-cabal run wyvern-diagrams -- \
-   -i "./diagrams/examples/simple-diagram-3.txt" \
-   -o "./diagrams/examples/simple-diagram-3.svg"
-
-cabal run wyvern-diagrams -- \
-    -i "./diagrams/examples/simple-diagram-4.txt" \
-    -o "./diagrams/examples/simple-diagram-4.svg"
-
-cabal run wyvern-diagrams -- \
-    -i "./diagrams/examples/simple-diagram-5.txt" \
-    -o "./diagrams/examples/simple-diagram-5.svg"
-
-cabal run wyvern-diagrams -- \
-    -i "./diagrams/examples/simple-diagram-6.txt" \
-    -o "./diagrams/examples/simple-diagram-6.svg"
+    -i "./diagrams/issue-47.txt" \
+    -o "./diagrams/issue-47.svg"
