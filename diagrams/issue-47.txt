@@ -1,0 +1,21 @@
+"action"
+"fork 1"
+{
+    "action"
+}
+{
+    "fork 2"
+    {
+        "action"
+    }
+    {
+        "fork 3"
+        {
+            "action"
+        }
+        {
+            "action"
+        }
+    }
+}
+"action"
