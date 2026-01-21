@@ -29,6 +29,7 @@ library
                       Blocks
                       HelperDiagrams
                       Lexer
+                      LexerV2
                       Parser
                       InputArguments
     hs-source-dirs:   src/lib

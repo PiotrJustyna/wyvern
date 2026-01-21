@@ -1,29 +1,4 @@
-"n = length of input"
-"swapped = false"
-1 "swapped"
-{
-}
-{
-  "i = 1"
-  2 "i < n"
-  {
-    "input[i - 1] < input[i]"
-    {
-    }
-    {
-      "swap(input[i - 1], input[i])"
-      "swapped = true"
-    }
-    "i++"
-    2
-  }
-  {
-    "a"
-    {
-      "1"
-    }
-    {
-      "2"
-    }
-  }
-}
+"action a"
+"action b"
+"action c"
+"action d"
