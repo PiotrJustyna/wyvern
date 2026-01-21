@@ -1,6 +1,6 @@
 cabal-version:      3.4
 name:               wyvern-diagrams
-version:            0.3.1.0
+version:            0.3.1.1
 synopsis:           Simple flowchart diagrams. Inspired by DRAKON.
 description:        Wyvern combines syntax and rendering engine
                     for simple, DRAKON-like flowcharts.
@@ -34,7 +34,7 @@ library
     hs-source-dirs:   src/lib
     build-depends:
                       -- BSD-3-Clause
-                      base >= 4.19.2.0 && < 4.22,
+                      base >= 4.19.2.0 && < 4.23,
                       -- MIT
                       colour >= 2.3.6 && < 2.3.7,
                       -- BSD-2-Clause
@@ -60,7 +60,7 @@ executable wyvern-diagrams
     main-is:          Main.hs
     build-depends:
                       -- BSD-3-Clause
-                      base >= 4.19.2.0 && < 4.22,
+                      base >= 4.19.2.0 && < 4.23,
                       -- BSD-3-Clause
                       array >= 0.5.8 && < 0.5.9,
                       -- BSD-3-Clause
@@ -79,7 +79,7 @@ test-suite wyvern-tests
     main-is:          OverlappingLoopbacks.hs
     build-depends:
                       -- BSD-3-Clause
-                      base >= 4.19.2.0 && < 4.22,
+                      base >= 4.19.2.0 && < 4.23,
                       -- BSD-3-Clause
                       HUnit,
                       -- BSD-3-Clause

@@ -1,6 +1,10 @@
+## [0.3.1.1](https://github.com/PiotrJustyna/wyvern/tree/0.3.1.1) (2026-01-21)
+
+- resolved issue 50 - support for GHC 9.14.1 and base 4.22.0.0: https://github.com/PiotrJustyna/wyvern/issues/50
+
 ## [0.3.1.0](https://github.com/PiotrJustyna/wyvern/tree/0.3.1.0) (2026-01-19)
 
-- resolved issue 474 - a problem with connections in tested forks: https://github.com/PiotrJustyna/wyvern/issues/47
+- resolved issue 47 - a problem with connections in tested forks: https://github.com/PiotrJustyna/wyvern/issues/47
 
 ## [0.3.0.7](https://github.com/PiotrJustyna/wyvern/tree/0.3.0.7) (2026-01-15)
 
