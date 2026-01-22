@@ -38,7 +38,7 @@ library
                       -- MIT
                       colour >= 2.3.6 && < 2.3.7,
                       -- BSD-2-Clause
-                      text >= 2.1.2 && < 2.2.0,
+                      text >= 2.1.2 && < 2.2.1,
                       -- BSD-3-Clause
                       diagrams-lib >= 1.5.1 && < 1.5.2,
                       -- BSD-3-Clause
