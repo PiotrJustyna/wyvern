@@ -1,3 +1,7 @@
+## [0.3.1.2](https://github.com/PiotrJustyna/wyvern/tree/0.3.1.2) (2026-01-22)
+
+- resolved issue 52 - support for text 4.1.3: https://github.com/PiotrJustyna/wyvern/issues/52
+
 ## [0.3.1.1](https://github.com/PiotrJustyna/wyvern/tree/0.3.1.1) (2026-01-21)
 
 - resolved issue 50 - support for GHC 9.14.1 and base 4.22.0.0: https://github.com/PiotrJustyna/wyvern/issues/50
