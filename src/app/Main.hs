@@ -5,7 +5,8 @@ import Constants (svgOptions)
 import Diagrams.Backend.SVG (renderSVG')
 import InputArguments (inputPath, outputPath, parseInput)
 -- import Lexer (alexScanTokens)
-import LexerV2 (alexScanTokens)
+-- import LexerV2 (alexScanTokens)
+import LexerV3 (lexAll, runAlex)
 import Options.Applicative (execParser, fullDesc, header, helper, info, (<**>))
 import Parser (ParseResult (..), diagram)
 
@@ -14,9 +15,9 @@ main = do
   input <- execParser options
   print input
   fileContent <- readFile $ inputPath input
-  let preTokens = alexScanTokens fileContent
-  putStrLn "provided tokens:"
-  print preTokens
+  let tokens = runAlex fileContent lexAll
+  putStrLn "tokens:"
+  print tokens
   where
     -- let tokens = alexScanTokens fileContent
     -- case diagram tokens 1 of
