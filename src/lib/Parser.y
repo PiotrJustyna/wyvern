@@ -3,7 +3,7 @@ module Parser where
 import Data.Char
 import Data.String.Utils (lstrip)
 import ID
-import Lexer
+import LexerV3
 import Blocks
 }
 
@@ -12,10 +12,10 @@ import Blocks
 %monad                                                    { P } { thenP } { returnP }
 
 %token
-  action                                                  { TokenAction $$ }
-  soloId                                                  { TokenSoloIdentifier $$ }
-  '{'                                                     { TokenOCB }
-  '}'                                                     { TokenCCB }
+  action                                                  { TokenAction _ $$ }
+  soloId                                                  { TokenSoloIdentifier _ $$ }
+  '{'                                                     { TokenOCB _ }
+  '}'                                                     { TokenCCB _ }
 
 %%
 
@@ -51,7 +51,9 @@ toContent t =
   in  take (length idFreeContent' - 1) idFreeContent'
 
 toAction :: String -> Block
-toAction t = Action (toId t) (toContent t)
+toAction t =
+    Action Nothing (show t)
+    -- Action (toId t) (toContent t)
 
 toFork :: String -> [Block] -> [Block] -> Maybe ID -> Block
 toFork t l r rId = Fork (toId t) (toContent t) l r rId

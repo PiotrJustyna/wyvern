@@ -4,6 +4,14 @@ alex  --ghc ./src/lib/Lexer.x \
       --outfile="./src/lib/Lexer.hs" \
       --info="./src/lib/Lexer.info" && \
 
+alex  --ghc ./src/lib/LexerV2.x \
+      --outfile="./src/lib/LexerV2.hs" \
+      --info="./src/lib/LexerV2.info" && \
+
+alex  --ghc ./src/lib/LexerV3.x \
+      --outfile="./src/lib/LexerV3.hs" \
+      --info="./src/lib/LexerV3.info" && \
+
 happy --ghc ./src/lib/Parser.y \
       --outfile="./src/lib/Parser.hs" \
       --info="./src/lib/Parser.info" && \

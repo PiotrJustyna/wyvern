@@ -1,29 +1,138 @@
-"n = length of input"
-"swapped = false"
-1 "swapped"
+"action"
+"action"
+"action"
+"question"
 {
+    "action"
+    "action"
+    "action"
+    "question"
+    {
+        "action"
+        "action"
+        "action"
+        "question"
+        {
+            "action"
+            "action"
+            "action"
+            "question"
+            {
+                "action"
+                "action"
+                "action"
+            }
+            {
+                "action"
+                "action"
+                "action"
+            }
+        }
+        {
+            "action"
+            "action"
+            "action"
+            "question"
+            {
+                "action"
+                "action"
+                "action"
+                "question"
+                {
+                    "action"
+                    "action"
+                    "action"
+                }
+                {
+                    "action"
+                    "action"
+                    "action"
+                }
+            }
+            {
+                "action"
+                "action"
+                "action"
+                "question"
+                {
+                    "action"
+                    "action"
+                    "action"
+                }
+                {
+                    "action"
+                    "action"
+                    "action"
+                    "question"
+                    {
+                        "action"
+                        "action"
+                        "action"
+                    }
+                    {
+                        "action"
+                        "action"
+                        "action"
+                    }
+                }
+            }
+        }
+    }
+    {
+        "action"
+        "action"
+        "action"
+        "question"
+        {
+            "action"
+            "action"
+            "action"
+        }
+        {
+            "action"
+            "action"
+            "action"
+        }
+    }
 }
 {
-  "i = 1"
-  2 "i < n"
-  {
-    "input[i - 1] < input[i]"
+    "action"
+    "action"
+    "action"
+    "question"
     {
+        "action"
+        "action"
+        "action"
+        "question"
+        {
+            "action"
+            "action"
+            "action"
+        }
+        {
+            "action"
+            "action"
+            "action"
+        }
     }
     {
-      "swap(input[i - 1], input[i])"
-      "swapped = true"
+        "action"
+        "action"
+        "action"
+        "question"
+        {
+            "action"
+            "action"
+            "action"
+        }
+        {
+            "action"
+            "action"
+            "action"
+        }
     }
-    "i++"
-    2
-  }
-  {
-    "a"
-    {
-      "1"
-    }
-    {
-      "2"
-    }
-  }
 }
+"action"
+"action"
+"action"
