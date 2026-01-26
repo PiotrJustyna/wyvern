@@ -11,12 +11,7 @@ module LexerV2
   TokenSoloIdentifier,
   TokenOCB,
   TokenCCB),
-<<<<<<< HEAD
   AlexPosn(..)) where
-=======
-  AlexPosn(..),
-  tokenPosition) where
->>>>>>> f4d769a (lexer errors)
 #include "ghcconfig.h"
 import qualified Data.Array
 import qualified Data.Char
