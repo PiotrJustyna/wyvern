@@ -23,13 +23,15 @@ $contentChar  = [$alpha $digit $white \' \, \! \- \. \/ \? \= \< \> \[ \] \+ \( 
 tokens :-
 
   $white+                         ;
-  @id [$white]+ \"@content\"      { tokenActionWithIdAction }
-  \"@content\"                    { tokenActionAction }
-  @id                             { tokenSoloIdentifierAction }
-  \{                              { tokenOCBAction }
-  \}                              { tokenCCBAction }
+  @id [$white]+ \"@content\"      { (\(position, _previousCharacter, _bytes, inputString) len -> return $ TokenAction position (take len inputString)) }
+  \"@content\"                    { (\(position, _previousCharacter, _bytes, inputString) len -> return $ TokenAction position ("# " <> take len inputString)) -- # is a placeholder id that will later be replaced by a unique identifier }
+  @id                             { (\(position, _previousCharacter, _bytes, inputString) len -> return $ TokenSoloIdentifier position (take len inputString)) }
+  \{                              { (\(position, _previousCharacter, _bytes, _inputString) len -> return $ TokenOCB position) }
+  \}                              { (\(position, _previousCharacter, _bytes, _inputString) len -> return $ TokenCCB position) }
 
 {
+-- Each token action (the right hand side function) is of type :: AlexInput -> Int -> Alex Token
+
 data Token
   = TokenAction AlexPosn String
   | TokenSoloIdentifier AlexPosn String
@@ -37,22 +39,6 @@ data Token
   | TokenCCB AlexPosn
   | TokenEOF
   deriving (Eq, Show)
-
-tokenOCBAction :: AlexInput -> Int -> Alex Token
-tokenOCBAction (position, _previousCharacter, _bytes, _inputString) len = return $ TokenOCB position
-
-tokenCCBAction :: AlexInput -> Int -> Alex Token
-tokenCCBAction (position, _previousCharacter, _bytes, _inputString) len = return $ TokenCCB position
-
-tokenActionWithIdAction :: AlexInput -> Int -> Alex Token
-tokenActionWithIdAction (position, _previousCharacter, _bytes, inputString) len = return $ TokenAction position (take len inputString)
-
--- # is a placeholder id that will later be replaced by a unique identifier
-tokenActionAction :: AlexInput -> Int -> Alex Token
-tokenActionAction (position, _previousCharacter, _bytes, inputString) len = return $ TokenAction position ("# " <> take len inputString)
-
-tokenSoloIdentifierAction :: AlexInput -> Int -> Alex Token
-tokenSoloIdentifierAction (position, _previousCharacter, _bytes, inputString) len = return $ TokenSoloIdentifier position (take len inputString)
 
 alexEOF :: Alex Token
 alexEOF = return TokenEOF
@@ -63,6 +49,6 @@ lexAll = go
         go = do
             t <- alexMonadScan
             case t of
-                TokenEOF -> return [TokenEOF]
+                TokenEOF -> return []
                 _ -> (t:) <$> go
 }

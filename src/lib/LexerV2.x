@@ -5,8 +5,7 @@ module LexerV2
   TokenSoloIdentifier,
   TokenOCB,
   TokenCCB),
-  AlexPosn(..),
-  tokenPosition) where
+  AlexPosn(..)) where
 }
 
 %wrapper "posn"
@@ -23,17 +22,14 @@ $contentChar  = [$alpha $digit $white \' \, \! \- \. \/ \? \= \< \> \[ \] \+ \( 
 tokens :-
 
   $white+                         ;
-  @id [$white]+ \"@content\"      { tok (\p s -> TokenAction p s) }
-  \"@content\"                    { tok (\p s -> TokenAction p ("# " <> s)) -- # is a placeholder id that will later be replaced by a unique identifier }
-  @id                             { tok (\p s -> TokenSoloIdentifier p s) }
-  \{                              { tok (\p _ -> TokenOCB p) }
-  \}                              { tok (\p _ -> TokenCCB p) }
+  @id [$white]+ \"@content\"      { (\position input -> TokenAction position input) }
+  \"@content\"                    { (\position input -> TokenAction position ("# " <> input)) -- # is a placeholder id that will later be replaced by a unique identifier }
+  @id                             { (\position input -> TokenSoloIdentifier position input) }
+  \{                              { (\position _ -> TokenOCB position) }
+  \}                              { (\position _ -> TokenCCB position) }
 
 {
--- Each right-hand side has type :: AlexPosn -> String -> Token
-
--- Some action helpers:
-tok f p s = f p s
+-- Each token action (the right hand side function) is of type :: AlexPosn -> String -> Token
 
 data Token
   = TokenAction AlexPosn String
@@ -41,9 +37,4 @@ data Token
   | TokenOCB AlexPosn
   | TokenCCB AlexPosn
   deriving (Eq, Show)
-
-tokenPosition (TokenAction p _) = p
-tokenPosition (TokenSoloIdentifier p _) = p
-tokenPosition (TokenOCB p) = p
-tokenPosition (TokenCCB p) = p
 }

@@ -15,15 +15,25 @@ main = do
   input <- execParser options
   print input
   fileContent <- readFile $ inputPath input
-  let tokens = runAlex fileContent lexAll
-  putStrLn "tokens:"
-  print tokens
-  where
-    -- let tokens = alexScanTokens fileContent
-    -- case diagram tokens 1 of
-    --   ParseOk d -> renderSVG' (outputPath input) svgOptions (Blocks.render d)
-    --   ParseFail s -> error s
 
+  -- lexer v1/v2
+  -- let tokens = alexScanTokens fileContent
+
+  -- putStrLn "tokens:"
+  -- print tokens
+
+  -- lexer v3
+  let lexingResult = runAlex fileContent lexAll
+
+  case lexingResult of
+    Left lexingError -> do
+      putStrLn $ "Wyvern failed with the following error: " <> lexingError
+    Right tokens -> do
+      -- print tokens
+      case diagram tokens 1 of
+        ParseOk d -> renderSVG' (outputPath input) svgOptions (Blocks.render d)
+        ParseFail s -> error s
+  where
     options =
       info
         (parseInput <**> helper)
