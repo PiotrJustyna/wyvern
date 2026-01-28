@@ -1,6 +1,6 @@
 cabal-version:      3.4
 name:               wyvern-diagrams
-version:            0.3.1.3
+version:            0.3.2.0
 synopsis:           Simple flowchart diagrams. Inspired by DRAKON.
 description:        Wyvern combines syntax and rendering engine
                     for simple, DRAKON-like flowcharts.
