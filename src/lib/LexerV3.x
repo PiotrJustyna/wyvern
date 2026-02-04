@@ -1,12 +1,12 @@
 {
 module LexerV3
-  (lexAll,
-  runAlex,
-  Token(TokenAction,
-  TokenSoloIdentifier,
-  TokenOCB,
-  TokenCCB),
-  AlexPosn(..)) where
+    (lexAll,
+    runAlex,
+    Token(TokenAction,
+    TokenSoloIdentifier,
+    TokenOCB,
+    TokenCCB),
+    AlexPosn(..)) where
 }
 
 %wrapper "monad"
@@ -22,23 +22,31 @@ $contentChar  = [$alpha $digit $white \' \, \! \- \. \/ \? \= \< \> \[ \] \+ \( 
 
 tokens :-
 
-  $white+                         ;
-  @id [$white]+ \"@content\"      { (\(position, _previousCharacter, _bytes, inputString) len -> return $ TokenAction position (take len inputString)) }
-  \"@content\"                    { (\(position, _previousCharacter, _bytes, inputString) len -> return $ TokenAction position ("# " <> take len inputString)) -- # is a placeholder id that will later be replaced by a unique identifier }
-  @id                             { (\(position, _previousCharacter, _bytes, inputString) len -> return $ TokenSoloIdentifier position (take len inputString)) }
-  \{                              { (\(position, _previousCharacter, _bytes, _inputString) len -> return $ TokenOCB position) }
-  \}                              { (\(position, _previousCharacter, _bytes, _inputString) len -> return $ TokenCCB position) }
+    $white+                         ;
+    @id [$white]+ \"@content\"      { (\(position, _previousCharacter, _bytes, inputString) len -> return $ TokenAction position (take len inputString)) }
+    \"@content\"                    { (\(position, _previousCharacter, _bytes, inputString) len -> return $ TokenAction position ("# " <> take len inputString)) -- # is a placeholder id that will later be replaced by a unique identifier }
+    @id                             { (\(position, _previousCharacter, _bytes, inputString) len -> return $ TokenSoloIdentifier position (take len inputString)) }
+    \{                              { (\(position, _previousCharacter, _bytes, _inputString) len -> return $ TokenOCB position) }
+    \}                              { (\(position, _previousCharacter, _bytes, _inputString) len -> return $ TokenCCB position) }
 
 {
 -- Each token action (the right hand side function) is of type :: AlexInput -> Int -> Alex Token
 
 data Token
-  = TokenAction AlexPosn String
-  | TokenSoloIdentifier AlexPosn String
-  | TokenOCB AlexPosn
-  | TokenCCB AlexPosn
-  | TokenEOF
-  deriving (Eq, Show)
+    = TokenAction AlexPosn String
+    | TokenSoloIdentifier AlexPosn String
+    | TokenOCB AlexPosn
+    | TokenCCB AlexPosn
+    | TokenEOF
+    deriving (Eq)
+
+instance Show Token where
+    show x = case x of
+        TokenAction (AlexPn _character l c) s -> "token \"" <> s <> "\" - line: " <> show l <> ", column: " <> show c
+        TokenSoloIdentifier (AlexPn _character l c) s -> "token \"" <> s <> "\" - line: " <> show l <> ", column: " <> show c
+        TokenOCB (AlexPn _character l c) -> "token \"{\" - line: " <> show l <> ", column: " <> show c
+        TokenCCB (AlexPn _character l c) -> "token \"} - line: " <> show l <> ", column: " <> show c
+        TokenEOF -> "EOF"
 
 alexEOF :: Alex Token
 alexEOF = return TokenEOF

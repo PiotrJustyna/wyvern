@@ -10,6 +10,7 @@ import Blocks
 %name                                                     diagram
 %tokentype                                                { Token }
 %monad                                                    { P } { thenP } { returnP }
+%error                                                    { happyError }
 
 %token
   action                                                  { TokenAction _ $$ }
@@ -64,7 +65,9 @@ toHeadline t = Headline (toId t) (toContent t)
 toAddress :: String -> Block
 toAddress t = Address (toId t) (head $ words t)
 
-happyError = \tks i -> error ("Parse error in line " ++ show (i::Int) ++ ".\n")
+happyError :: [Token] -> a
+happyError [] = error ("Parse error - no input")
+happyError (t:_) = error ("Parse error - provided input did not match any grammar production rules: " <> show t <> ".")
 
 data ParseResult a
   = ParseOk a
