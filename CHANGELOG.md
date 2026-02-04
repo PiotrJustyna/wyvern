@@ -28,7 +28,7 @@ CallStack (from HasCallStack):
   error, called at src/lib/Parser.hs:281:20 in wyvern-diagrams-0.3.2.0-inplace:Parser
 ```
 
-- resolved issue 55 - more details extracted from the lexer: https://github.com/PiotrJustyna/wyvern/issues/55
+- resolved issue 59 - more details extracted from the lexer: https://github.com/PiotrJustyna/wyvern/issues/59
 
 ## [0.3.2.0](https://github.com/PiotrJustyna/wyvern/tree/0.3.2.0) (2026-01-28)
 
