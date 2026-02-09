@@ -53,10 +53,20 @@ jobs:
         cd ../
         cabal install alex happy
 
-    - name: Generate a source distribution file
+    - name: Generate source distribution file
       run: |
         cabal sdist --ignore-project --output-directory .
 
     - name: Extract source code from distribution file
       run: |
         cabal get wyvern-diagrams-*.tar.gz
+
+    - name: Build
+      run: |
+        cd wyvern-diagrams-*/
+        cabal build all --enable-benchmarks
+
+    - name: Cabal check
+      run: |
+        cd wyvern-diagrams-*/
+        cabal check
