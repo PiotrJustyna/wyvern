@@ -1,7 +1,7 @@
 # 2026-02-09 PJ:
 # --------------
 # This code is inspired by alex ci: https://github.com/haskell/alex/blob/master/.github/workflows/ci.yml
-name: ci-sandbox
+name: wyvern-ci
 on:
   workflow_dispatch:
 
@@ -19,11 +19,10 @@ jobs:
         os: [ubuntu-latest]
         ghc:
           - "9.8.4"
-          - "9.14"
         include:
-          - ghc: "9.14"
+          - ghc: "9.8.4"
             os:  macos-latest
-          - ghc: "9.14"
+          - ghc: "9.8.4"
             os:  windows-latest
 
     steps:

@@ -1,3 +1,7 @@
+## [0.4.0.1](https://github.com/PiotrJustyna/wyvern/tree/0.4.0.1) (2026-02-13)
+
+Provided a ci workflow and altered the cabal file slightly to reflect that.
+
 ## [0.4.0.0](https://github.com/PiotrJustyna/wyvern/tree/0.4.0.0) (2026-02-04)
 
 Continuing my prior work on extracting more error information from the lexical analyzer, I am now extracting more information from parser errors, all pretty printed:

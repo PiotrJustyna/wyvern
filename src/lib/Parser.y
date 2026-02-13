@@ -3,7 +3,7 @@ module Parser where
 import Data.Char
 import Data.String.Utils (lstrip)
 import ID
-import LexerV3
+import Lexer
 import Blocks
 }
 
