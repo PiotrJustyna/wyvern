@@ -1,6 +1,6 @@
 # wyvern
 
-[![wyvern-ci](https://github.com/PiotrJustyna/wyvern/actions/workflows/wyvern-ci.yml/badge.svg)](https://github.com/PiotrJustyna/wyvern/actions/workflows/wyvern-ci.yml) ![Hackage Version](https://img.shields.io/hackage/v/wyvern-diagrams)
+[![wyvern-ci](https://github.com/PiotrJustyna/wyvern/actions/workflows/wyvern-ci.yml/badge.svg)](https://github.com/PiotrJustyna/wyvern/actions/workflows/wyvern-ci.yml) [![Hackage Version](https://img.shields.io/hackage/v/wyvern-diagrams)](https://hackage.haskell.org/package/wyvern-diagrams-0.4.0.1)
 
 ![](./img/wyvern-small.png)
 
