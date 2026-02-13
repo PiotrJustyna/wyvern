@@ -1,5 +1,7 @@
 # wyvern
 
+[![wyvern-ci](https://github.com/PiotrJustyna/wyvern/actions/workflows/wyvern-ci.yml/badge.svg)](https://github.com/PiotrJustyna/wyvern/actions/workflows/wyvern-ci.yml) ![Hackage Version](https://img.shields.io/hackage/v/wyvern-diagrams)
+
 ![](./img/wyvern-small.png)
 
 Simple flowchart diagrams. Inspired by DRAKON.
