@@ -143,6 +143,11 @@ renderAllSkewers' accuRD accuDs (uBCs, lBCs, minD) accuGCs accuW accuH accuMaxH 
   let (rD, ds, gCs, w, h, maxW, maxH) = renderSingleSkewer b (p2 (accuW, accuH)) accuDs accuGCs accuW
    in renderAllSkewers' (accuRD <> rD) ds ((accuW, maxW) : uBCs, (accuW, maxW, h) : lBCs, min minD maxH) gCs maxW accuH (min minD maxH) bs
 
+-- 2026-02-16 PJ:
+-- ##############
+-- Here, we should already know if gamma connections are correct or not.
+-- A simple bool flag added to this tuple should suffice for now:
+-- (Point V2 Double, Double, Double, ID)
 renderAllSkewers :: [[Block]] -> (Diagram B, Map ID (Point V2 Double), ([(Double, Double)], [(Double, Double, Double)], Double), [(Point V2 Double, Double, Double, ID)], Double, Double, Double, [[Block]])
 renderAllSkewers blocks@(b : bs) =
   let manyBlocks = length blocks > 2

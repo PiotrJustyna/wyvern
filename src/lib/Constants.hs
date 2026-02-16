@@ -31,6 +31,9 @@ heightRatio = 0.5
 lineColour :: Colour Double
 lineColour = sRGB (160.0 / 255.0) (194.0 / 255.0) (222.0 / 255.0)
 
+errorLineColour :: Colour Double
+errorLineColour = sRGB (255.0 / 255.0) (0.0 / 255.0) (0.0 / 255.0)
+
 fillColour :: Colour Double
 fillColour = sRGB (237.0 / 255.0) (237.0 / 255.0) (244.0 / 255.0)
 
@@ -45,6 +48,9 @@ defaultFontSize = defaultBoundingBoxHeight / 8.0
 
 wyvernStyle :: Diagram B -> Diagram B
 wyvernStyle = lw veryThin # lc lineColour # fc fillColour
+
+wyvernErrorStyle :: Diagram B -> Diagram B
+wyvernErrorStyle = lw veryThin # lc errorLineColour # fc fillColour
 
 svgOptions :: (Num n) => Options SVG V2 n
 svgOptions =

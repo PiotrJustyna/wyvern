@@ -52,9 +52,9 @@
 #    -i "./diagrams/examples/simple-diagram-3.txt" \
 #    -o "./diagrams/examples/simple-diagram-3.svg"
 
-# cabal run wyvern-diagrams -- \
-#     -i "./diagrams/examples/simple-diagram-4.txt" \
-#     -o "./diagrams/examples/simple-diagram-4.svg"
+cabal run wyvern-diagrams -- \
+    -i "./diagrams/examples/simple-diagram-4.txt" \
+    -o "./diagrams/examples/simple-diagram-4.svg"
 
 # cabal run wyvern-diagrams -- \
 #     -i "./diagrams/examples/simple-diagram-5.txt" \
@@ -64,6 +64,6 @@
 #     -i "./diagrams/examples/simple-diagram-6.txt" \
 #     -o "./diagrams/examples/simple-diagram-6.svg"
 
-cabal run wyvern-diagrams -- \
-    -i "./diagrams/temp.txt" \
-    -o "./diagrams/temp.svg"
+# cabal run wyvern-diagrams -- \
+#     -i "./diagrams/temp.txt" \
+#     -o "./diagrams/temp.svg"
