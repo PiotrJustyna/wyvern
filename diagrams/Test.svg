@@ -1,0 +1,24 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="200" height="200" viewBox="0 0 200 200">
+
+  <!-- Sky background -->
+  <rect width="200" height="200" fill="#87CEEB" />
+
+  <!-- Sun -->
+  <circle cx="160" cy="40" r="25" fill="#FFD700" />
+
+  <!-- Ground -->
+  <rect x="0" y="150" width="200" height="50" fill="#228B22" />
+
+  <!-- House body -->
+  <rect x="60" y="100" width="80" height="60" fill="#D2691E" />
+
+  <!-- Roof -->
+  <polygon points="50,100 100,55 150,100" fill="#8B0000" />
+
+  <!-- Door -->
+  <rect x="88" y="130" width="24" height="30" fill="#4A2C00" />
+
+  <!-- Window -->
+  <rect x="68" y="110" width="20" height="20" fill="#ADD8E6" />
+
+</svg>
