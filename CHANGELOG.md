@@ -1,3 +1,7 @@
+## [0.4.1.0](https://github.com/PiotrJustyna/wyvern/tree/0.4.0.1) (2026-03-13)
+
+Fixed bug [#64](https://github.com/PiotrJustyna/wyvern/issues/64) - incorrect action token rendering.
+
 ## [0.4.0.1](https://github.com/PiotrJustyna/wyvern/tree/0.4.0.1) (2026-02-13)
 
 Provided a ci workflow and altered the cabal file slightly to reflect that.
