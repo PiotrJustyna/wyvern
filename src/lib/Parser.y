@@ -52,9 +52,7 @@ toContent t =
   in  take (length idFreeContent' - 1) idFreeContent'
 
 toAction :: String -> Block
-toAction t =
-    Action Nothing (show t)
-    -- Action (toId t) (toContent t)
+toAction t = Action (toId t) (toContent t)
 
 toFork :: String -> [Block] -> [Block] -> Maybe ID -> Block
 toFork t l r rId = Fork (toId t) (toContent t) l r rId
