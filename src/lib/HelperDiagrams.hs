@@ -1,6 +1,6 @@
 module HelperDiagrams where
 
-import Constants (defaultBoundingBoxHeight, defaultBoundingBoxWidth, defaultFontSize, fillColour, fontColour, heightRatio, lineColour, widthRatio, wyvernStyle, wyvernErrorStyle)
+import Constants (defaultBoundingBoxHeight, defaultBoundingBoxWidth, defaultFontSize, fillColour, fontColour, heightRatio, lineColour, widthRatio, wyvernErrorStyle, wyvernStyle)
 import Diagrams.Backend.SVG (B)
 import Diagrams.Prelude
   ( Diagram,
@@ -131,24 +131,26 @@ renderConnection coordinates = fromVertices coordinates # wyvernStyle
 renderIncorrectConnection :: [Point V2 Double] -> Diagram B
 renderIncorrectConnection coordinates = fromVertices coordinates # wyvernErrorStyle
 
-renderGammaConnection :: Point V2 Double -> Point V2 Double -> Double -> Double -> Diagram B
-renderGammaConnection gO@(P (V2 gOX gOY)) gD@(P (V2 gDX gDY)) maxX minY =
+renderGammaConnection :: Point V2 Double -> Point V2 Double -> Double -> Double -> Bool -> Diagram B
+renderGammaConnection gO@(P (V2 gOX _gOY)) (P (V2 gDX gDY)) maxX minY isCorrect =
   let gD'@(P (V2 gDX' gDY')) = p2 (gDX + (0.1 * sqrt 3.0 / 2.0) + 0.012, gDY + defaultBoundingBoxHeight * 0.5)
       gammaMidpoint1 = p2 (gOX, minY)
       gammaMidpoint2 = p2 (maxX - defaultBoundingBoxWidth * 0.5, minY)
       gammaMidpoint3 = p2 (maxX - defaultBoundingBoxWidth * 0.5, gDY')
       coordinates = [gO, gammaMidpoint1, gammaMidpoint2, gammaMidpoint3, gD']
-   in renderIncorrectConnection coordinates <> position [(p2 (gDX' - 0.025, gDY'), rotateBy (1 / 4) $ triangle 0.1 # wyvernErrorStyle)]
+   in case isCorrect of
+        False -> renderIncorrectConnection coordinates <> position [(p2 (gDX' - 0.025, gDY'), rotateBy (1 / 4) $ triangle 0.1 # wyvernErrorStyle)]
+        _ -> renderConnection coordinates <> position [(p2 (gDX' - 0.025, gDY'), rotateBy (1 / 4) $ triangle 0.1 # wyvernStyle)]
 
 renderUpperBetaConnections :: [(Double, Double)] -> Double -> Diagram B
-renderUpperBetaConnections [] maxD = mempty
-renderUpperBetaConnections [uBC@(uBCa, uBCb)] maxD =
+renderUpperBetaConnections [] _maxD = mempty
+renderUpperBetaConnections [(uBCa, uBCb)] maxD =
   renderConnection
     [ p2 (uBCa, maxD + defaultBoundingBoxHeight * 0.5),
       p2 (uBCb, maxD + defaultBoundingBoxHeight * 0.5),
       p2 (uBCb, maxD + defaultBoundingBoxHeight * heightRatio * 0.5)
     ]
-renderUpperBetaConnections (uBC@(uBCa, uBCb) : uBCs) maxD =
+renderUpperBetaConnections ((uBCa, uBCb) : uBCs) maxD =
   renderConnection
     [ p2 (uBCa, maxD + defaultBoundingBoxHeight * 0.5),
       p2 (uBCb, maxD + defaultBoundingBoxHeight * 0.5),
@@ -157,7 +159,7 @@ renderUpperBetaConnections (uBC@(uBCa, uBCb) : uBCs) maxD =
     <> renderUpperBetaConnections uBCs maxD
 
 renderSideBetaConnection :: Point V2 Double -> Point V2 Double -> Diagram B
-renderSideBetaConnection a@(P (V2 aX aY)) b@(P (V2 bX bY)) =
+renderSideBetaConnection a@(P (V2 aX aY)) (P (V2 bX bY)) =
   renderConnection
     [ a,
       p2 (aX - defaultBoundingBoxWidth * 0.5, aY),
@@ -168,12 +170,12 @@ renderSideBetaConnection a@(P (V2 aX aY)) b@(P (V2 bX bY)) =
 
 renderLowerBetaConnections' :: [(Double, Double, Double)] -> Double -> Diagram B
 renderLowerBetaConnections' [] _ = mempty
-renderLowerBetaConnections' (lBC@(lBCa, lBCb, lBCc) : lBCs) minD =
+renderLowerBetaConnections' ((lBCa, lBCb, lBCc) : lBCs) minD =
   renderConnection [p2 (lBCa, lBCc + defaultBoundingBoxHeight), p2 (lBCa, minD), p2 (lBCb, minD)]
     <> renderLowerBetaConnections' lBCs minD
 
 renderLowerBetaConnections :: [(Double, Double, Double)] -> Double -> Diagram B
 renderLowerBetaConnections [] _ = mempty
-renderLowerBetaConnections (lBC@(lBCa, lBCb, lBCc) : lBCs) minD =
+renderLowerBetaConnections ((lBCa, _lBCb, lBCc) : lBCs) minD =
   renderConnection [p2 (lBCa, lBCc + defaultBoundingBoxHeight), p2 (lBCa, minD)]
     <> renderLowerBetaConnections' lBCs minD

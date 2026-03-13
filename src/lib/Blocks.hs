@@ -59,9 +59,9 @@ renderSingleBlock ::
   Block ->
   Point V2 Double ->
   Map ID (Point V2 Double) ->
-  [(Point V2 Double, Double, Double, ID)] ->
+  [(Point V2 Double, Double, Double, ID, Bool)] ->
   Double ->
-  (Diagram B, Map ID (Point V2 Double), [(Point V2 Double, Double, Double, ID)], Double, Double, Double, Double)
+  (Diagram B, Map ID (Point V2 Double), [(Point V2 Double, Double, Double, ID, Bool)], Double, Double, Double, Double)
 renderSingleBlock fork@(Fork i c l r gCId) o@(P (V2 oX oY)) ds gCs globalMaxWidth =
   let (gCW, gCH) = case gCId of
         Nothing -> (0.0, 0.0)
@@ -78,7 +78,11 @@ renderSingleBlock fork@(Fork i c l r gCId) o@(P (V2 oX oY)) ds gCs globalMaxWidt
       newMinH = min minHL minHR - gCH
       gCs' = case gCId of
         Nothing -> gCsR
-        Just gCId' -> (p2 (wR, oY), newMaxW', if null r then hR else newMinH + defaultBoundingBoxHeight * 0.5, gCId') : gCsR
+        Just gCId' ->
+          let isCorrect = case i of
+                Nothing -> True
+                Just i' -> if (gCId' == i') then True else False
+           in (p2 (wR, oY), newMaxW', if null r then hR else newMinH + defaultBoundingBoxHeight * 0.5, gCId', isCorrect) : gCsR
    in ( dQ
           <> dL
           <> dR
@@ -106,9 +110,9 @@ renderSingleSkewer ::
   [Block] ->
   Point V2 Double ->
   Map ID (Point V2 Double) ->
-  [(Point V2 Double, Double, Double, ID)] ->
+  [(Point V2 Double, Double, Double, ID, Bool)] ->
   Double ->
-  (Diagram B, Map ID (Point V2 Double), [(Point V2 Double, Double, Double, ID)], Double, Double, Double, Double)
+  (Diagram B, Map ID (Point V2 Double), [(Point V2 Double, Double, Double, ID, Bool)], Double, Double, Double, Double)
 renderSingleSkewer [] o@(P (V2 oX oY)) ds gCs globalWidth =
   let w = oX
       minD = oY
@@ -129,12 +133,12 @@ renderAllSkewers' ::
   Diagram B ->
   Map ID (Point V2 Double) ->
   ([(Double, Double)], [(Double, Double, Double)], Double) ->
-  [(Point V2 Double, Double, Double, ID)] ->
+  [(Point V2 Double, Double, Double, ID, Bool)] ->
   Double ->
   Double ->
   Double ->
   [[Block]] ->
-  (Diagram B, Map ID (Point V2 Double), ([(Double, Double)], [(Double, Double, Double)], Double), [(Point V2 Double, Double, Double, ID)], Double, Double, Double, [[Block]])
+  (Diagram B, Map ID (Point V2 Double), ([(Double, Double)], [(Double, Double, Double)], Double), [(Point V2 Double, Double, Double, ID, Bool)], Double, Double, Double, [[Block]])
 renderAllSkewers' rD ds bCs gCs w h maxH [] = (rD, ds, bCs, gCs, w, h, maxH, [])
 renderAllSkewers' accuRD accuDs accuBCs@(uBCs, lBCs, minD) accuGCs accuW accuH accuMaxH [b] =
   let (rD, ds, gCs, w, h, maxW, maxH) = renderSingleSkewer b (p2 (accuW, accuH)) accuDs accuGCs accuW
@@ -143,12 +147,8 @@ renderAllSkewers' accuRD accuDs (uBCs, lBCs, minD) accuGCs accuW accuH accuMaxH 
   let (rD, ds, gCs, w, h, maxW, maxH) = renderSingleSkewer b (p2 (accuW, accuH)) accuDs accuGCs accuW
    in renderAllSkewers' (accuRD <> rD) ds ((accuW, maxW) : uBCs, (accuW, maxW, h) : lBCs, min minD maxH) gCs maxW accuH (min minD maxH) bs
 
--- 2026-02-16 PJ:
--- ##############
--- Here, we should already know if gamma connections are correct or not.
--- A simple bool flag added to this tuple should suffice for now:
--- (Point V2 Double, Double, Double, ID)
-renderAllSkewers :: [[Block]] -> (Diagram B, Map ID (Point V2 Double), ([(Double, Double)], [(Double, Double, Double)], Double), [(Point V2 Double, Double, Double, ID)], Double, Double, Double, [[Block]])
+renderAllSkewers ::
+  [[Block]] -> (Diagram B, Map ID (Point V2 Double), ([(Double, Double)], [(Double, Double, Double)], Double), [(Point V2 Double, Double, Double, ID, Bool)], Double, Double, Double, [[Block]])
 renderAllSkewers blocks@(b : bs) =
   let manyBlocks = length blocks > 2
       (rD, ds, (uBCs, lBCs, minD), gCs, w, h, maxH, _) = renderAllSkewers' mempty Data.Map.empty ([], [], 0.0) [] 0.0 0.0 0.0 [b]
@@ -169,10 +169,10 @@ render' bs =
               rLBCs = renderLowerBetaConnections lBCs (maxH' + defaultBoundingBoxHeight * 0.5)
            in rUBCs <> rSBC <> rLBCs
    in foldl
-        ( \accu (gCO, maxX, maxY, i) ->
+        ( \accu (gCO, maxX, maxY, i, isCorrect) ->
             case Data.Map.lookup i ds' of
               Nothing -> error $ "gamma connection destination " <> show i <> "not found in the collection of destinations: " <> show ds'
-              Just gCD -> accu <> renderGammaConnection gCO gCD maxX maxY
+              Just gCD -> accu <> renderGammaConnection gCO gCD maxX maxY isCorrect
         )
         (rD' <> bCs)
         gCs'

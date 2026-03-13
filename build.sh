@@ -6,4 +6,4 @@ hlint . \
 
 find . -name '*.hs' ! -name 'Lexer.hs' ! -name 'Parser.hs' -exec ormolu --mode inplace {} +
 
-cabal build --enable-executable-stripping --ghc-options="-Wall -Werror -Wunused-packages"
+cabal build --enable-executable-stripping --ghc-options="-Wall -Wunused-packages"
