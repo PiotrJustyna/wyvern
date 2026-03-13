@@ -26,8 +26,8 @@ tokens :-
     @id [$white]+ \"@content\"      { (\(position, _previousCharacter, _bytes, inputString) len -> return $ TokenAction position (take len inputString)) }
     \"@content\"                    { (\(position, _previousCharacter, _bytes, inputString) len -> return $ TokenAction position ("# " <> take len inputString)) -- # is a placeholder id that will later be replaced by a unique identifier }
     @id                             { (\(position, _previousCharacter, _bytes, inputString) len -> return $ TokenSoloIdentifier position (take len inputString)) }
-    \{                              { (\(position, _previousCharacter, _bytes, _inputString) len -> return $ TokenOCB position) }
-    \}                              { (\(position, _previousCharacter, _bytes, _inputString) len -> return $ TokenCCB position) }
+    \{                              { (\(position, _previousCharacter, _bytes, _inputString) _len -> return $ TokenOCB position) }
+    \}                              { (\(position, _previousCharacter, _bytes, _inputString) _len -> return $ TokenCCB position) }
 
 {
 -- Each token action (the right hand side function) is of type :: AlexInput -> Int -> Alex Token
