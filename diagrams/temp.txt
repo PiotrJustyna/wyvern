@@ -1,7 +1,7 @@
 "action 1"
 "question 1"
 {
-    123 456"action 2"
+    123 "action 2"
 }
 {
     "action 3"
