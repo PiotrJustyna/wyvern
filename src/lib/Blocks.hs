@@ -149,9 +149,9 @@ renderAllSkewers blocks@(b : bs) =
       (rD', ds', (uBCs'', lBCs'', minD'), gCs', w', h', maxH', _) = renderAllSkewers' rD ds (uBCs', lBCs', minD) gCs w (negate defaultBoundingBoxHeight) maxH bs
    in (rD', ds', (uBCs'', lBCs'', minD'), gCs', w', h', if manyBlocks then maxH' else maxH, b : bs)
 
-render' :: [[Block]] -> Diagram B
-render' [] = mempty
-render' bs =
+renderDiagram :: [[Block]] -> Diagram B
+renderDiagram [] = mempty
+renderDiagram bs =
   let (rD', ds', (uBCs, lBCs, _minD), gCs', _w', _h', maxH', _) = renderAllSkewers bs
       bCs = case length bs of
         1 -> mempty
@@ -169,7 +169,7 @@ render' bs =
         (rD' <> bCs)
         gCs'
 
-render :: [[Block]] -> Diagram B
-render [] = mempty
-render [b] = render' $ Blocks.reverse [(EndTerminator : b) <> [StartTerminator]]
-render (b : bs) = render' . Blocks.reverse $ ((EndTerminator : b) : init bs) <> [last bs <> [StartTerminator]]
+render :: [[Block]] -> Either (Diagram B) [String]
+render [] = Left mempty
+render [b] = Left $ renderDiagram $ Blocks.reverse [(EndTerminator : b) <> [StartTerminator]]
+render (b : bs) = Left $ renderDiagram . Blocks.reverse $ ((EndTerminator : b) : init bs) <> [last bs <> [StartTerminator]]
