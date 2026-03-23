@@ -1,9 +1,30 @@
-"action 1"
-"question 1"
+0 "question 0"
+{
+    0a "action a"
+    0aq "question 0a"
+    {
+        0aqa1 "unknown action"
+    }
+    {
+        0aqa2 "unknown action"
+    }
+}
+{
+    0b "action b"
+    0bq "question 0b"
+    {
+        0bqa1 "unknown action"
+    }
+    {
+        0bqa2 "unknown action"
+    }
+}
+1 "action 1"
+q1 "question 1"
 {
     123 "action 2"
 }
 {
-    "action 3"
+    "action 3" 0bqa21
 }
-"action 4"
+4 "action 4"

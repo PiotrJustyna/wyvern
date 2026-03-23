@@ -51,6 +51,17 @@ getIdentifier (Headline i _) = i
 getIdentifier (Address i _) = i
 getIdentifier (Fork i _ _ _ _) = i
 
+getAllIdentifiers' :: [Block] -> [ID]
+getAllIdentifiers' bs = foldr (\singleBlock accu -> (getAllIdentifiers singleBlock) ++ accu) [] bs
+
+getAllIdentifiers :: Block -> [ID]
+getAllIdentifiers fork@(Fork (Just i) _ l r _) = (getAllIdentifiers' r) ++ [i]
+getAllIdentifiers fork@(Fork Nothing _ l r _) = getAllIdentifiers' r
+getAllIdentifiers b =
+  case getIdentifier b of
+    Just i -> [i]
+    Nothing -> []
+
 renderSingleBlock ::
   Block ->
   Point V2 Double ->
@@ -149,9 +160,9 @@ renderAllSkewers blocks@(b : bs) =
       (rD', ds', (uBCs'', lBCs'', minD'), gCs', w', h', maxH', _) = renderAllSkewers' rD ds (uBCs', lBCs', minD) gCs w (negate defaultBoundingBoxHeight) maxH bs
    in (rD', ds', (uBCs'', lBCs'', minD'), gCs', w', h', if manyBlocks then maxH' else maxH, b : bs)
 
-renderDiagram :: [[Block]] -> Diagram B
-renderDiagram [] = mempty
-renderDiagram bs =
+renderDiagram' :: [[Block]] -> Diagram B
+renderDiagram' [] = mempty
+renderDiagram' bs =
   let (rD', ds', (uBCs, lBCs, _minD), gCs', _w', _h', maxH', _) = renderAllSkewers bs
       bCs = case length bs of
         1 -> mempty
@@ -169,7 +180,34 @@ renderDiagram bs =
         (rD' <> bCs)
         gCs'
 
-render :: [[Block]] -> Either (Diagram B) [String]
-render [] = Left mempty
-render [b] = Left $ renderDiagram $ Blocks.reverse [(EndTerminator : b) <> [StartTerminator]]
-render (b : bs) = Left $ renderDiagram . Blocks.reverse $ ((EndTerminator : b) : init bs) <> [last bs <> [StartTerminator]]
+renderDiagram :: [[Block]] -> Diagram B
+renderDiagram [] = mempty
+renderDiagram [b] = renderDiagram' $ Blocks.reverse [(EndTerminator : b) <> [StartTerminator]]
+renderDiagram (b : bs) = renderDiagram' . Blocks.reverse $ ((EndTerminator : b) : init bs) <> [last bs <> [StartTerminator]]
+
+validateSingleBlock :: Block -> [ID] -> Bool
+validateSingleBlock (Fork (Just i) _ _ _ (Just gCId)) ids = gCId == i || elem gCId ids
+validateSingleBlock (Fork Nothing _ _ _ (Just gCId)) ids = elem gCId ids
+validateSingleBlock (Fork _ _ _ _ Nothing) _ = True
+validateSingleBlock _ _ = True
+
+validateBlocks' :: [Block] -> Either [Block] ([ID], [String])
+validateBlocks' [] = Left []
+validateBlocks' [b] = Left [b]
+validateBlocks' bs =
+  let (ids, errors) =
+        foldr
+          (\singleBlock (accuIds, accuErrors) -> ((getAllIdentifiers singleBlock) ++ accuIds, if validateSingleBlock singleBlock accuIds then accuErrors else "error" : accuErrors))
+          ([], [])
+          bs
+   in case errors of
+        [] -> Left bs
+        _ -> Right (ids, errors)
+
+validateBlocks :: [[Block]] -> Either [[Block]] ([ID], [String])
+validateBlocks [] = Left []
+validateBlocks [b] =
+  case validateBlocks' b of
+    Left b' -> Left [b']
+    Right errors -> Right errors
+validateBlocks (b : bs) = error "not implemented yet"
