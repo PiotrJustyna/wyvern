@@ -135,7 +135,7 @@ renderConnection coordinates = fromVertices coordinates # wyvernStyle
 --   we only have the max x for the origin block
 renderGammaConnection :: Point V2 Double -> Point V2 Double -> Double -> Double -> Diagram B
 renderGammaConnection gO@(P (V2 gOX gOY)) gD@(P (V2 gDX gDY)) maxX minY =
-  let gD'@(P (V2 gDX' gDY')) = p2 (gDX + (0.1 * sqrt 3.0 / 2.0) + 0.012, gDY + defaultBoundingBoxHeight * 0.5)
+  let gD'@(P (V2 gDX' gDY')) = p2 (gDX + (0.1 * sqrt 3.0 / 2.0) + 0.012, gDY + defaultBoundingBoxHeight * 0.5 - 0.1)
       gammaMidpoint1 = p2 (gOX, minY)
       gammaMidpoint2 = p2 (if gDX > gOX then gDX + defaultBoundingBoxWidth * 0.5 else maxX - defaultBoundingBoxWidth * 0.5, minY)
       gammaMidpoint3 = p2 (if gDX > gOX then gDX + defaultBoundingBoxWidth * 0.5 else maxX - defaultBoundingBoxWidth * 0.5, gDY')
