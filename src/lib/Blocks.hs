@@ -1,14 +1,10 @@
 module Blocks where
 
-import Constants (defaultBoundingBoxHeight, defaultBoundingBoxWidth, heightRatio, widthRatio)
-import Data.HashSet (HashSet, insert, member)
-import Data.List (groupBy, sortBy, sortOn)
+import Constants (defaultBoundingBoxHeight, defaultBoundingBoxWidth)
 import Data.Map (Map, empty, insert, lookup)
-import Data.Ord (comparing)
 import Diagrams.Backend.SVG (B)
-import Diagrams.Prelude (Diagram, Point (..), V2 (..), p2, position, r2, translate, (#))
-import GHC.Float
-import HelperDiagrams (renderConnection, renderGammaConnection, renderLowerBetaConnections, renderSideBetaConnection, renderText, renderUpperBetaConnections, wyvernAddress, wyvernHeadline, wyvernQuestion, wyvernRect, wyvernRoundedRect)
+import Diagrams.Prelude (Diagram, Point (..), V2 (..), p2, position)
+import HelperDiagrams (renderConnection, renderGammaConnection, renderLowerBetaConnections, renderSideBetaConnection, renderUpperBetaConnections, wyvernAddress, wyvernHeadline, wyvernQuestion, wyvernRect, wyvernRoundedRect)
 import ID
 
 data Block
@@ -25,7 +21,7 @@ reverse' =
   foldl
     ( \accu x ->
         case x of
-          Fork id content l r rId -> Fork id content (reverse' l) (reverse' r) rId : accu
+          Fork i content l r rId -> Fork i content (reverse' l) (reverse' r) rId : accu
           _ -> x : accu
     )
     []
@@ -55,6 +51,17 @@ getIdentifier (Headline i _) = i
 getIdentifier (Address i _) = i
 getIdentifier (Fork i _ _ _ _) = i
 
+getAllIdentifiers' :: [Block] -> [ID]
+getAllIdentifiers' bs = foldr (\singleBlock accu -> (getAllIdentifiers singleBlock) ++ accu) [] bs
+
+getAllIdentifiers :: Block -> [ID]
+getAllIdentifiers fork@(Fork (Just i) _ l r _) = (getAllIdentifiers' r) ++ [i]
+getAllIdentifiers fork@(Fork Nothing _ l r _) = getAllIdentifiers' r
+getAllIdentifiers b =
+  case getIdentifier b of
+    Just i -> [i]
+    Nothing -> []
+
 renderSingleBlock ::
   Block ->
   Point V2 Double ->
@@ -62,16 +69,16 @@ renderSingleBlock ::
   [(Point V2 Double, Double, Double, ID)] ->
   Double ->
   (Diagram B, Map ID (Point V2 Double), [(Point V2 Double, Double, Double, ID)], Double, Double, Double, Double)
-renderSingleBlock fork@(Fork i c l r gCId) o@(P (V2 oX oY)) ds gCs globalMaxWidth =
+renderSingleBlock (Fork _i c l r gCId) o@(P (V2 oX oY)) ds gCs globalMaxWidth =
   let (gCW, gCH) = case gCId of
         Nothing -> (0.0, 0.0)
         Just _ -> (0.1, 0.1)
-      (dQ, wQ, hQ) = (position [(o, wyvernQuestion c)], oX + defaultBoundingBoxWidth, oY - defaultBoundingBoxHeight)
+      (dQ, _wQ, hQ) = (position [(o, wyvernQuestion c)], oX + defaultBoundingBoxWidth, oY - defaultBoundingBoxHeight)
       lX = oX
       lY = hQ
       rX = maxWL
       rY = hQ
-      (dL, dsL, gCsL, wL, hL, maxWL, minHL) = renderSingleSkewer l (p2 (lX, lY)) ds gCs 0.0
+      (dL, dsL, gCsL, _wL, _hL, maxWL, minHL) = renderSingleSkewer l (p2 (lX, lY)) ds gCs 0.0
       (dR, dsR, gCsR, wR, hR, maxWR, minHR) = renderSingleSkewer r (p2 (rX, if null r then oY else rY)) dsL gCsL globalMaxWidth
       newMaxW = maxWR + gCW
       newMaxW' = max newMaxW globalMaxWidth
@@ -96,11 +103,11 @@ renderSingleBlock fork@(Fork i c l r gCId) o@(P (V2 oX oY)) ds gCs globalMaxWidt
         newMaxW',
         newMinH
       )
-renderSingleBlock StartTerminator o@(P (V2 oX oY)) ds gCs abc = (position [(o, wyvernRoundedRect $ getContent StartTerminator)], ds, gCs, oX, oY, oX + defaultBoundingBoxWidth, oY - defaultBoundingBoxHeight)
-renderSingleBlock EndTerminator o@(P (V2 oX oY)) ds gCs abc = (position [(o, wyvernRoundedRect $ getContent EndTerminator)], ds, gCs, oX, oY, oX + defaultBoundingBoxWidth, oY - defaultBoundingBoxHeight)
-renderSingleBlock (Headline _i c) o@(P (V2 oX oY)) ds gCs abc = (position [(o, wyvernHeadline c)], ds, gCs, oX, oY, oX + defaultBoundingBoxWidth, oY - defaultBoundingBoxHeight)
-renderSingleBlock (Address _i c) o@(P (V2 oX oY)) ds gCs abc = (position [(o, wyvernAddress c)], ds, gCs, oX, oY, oX + defaultBoundingBoxWidth, oY - defaultBoundingBoxHeight)
-renderSingleBlock b o@(P (V2 oX oY)) ds gCs abc = (position [(o, wyvernRect $ getContent b)], ds, gCs, oX, oY, oX + defaultBoundingBoxWidth, oY - defaultBoundingBoxHeight)
+renderSingleBlock StartTerminator o@(P (V2 oX oY)) ds gCs _globalMaxWidth = (position [(o, wyvernRoundedRect $ getContent StartTerminator)], ds, gCs, oX, oY, oX + defaultBoundingBoxWidth, oY - defaultBoundingBoxHeight)
+renderSingleBlock EndTerminator o@(P (V2 oX oY)) ds gCs _globalMaxWidth = (position [(o, wyvernRoundedRect $ getContent EndTerminator)], ds, gCs, oX, oY, oX + defaultBoundingBoxWidth, oY - defaultBoundingBoxHeight)
+renderSingleBlock (Headline _i c) o@(P (V2 oX oY)) ds gCs _globalMaxWidth = (position [(o, wyvernHeadline c)], ds, gCs, oX, oY, oX + defaultBoundingBoxWidth, oY - defaultBoundingBoxHeight)
+renderSingleBlock (Address _i c) o@(P (V2 oX oY)) ds gCs _globalMaxWidth = (position [(o, wyvernAddress c)], ds, gCs, oX, oY, oX + defaultBoundingBoxWidth, oY - defaultBoundingBoxHeight)
+renderSingleBlock b o@(P (V2 oX oY)) ds gCs _globalMaxWidth = (position [(o, wyvernRect $ getContent b)], ds, gCs, oX, oY, oX + defaultBoundingBoxWidth, oY - defaultBoundingBoxHeight)
 
 renderSingleSkewer ::
   [Block] ->
@@ -109,19 +116,19 @@ renderSingleSkewer ::
   [(Point V2 Double, Double, Double, ID)] ->
   Double ->
   (Diagram B, Map ID (Point V2 Double), [(Point V2 Double, Double, Double, ID)], Double, Double, Double, Double)
-renderSingleSkewer [] o@(P (V2 oX oY)) ds gCs globalWidth =
+renderSingleSkewer [] (P (V2 oX oY)) ds gCs globalWidth =
   let w = oX
       minD = oY
       localWidth = w + defaultBoundingBoxWidth
       localWidth' = max globalWidth localWidth
    in (mempty, ds, gCs, w, minD, localWidth', minD)
-renderSingleSkewer [b] o@(P (V2 oX oY)) ds gCs globalWidth =
+renderSingleSkewer [b] o@(P (V2 oX _oY)) ds gCs globalWidth =
   let ds' = updateDestinations (getIdentifier b) o ds
-      (d, ds'', gCs', w, h, maxW, minH) = renderSingleBlock b o ds' gCs globalWidth
+      (d, ds'', gCs', _w, h, maxW, minH) = renderSingleBlock b o ds' gCs globalWidth
    in (d, ds'', gCs', oX, h, maxW, minH)
 renderSingleSkewer (b : bs) o@(P (V2 oX oY)) ds gCs globalWidth =
   let ds' = updateDestinations (getIdentifier b) o ds
-      (d, ds'', gCs', w, h, maxW, minH) = renderSingleBlock b o ds' gCs globalWidth
+      (d, ds'', gCs', _w, _h, maxW, minH) = renderSingleBlock b o ds' gCs globalWidth
       (d', ds''', gCs'', w', h', maxW', minH') = renderSingleSkewer bs (p2 (oX, minH)) ds'' gCs' (maxW + 0.1)
    in (d <> d' <> renderConnection [p2 (oX, minH), p2 (oX, oY)], ds''', gCs'', w', h', max maxW maxW', minH')
 
@@ -136,26 +143,27 @@ renderAllSkewers' ::
   [[Block]] ->
   (Diagram B, Map ID (Point V2 Double), ([(Double, Double)], [(Double, Double, Double)], Double), [(Point V2 Double, Double, Double, ID)], Double, Double, Double, [[Block]])
 renderAllSkewers' rD ds bCs gCs w h maxH [] = (rD, ds, bCs, gCs, w, h, maxH, [])
-renderAllSkewers' accuRD accuDs accuBCs@(uBCs, lBCs, minD) accuGCs accuW accuH accuMaxH [b] =
-  let (rD, ds, gCs, w, h, maxW, maxH) = renderSingleSkewer b (p2 (accuW, accuH)) accuDs accuGCs accuW
+renderAllSkewers' accuRD accuDs (uBCs, lBCs, minD) accuGCs accuW accuH _accuMaxH [b] =
+  let (rD, ds, gCs, _w, _h, maxW, maxH) = renderSingleSkewer b (p2 (accuW, accuH)) accuDs accuGCs accuW
    in renderAllSkewers' (accuRD <> rD) ds (uBCs, lBCs, min minD maxH) gCs maxW accuH (min minD maxH) []
-renderAllSkewers' accuRD accuDs (uBCs, lBCs, minD) accuGCs accuW accuH accuMaxH (b : bs) =
-  let (rD, ds, gCs, w, h, maxW, maxH) = renderSingleSkewer b (p2 (accuW, accuH)) accuDs accuGCs accuW
+renderAllSkewers' accuRD accuDs (uBCs, lBCs, minD) accuGCs accuW accuH _accuMaxH (b : bs) =
+  let (rD, ds, gCs, _w, h, maxW, maxH) = renderSingleSkewer b (p2 (accuW, accuH)) accuDs accuGCs accuW
    in renderAllSkewers' (accuRD <> rD) ds ((accuW, maxW) : uBCs, (accuW, maxW, h) : lBCs, min minD maxH) gCs maxW accuH (min minD maxH) bs
 
 renderAllSkewers :: [[Block]] -> (Diagram B, Map ID (Point V2 Double), ([(Double, Double)], [(Double, Double, Double)], Double), [(Point V2 Double, Double, Double, ID)], Double, Double, Double, [[Block]])
+renderAllSkewers [] = error "no skewers provided"
 renderAllSkewers blocks@(b : bs) =
   let manyBlocks = length blocks > 2
-      (rD, ds, (uBCs, lBCs, minD), gCs, w, h, maxH, _) = renderAllSkewers' mempty Data.Map.empty ([], [], 0.0) [] 0.0 0.0 0.0 [b]
+      (rD, ds, (uBCs, lBCs, minD), gCs, w, _h, maxH, _) = renderAllSkewers' mempty Data.Map.empty ([], [], 0.0) [] 0.0 0.0 0.0 [b]
       uBCs' = if null bs then uBCs else (0.0, w) : uBCs
       lBCs' = if null bs then lBCs else (0.0, w, maxH) : lBCs
       (rD', ds', (uBCs'', lBCs'', minD'), gCs', w', h', maxH', _) = renderAllSkewers' rD ds (uBCs', lBCs', minD) gCs w (negate defaultBoundingBoxHeight) maxH bs
    in (rD', ds', (uBCs'', lBCs'', minD'), gCs', w', h', if manyBlocks then maxH' else maxH, b : bs)
 
-render' :: [[Block]] -> Diagram B
-render' [] = mempty
-render' bs =
-  let (rD', ds', (uBCs, lBCs, minD), gCs', w', h', maxH', _) = renderAllSkewers bs
+renderDiagram' :: [[Block]] -> Diagram B
+renderDiagram' [] = mempty
+renderDiagram' bs =
+  let (rD', ds', (uBCs, lBCs, _minD), gCs', _w', _h', maxH', _) = renderAllSkewers bs
       bCs = case length bs of
         1 -> mempty
         _ ->
@@ -172,9 +180,34 @@ render' bs =
         (rD' <> bCs)
         gCs'
 
-render :: [[Block]] -> Diagram B
-render [] = mempty
-render [b] = render' $ Blocks.reverse [(EndTerminator : b) <> [StartTerminator]]
-render bs =
-  let bs' = tail bs
-   in render' . Blocks.reverse $ ((EndTerminator : head bs) : init bs') <> [last bs' <> [StartTerminator]]
+renderDiagram :: [[Block]] -> Diagram B
+renderDiagram [] = mempty
+renderDiagram [b] = renderDiagram' $ Blocks.reverse [(EndTerminator : b) <> [StartTerminator]]
+renderDiagram (b : bs) = renderDiagram' . Blocks.reverse $ ((EndTerminator : b) : init bs) <> [last bs <> [StartTerminator]]
+
+validateSingleBlock :: Block -> [ID] -> Bool
+validateSingleBlock (Fork (Just i) _ _ _ (Just gCId)) ids = gCId == i || elem gCId ids
+validateSingleBlock (Fork Nothing _ _ _ (Just gCId)) ids = elem gCId ids
+validateSingleBlock (Fork _ _ _ _ Nothing) _ = True
+validateSingleBlock _ _ = True
+
+validateBlocks' :: [Block] -> Either [Block] ([ID], [String])
+validateBlocks' [] = Left []
+validateBlocks' [b] = Left [b]
+validateBlocks' bs =
+  let (ids, errors) =
+        foldr
+          (\singleBlock (accuIds, accuErrors) -> ((getAllIdentifiers singleBlock) ++ accuIds, if validateSingleBlock singleBlock accuIds then accuErrors else "error" : accuErrors))
+          ([], [])
+          bs
+   in case errors of
+        [] -> Left bs
+        _ -> Right (ids, errors)
+
+validateBlocks :: [[Block]] -> Either [[Block]] ([ID], [String])
+validateBlocks [] = Left []
+validateBlocks [b] =
+  case validateBlocks' b of
+    Left b' -> Left [b']
+    Right errors -> Right errors
+validateBlocks (b : bs) = error "not implemented yet"

@@ -1,7 +1,6 @@
 module Constants where
 
 import Data.Colour.SRGB (sRGB)
-import Data.Text (empty)
 import Diagrams.Backend.SVG
   ( B,
     Options (SVGOptions),
@@ -50,7 +49,6 @@ svgOptions :: (Num n) => Options SVG V2 n
 svgOptions =
   SVGOptions
     { _size = mkSizeSpec $ V2 (Just 1920) (Just 1080),
-      _idPrefix = empty,
       _svgDefinitions = Nothing,
       _svgAttributes = [],
       _generateDoctype = True

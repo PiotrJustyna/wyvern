@@ -128,12 +128,17 @@ wyvernHex x =
 renderConnection :: [Point V2 Double] -> Diagram B
 renderConnection coordinates = fromVertices coordinates # wyvernStyle
 
+-- 2026-03-25 PJ:
+-- ##############
+-- TODO:
+-- * we need a max x for the destination block
+--   we only have the max x for the origin block
 renderGammaConnection :: Point V2 Double -> Point V2 Double -> Double -> Double -> Diagram B
 renderGammaConnection gO@(P (V2 gOX gOY)) gD@(P (V2 gDX gDY)) maxX minY =
-  let gD'@(P (V2 gDX' gDY')) = p2 (gDX + (0.1 * sqrt 3.0 / 2.0) + 0.012, gDY + defaultBoundingBoxHeight * 0.5)
+  let gD'@(P (V2 gDX' gDY')) = p2 (gDX + (0.1 * sqrt 3.0 / 2.0) + 0.012, gDY + defaultBoundingBoxHeight * 0.5 - 0.1)
       gammaMidpoint1 = p2 (gOX, minY)
-      gammaMidpoint2 = p2 (maxX - defaultBoundingBoxWidth * 0.5, minY)
-      gammaMidpoint3 = p2 (maxX - defaultBoundingBoxWidth * 0.5, gDY')
+      gammaMidpoint2 = p2 (if gDX > gOX then gDX + defaultBoundingBoxWidth * 0.5 else maxX - defaultBoundingBoxWidth * 0.5, minY)
+      gammaMidpoint3 = p2 (if gDX > gOX then gDX + defaultBoundingBoxWidth * 0.5 else maxX - defaultBoundingBoxWidth * 0.5, gDY')
       coordinates = [gO, gammaMidpoint1, gammaMidpoint2, gammaMidpoint3, gD']
    in renderConnection coordinates <> position [(p2 (gDX' - 0.025, gDY'), rotateBy (1 / 4) $ triangle 0.1 # wyvernStyle)]
 
@@ -145,7 +150,7 @@ renderUpperBetaConnections [uBC@(uBCa, uBCb)] maxD =
       p2 (uBCb, maxD + defaultBoundingBoxHeight * 0.5),
       p2 (uBCb, maxD + defaultBoundingBoxHeight * heightRatio * 0.5)
     ]
-renderUpperBetaConnections (uBC@(uBCa, uBCb) : uBCs) maxD =
+renderUpperBetaConnections ((uBCa, uBCb) : uBCs) maxD =
   renderConnection
     [ p2 (uBCa, maxD + defaultBoundingBoxHeight * 0.5),
       p2 (uBCb, maxD + defaultBoundingBoxHeight * 0.5),
@@ -154,7 +159,7 @@ renderUpperBetaConnections (uBC@(uBCa, uBCb) : uBCs) maxD =
     <> renderUpperBetaConnections uBCs maxD
 
 renderSideBetaConnection :: Point V2 Double -> Point V2 Double -> Diagram B
-renderSideBetaConnection a@(P (V2 aX aY)) b@(P (V2 bX bY)) =
+renderSideBetaConnection a@(P (V2 aX aY)) (P (V2 bX bY)) =
   renderConnection
     [ a,
       p2 (aX - defaultBoundingBoxWidth * 0.5, aY),
@@ -165,12 +170,12 @@ renderSideBetaConnection a@(P (V2 aX aY)) b@(P (V2 bX bY)) =
 
 renderLowerBetaConnections' :: [(Double, Double, Double)] -> Double -> Diagram B
 renderLowerBetaConnections' [] _ = mempty
-renderLowerBetaConnections' (lBC@(lBCa, lBCb, lBCc) : lBCs) minD =
+renderLowerBetaConnections' ((lBCa, lBCb, lBCc) : lBCs) minD =
   renderConnection [p2 (lBCa, lBCc + defaultBoundingBoxHeight), p2 (lBCa, minD), p2 (lBCb, minD)]
     <> renderLowerBetaConnections' lBCs minD
 
 renderLowerBetaConnections :: [(Double, Double, Double)] -> Double -> Diagram B
 renderLowerBetaConnections [] _ = mempty
-renderLowerBetaConnections (lBC@(lBCa, lBCb, lBCc) : lBCs) minD =
+renderLowerBetaConnections ((lBCa, _lBCb, lBCc) : lBCs) minD =
   renderConnection [p2 (lBCa, lBCc + defaultBoundingBoxHeight), p2 (lBCa, minD)]
     <> renderLowerBetaConnections' lBCs minD
