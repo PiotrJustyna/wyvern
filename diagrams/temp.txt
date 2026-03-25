@@ -25,6 +25,6 @@ q1 "question 1"
     123 "action 2"
 }
 {
-    "action 3" 0bqa21
+    "action 3" 0bq
 }
 4 "action 4"
