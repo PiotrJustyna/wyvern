@@ -131,7 +131,9 @@ renderConnection coordinates = fromVertices coordinates # wyvernStyle
 -- 2026-03-25 PJ:
 -- ##############
 -- TODO:
+
 -- * we need a max x for the destination block
+
 --   we only have the max x for the origin block
 renderGammaConnection :: Point V2 Double -> Point V2 Double -> Double -> Double -> Diagram B
 renderGammaConnection gO@(P (V2 gOX gOY)) gD@(P (V2 gDX gDY)) maxX minY =

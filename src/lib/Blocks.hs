@@ -52,11 +52,11 @@ getIdentifier (Address i _) = i
 getIdentifier (Fork i _ _ _ _) = i
 
 getAllIdentifiers' :: [Block] -> [ID]
-getAllIdentifiers' bs = foldr (\singleBlock accu -> (getAllIdentifiers singleBlock) ++ accu) [] bs
+getAllIdentifiers' = foldr (\singleBlock accu -> getAllIdentifiers singleBlock <> accu) []
 
 getAllIdentifiers :: Block -> [ID]
-getAllIdentifiers fork@(Fork (Just i) _ l r _) = (getAllIdentifiers' r) ++ [i]
-getAllIdentifiers fork@(Fork Nothing _ l r _) = getAllIdentifiers' r
+getAllIdentifiers (Fork (Just i) _ l r _) = getAllIdentifiers' l <> getAllIdentifiers' r <> [i]
+getAllIdentifiers (Fork Nothing _ l r _) = getAllIdentifiers' l <> getAllIdentifiers' r
 getAllIdentifiers b =
   case getIdentifier b of
     Just i -> [i]
@@ -185,29 +185,44 @@ renderDiagram [] = mempty
 renderDiagram [b] = renderDiagram' $ Blocks.reverse [(EndTerminator : b) <> [StartTerminator]]
 renderDiagram (b : bs) = renderDiagram' . Blocks.reverse $ ((EndTerminator : b) : init bs) <> [last bs <> [StartTerminator]]
 
-validateSingleBlock :: Block -> [ID] -> Bool
-validateSingleBlock (Fork (Just i) _ _ _ (Just gCId)) ids = gCId == i || elem gCId ids
-validateSingleBlock (Fork Nothing _ _ _ (Just gCId)) ids = elem gCId ids
-validateSingleBlock (Fork _ _ _ _ Nothing) _ = True
-validateSingleBlock _ _ = True
+validateSingleBlock :: Block -> [ID] -> (Bool, String)
+validateSingleBlock (Fork (Just i) _ _ _ (Just gCId)) ids = if gCId == i || gCId `elem` ids then (True, "") else (False, "Gamma connection ID: " <> show gCId <> " does not exist in the collection of block identifiers.")
+validateSingleBlock (Fork Nothing _ _ _ (Just gCId)) ids = if gCId `elem` ids then (True, "") else (False, "Gamma connection ID: " <> show gCId <> " does not exist in the collection of block identifiers.")
+validateSingleBlock (Fork _ _ _ _ Nothing) _ = (True, "")
+validateSingleBlock _ _ = (True, "")
 
-validateBlocks' :: [Block] -> Either [Block] ([ID], [String])
+validateBlocks' :: [Block] -> Either [Block] ([String], [ID])
 validateBlocks' [] = Left []
 validateBlocks' [b] = Left [b]
 validateBlocks' bs =
-  let (ids, errors) =
+  let (errors, ids) =
         foldr
-          (\singleBlock (accuIds, accuErrors) -> ((getAllIdentifiers singleBlock) ++ accuIds, if validateSingleBlock singleBlock accuIds then accuErrors else "error" : accuErrors))
+          ( \singleBlock (accuErrors, accuIds) ->
+              let (isValid, errorMessage) = validateSingleBlock singleBlock accuIds
+               in (if isValid then accuErrors else errorMessage : accuErrors, getAllIdentifiers singleBlock <> accuIds)
+          )
           ([], [])
           bs
    in case errors of
         [] -> Left bs
-        _ -> Right (ids, errors)
+        _ -> Right (errors, ids)
 
-validateBlocks :: [[Block]] -> Either [[Block]] ([ID], [String])
+validateBlocks :: [[Block]] -> Either [[Block]] ([String], [ID])
 validateBlocks [] = Left []
-validateBlocks [b] =
+validateBlocks (b : []) =
   case validateBlocks' b of
     Left b' -> Left [b']
     Right errors -> Right errors
-validateBlocks (b : bs) = error "not implemented yet"
+validateBlocks bs =
+    let validationResult@(allErrors, allIds) =
+                                foldl
+                                ( \accu@(accuErrors, accuIds) b ->
+                                    case validateBlocks' b of
+                                        Left _ -> accu
+                                        Right (errors, ids) -> (errors <> accuErrors, ids <> accuIds)
+                                )
+                                ([], [])
+                                bs
+    in case allErrors of
+        [] -> Left bs
+        _ -> Right validationResult
