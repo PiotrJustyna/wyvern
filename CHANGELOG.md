@@ -1,4 +1,13 @@
-## [0.4.1.0](https://github.com/PiotrJustyna/wyvern/tree/0.4.0.1) (2026-03-13)
+## [0.4.2.0](https://github.com/PiotrJustyna/wyvern/tree/0.4.2.0) (2026-03-27)
+
+Fixed bugs:
+
+* [#63](https://github.com/PiotrJustyna/wyvern/issues/63) - clean up warnings
+* [#66](https://github.com/PiotrJustyna/wyvern/issues/66) - remove unused dependency: unordered-containers
+* [#67](https://github.com/PiotrJustyna/wyvern/issues/67) - connections overlapping
+* [#68](https://github.com/PiotrJustyna/wyvern/issues/68) - gamma connection routing + validation
+
+## [0.4.1.0](https://github.com/PiotrJustyna/wyvern/tree/0.4.1.0) (2026-03-13)
 
 Fixed bug [#64](https://github.com/PiotrJustyna/wyvern/issues/64) - incorrect action token rendering.
 
