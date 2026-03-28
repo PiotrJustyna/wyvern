@@ -6,7 +6,7 @@
 
 Simple flowchart diagrams. Inspired by DRAKON.
 
-![](./diagrams/cover-diagram.svg)
+![](./diagrams/general/cover-diagram.svg)
 
 ## goals
 
@@ -39,7 +39,7 @@ Wyvern uses plain text files as input, extensions are not relevant. You can copy
 </td>
 <td>
 
-![](./diagrams/examples/simple-diagram-1.svg)
+![](./diagrams/examples/general/simple-diagram-1.svg)
 
 </td>
 </tr>
@@ -55,7 +55,7 @@ Wyvern uses plain text files as input, extensions are not relevant. You can copy
 </td>
 <td>
 
-![](./diagrams/examples/simple-diagram-2.svg)
+![](./diagrams/examples/general/simple-diagram-2.svg)
 
 </td>
 </tr>
@@ -78,7 +78,7 @@ a3 "action 3"
 </td>
 <td>
 
-![](./diagrams/examples/simple-diagram-3.svg)
+![](./diagrams/examples/general/simple-diagram-3.svg)
 
 </td>
 </tr>
@@ -120,7 +120,7 @@ a3 "action 3"
 </td>
 <td>
 
-![](./diagrams/examples/simple-diagram-4.svg)
+![](./diagrams/examples/general/simple-diagram-4.svg)
 
 </td>
 </tr>
@@ -166,7 +166,7 @@ h5 "headline 5"
 </td>
 <td>
 
-![](./diagrams/examples/simple-diagram-5.svg)
+![](./diagrams/examples/general/simple-diagram-5.svg)
 
 </td>
 </tr>
