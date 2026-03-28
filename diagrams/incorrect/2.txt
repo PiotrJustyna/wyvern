@@ -1,0 +1,35 @@
+q1 "question q1"
+{
+    q1o1 "option q1o1"
+    q1q1 "question q1q1"
+    {
+        q1q1o1 "option q1q1o1"
+    }
+    {
+        q1q1o2 "option q1q1o2"
+        q1q1q2 "question q1q1q2"
+        {
+            q1q1q2a1 "action q1q1q2a1"
+        }
+        {
+            q1q1q2a2 "action q1q1q2a2"
+        }
+    }
+}
+{
+    q1a1 "action q1a1"
+    q1q2 "question q1q2"
+    {
+        q1q2o1 "option q1q2o1"
+    }
+    {
+        q1q2o2 "option q1q2o2"
+    }
+}
+q2 "question q2"
+{
+    q2o1 "option q2o1"
+}
+{
+    q2o2 "option q2o2" q1q1
+}
