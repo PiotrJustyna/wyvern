@@ -24,6 +24,13 @@ q1 "question q1"
     }
     {
         q1q2o2 "option q1q2o2"
+        q1q2q2 "question q1q2q2"
+        {
+            q1q2q2a1 "action q1q2q2a1"
+        }
+        {
+            q1q2q2a2 "action q1q2q2a2"
+        }
     }
 }
 q2 "question q2"
