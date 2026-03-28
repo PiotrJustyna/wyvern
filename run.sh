@@ -65,5 +65,5 @@
 #     -o "./diagrams/examples/simple-diagram-6.svg"
 
 cabal run wyvern-diagrams -- \
-    -i "./diagrams/temp.txt" \
-    -o "./diagrams/temp.svg"
+    -i "./diagrams/general/temp.txt" \
+    -o "./diagrams/general/temp.svg"

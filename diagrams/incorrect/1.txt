@@ -1,0 +1,7 @@
+q1 "question"
+{
+    o1 "option 1"
+}
+{
+    o2 "option 2" o1
+}

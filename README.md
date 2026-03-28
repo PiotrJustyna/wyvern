@@ -6,7 +6,7 @@
 
 Simple flowchart diagrams. Inspired by DRAKON.
 
-![](./diagrams/cover-diagram.svg)
+![](./diagrams/general/cover-diagram.svg)
 
 ## goals
 
