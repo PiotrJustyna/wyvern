@@ -1,4 +1,4 @@
-h1 "headline 1"
+h1 "headline 1" -- single line comment
 {
     0 "question 0"
     {

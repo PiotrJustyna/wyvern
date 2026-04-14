@@ -1,10 +1,10 @@
-a1 "action 1"
-a2 "action 2"
+a1 "action 1" -- single line comment 1
+a2 "action 2" -- single line comment 2
 q1 "question 1"
 {
     a2a "action 2a"
 }
 {
-    a2b "action 2b"
+    a2b "action 2b" -- single line comment 3
 }
 a3 "action 3"

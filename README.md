@@ -17,6 +17,7 @@ Simple flowchart diagrams. Inspired by DRAKON.
 ## constraints
 
 * connections never cross
+  * **caveat:** *today it is allowed for gamma connections to result in lines crossing, but it is my goal to prevent lines crossing altogether*
 * connections are comprised only of horizontal and vertical lines
 * default direction: top-to-bottom
 * deterministic: input A will always produce output B
@@ -63,14 +64,14 @@ Wyvern uses plain text files as input, extensions are not relevant. You can copy
 <td>
 
 ```
-a1 "action 1"
-a2 "action 2"
+a1 "action 1" -- single line comment 1
+a2 "action 2" -- single line comment 2
 q1 "question 1"
 {
     a2a "action 2a"
 }
 {
-    a2b "action 2b"
+    a2b "action 2b" -- single line comment 3
 }
 a3 "action 3"
 ```

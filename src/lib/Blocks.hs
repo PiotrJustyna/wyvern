@@ -214,15 +214,15 @@ validateBlocks (b : []) =
     Left b' -> Left [b']
     Right errors -> Right errors
 validateBlocks bs =
-    let validationResult@(allErrors, allIds) =
-                                foldl
-                                ( \accu@(accuErrors, accuIds) b ->
-                                    case validateBlocks' b of
-                                        Left _ -> accu
-                                        Right (errors, ids) -> (errors <> accuErrors, ids <> accuIds)
-                                )
-                                ([], [])
-                                bs
-    in case allErrors of
+  let validationResult@(allErrors, allIds) =
+        foldl
+          ( \accu@(accuErrors, accuIds) b ->
+              case validateBlocks' b of
+                Left _ -> accu
+                Right (errors, ids) -> (errors <> accuErrors, ids <> accuIds)
+          )
+          ([], [])
+          bs
+   in case allErrors of
         [] -> Left bs
         _ -> Right validationResult
