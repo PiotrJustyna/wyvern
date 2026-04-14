@@ -11,23 +11,25 @@ module Lexer
 
 %wrapper "monad"
 
-$digit        = 0-9
-$alpha        = [a-zA-Z]
+$digit              = 0-9
+$alpha              = [a-zA-Z]
 
-$idChar       = [$alpha $digit \']
-$contentChar  = [$alpha $digit $white \' \, \! \- \. \/ \? \= \< \> \[ \] \+ \( \)]
+$idChar             = [$alpha $digit \']
+$contentChar        = [$alpha $digit $white \' \, \! \- \. \/ \? \= \< \> \[ \] \+ \( \)]
 
-@id           = $idChar+
-@content      = $contentChar+
+@id                 = $idChar+
+@content            = \"$contentChar+\"
+@singleLineComment  = \-\-$contentChar+\n
 
 tokens :-
 
-    $white+                         ;
-    @id [$white]+ \"@content\"      { (\(position, _previousCharacter, _bytes, inputString) len -> return $ TokenAction position (take len inputString)) }
-    \"@content\"                    { (\(position, _previousCharacter, _bytes, inputString) len -> return $ TokenAction position ("# " <> take len inputString)) -- # is a placeholder id that will later be replaced by a unique identifier }
-    @id                             { (\(position, _previousCharacter, _bytes, inputString) len -> return $ TokenSoloIdentifier position (take len inputString)) }
-    \{                              { (\(position, _previousCharacter, _bytes, _inputString) _len -> return $ TokenOCB position) }
-    \}                              { (\(position, _previousCharacter, _bytes, _inputString) _len -> return $ TokenCCB position) }
+    $white+                 ;
+    @singleLineComment      ;
+    @id [$white]+ @content  { (\(position, _previousCharacter, _bytes, inputString) len -> return $ TokenAction position (take len inputString)) }
+    @content                { (\(position, _previousCharacter, _bytes, inputString) len -> return $ TokenAction position ("# " <> take len inputString)) -- # is a placeholder id that will later be replaced by a unique identifier }
+    @id                     { (\(position, _previousCharacter, _bytes, inputString) len -> return $ TokenSoloIdentifier position (take len inputString)) }
+    \{                      { (\(position, _previousCharacter, _bytes, _inputString) _len -> return $ TokenOCB position) }
+    \}                      { (\(position, _previousCharacter, _bytes, _inputString) _len -> return $ TokenCCB position) }
 
 {
 -- Each token action (the right hand side function) is of type :: AlexInput -> Int -> Alex Token
