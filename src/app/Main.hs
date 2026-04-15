@@ -26,11 +26,13 @@ main = do
         case diagram tokens 1 of
           ParseOk blocks -> do
             case validateBlocks blocks of
-              Left validBlocks ->
+              (Left validBlocks, ids) ->
                 do
                   renderSVG' (outputPath input) svgOptions (Blocks.renderDiagram validBlocks)
+                  putStrLn "Available block identifiers to be used as gamma connections destinations:"
+                  print ids
                   return 0
-              Right (errors, ids) ->
+              (Right errors, ids) ->
                 do
                   putStrLn "Diagram validation failed with the following error(s):"
                   print errors

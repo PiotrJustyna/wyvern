@@ -13,7 +13,7 @@ h1 "headline 1" -- single line comment
     }
     {
         0b "action b"
-        0bq "question 0b"
+        0b "question 0b"
         {
             0bqa1 "unknown action"
         }
@@ -27,7 +27,7 @@ h1 "headline 1" -- single line comment
         123 "action 2"
     }
     {
-        "action 3" 0bqa2
+        "action 3" q1
     }
     4 "action 4"
     h2
@@ -40,6 +40,6 @@ h2 "headline 2"
         "action 1"
     }
     {
-        "action 2" h2
+        0b "action 2" h2
     }
 }
