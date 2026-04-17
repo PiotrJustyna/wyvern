@@ -31,6 +31,7 @@ library
                       Lexer
                       Parser
                       InputArguments
+                      Validator
     hs-source-dirs:   src/lib
     build-depends:
                       -- BSD-3-Clause

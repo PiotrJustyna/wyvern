@@ -7,6 +7,7 @@ import InputArguments (inputPath, outputPath, parseInput)
 import Lexer (lexAll, runAlex)
 import Options.Applicative (execParser, fullDesc, header, helper, info, (<**>))
 import Parser (ParseResult (..), diagram)
+import Validator (findDuplicatedIDs)
 
 main :: IO Int
 main = do
@@ -25,6 +26,7 @@ main = do
       do
         case diagram tokens 1 of
           ParseOk blocks -> do
+            print $ findDuplicatedIDs blocks
             case validateBlocks blocks of
               (Left validBlocks, ids) ->
                 do

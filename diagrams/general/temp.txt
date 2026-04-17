@@ -1,6 +1,6 @@
 h1 "headline 1" -- single line comment
 {
-    0 "question 0"
+    q1 "question 0"
     {
         0a "action a"
         0aq "question 0a"
@@ -29,7 +29,7 @@ h1 "headline 1" -- single line comment
     {
         "action 3" q1
     }
-    4 "action 4"
+    q1 "action 4"
     h2
 }
 h2 "headline 2"
