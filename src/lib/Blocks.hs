@@ -185,44 +185,55 @@ renderDiagram [] = mempty
 renderDiagram [b] = renderDiagram' $ Blocks.reverse [(EndTerminator : b) <> [StartTerminator]]
 renderDiagram (b : bs) = renderDiagram' . Blocks.reverse $ ((EndTerminator : b) : init bs) <> [last bs <> [StartTerminator]]
 
+-- 2026-04-15 PJ:
+-- ==============
+-- Validation also needs to be recursive.
 validateSingleBlock :: Block -> [ID] -> (Bool, String)
 validateSingleBlock (Fork (Just i) _ _ _ (Just gCId)) ids = if gCId == i || gCId `elem` ids then (True, "") else (False, "Gamma connection ID: " <> show gCId <> " does not exist in the collection of block identifiers.")
 validateSingleBlock (Fork Nothing _ _ _ (Just gCId)) ids = if gCId `elem` ids then (True, "") else (False, "Gamma connection ID: " <> show gCId <> " does not exist in the collection of block identifiers.")
 validateSingleBlock (Fork _ _ _ _ Nothing) _ = (True, "")
 validateSingleBlock _ _ = (True, "")
 
-validateBlocks' :: [Block] -> Either [Block] ([String], [ID])
-validateBlocks' [] = Left []
-validateBlocks' [b] = Left [b]
-validateBlocks' bs =
-  let (errors, ids) =
+idsAlreadyPresent :: [ID] -> [ID] -> [ID]
+idsAlreadyPresent xs xs' = foldl (\accu x -> if x `elem` xs' then x : accu else accu) [] xs
+
+validateBlocks' :: [Block] -> [ID] -> (Either [Block] [String], [ID])
+validateBlocks' [] ids = (Left [], ids)
+validateBlocks' [b] ids = (Left [b], getAllIdentifiers b <> ids) -- todo: also check for duplicates
+validateBlocks' bs ids =
+  let (errors, ids') =
         foldr
           ( \singleBlock (accuErrors, accuIds) ->
               let (isValid, errorMessage) = validateSingleBlock singleBlock accuIds
-               in (if isValid then accuErrors else errorMessage : accuErrors, getAllIdentifiers singleBlock <> accuIds)
+                  newIdentifiers = getAllIdentifiers singleBlock
+                  newIdentifiersDuplicated = idsAlreadyPresent newIdentifiers accuIds
+                  duplicatedIdentifiersErrors = case newIdentifiersDuplicated of
+                    [] -> accuErrors
+                    _ -> ("Following identifiers are duplicated: " <> show newIdentifiersDuplicated) : accuErrors
+               in (if isValid then duplicatedIdentifiersErrors else errorMessage : duplicatedIdentifiersErrors, newIdentifiers <> accuIds)
           )
-          ([], [])
+          ([], ids)
           bs
    in case errors of
-        [] -> Left bs
-        _ -> Right (errors, ids)
+        [] -> (Left bs, ids')
+        _ -> (Right errors, ids')
 
-validateBlocks :: [[Block]] -> Either [[Block]] ([String], [ID])
-validateBlocks [] = Left []
-validateBlocks (b : []) =
-  case validateBlocks' b of
-    Left b' -> Left [b']
-    Right errors -> Right errors
+validateBlocks :: [[Block]] -> (Either [[Block]] [String], [ID])
+validateBlocks [] = (Left [], [])
+validateBlocks [b] =
+  case validateBlocks' b [] of
+    (Left b', ids) -> (Left [b'], ids)
+    (Right errors, ids) -> (Right errors, ids)
 validateBlocks bs =
-  let validationResult@(allErrors, allIds) =
+  let (allErrors, allIds) =
         foldl
-          ( \accu@(accuErrors, accuIds) b ->
-              case validateBlocks' b of
-                Left _ -> accu
-                Right (errors, ids) -> (errors <> accuErrors, ids <> accuIds)
+          ( \(accuErrors, accuIds) b ->
+              case validateBlocks' b accuIds of
+                (Left _, ids) -> (accuErrors, ids <> accuIds)
+                (Right errors, ids) -> (errors <> accuErrors, ids <> accuIds)
           )
           ([], [])
           bs
    in case allErrors of
-        [] -> Left bs
-        _ -> Right validationResult
+        [] -> (Left bs, allIds)
+        _ -> (Right allErrors, allIds)

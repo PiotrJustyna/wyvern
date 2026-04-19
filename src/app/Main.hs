@@ -1,12 +1,13 @@
 module Main where
 
-import Blocks (renderDiagram, validateBlocks)
+import Blocks (renderDiagram)
 import Constants (svgOptions)
 import Diagrams.Backend.SVG (renderSVG')
 import InputArguments (inputPath, outputPath, parseInput)
 import Lexer (lexAll, runAlex)
 import Options.Applicative (execParser, fullDesc, header, helper, info, (<**>))
 import Parser (ParseResult (..), diagram)
+import Validator (validate)
 
 main :: IO Int
 main = do
@@ -25,18 +26,13 @@ main = do
       do
         case diagram tokens 1 of
           ParseOk blocks -> do
-            case validateBlocks blocks of
-              Left validBlocks ->
-                do
-                  renderSVG' (outputPath input) svgOptions (Blocks.renderDiagram validBlocks)
-                  return 0
-              Right (errors, ids) ->
-                do
-                  putStrLn "Diagram validation failed with the following error(s):"
-                  print errors
-                  putStrLn "Available block identifiers to be used as gamma connections destinations:"
-                  print ids
-                  return 1
+            case validate blocks of
+              Left validBlocks -> do
+                renderSVG' (outputPath input) svgOptions (Blocks.renderDiagram validBlocks)
+                return 0
+              Right duplicatedIds -> do
+                putStrLn $ "Block validation failed. Following IDs are duplicated: " <> show duplicatedIds
+                return 1
           ParseFail s -> error s
   where
     options =
