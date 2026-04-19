@@ -12,7 +12,7 @@ help:
 	@echo "  make repl           - Start GHCi REPL"
 	@echo "  make all            - Build and test"
 
-build:
+build: lint format
 	cabal build --enable-executable-stripping --ghc-options="-Wall -Wunused-packages"
 
 test: lint format
@@ -32,7 +32,7 @@ format-check:
 clean:
 	cabal clean
 
-run:
+run: lint format
 	cabal run wyvern-diagrams -- \
 	    -i "./diagrams/general/temp.txt" \
 	    -o "./diagrams/general/temp.svg"

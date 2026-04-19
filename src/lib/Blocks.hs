@@ -209,7 +209,7 @@ validateBlocks' bs ids =
                   newIdentifiersDuplicated = idsAlreadyPresent newIdentifiers accuIds
                   duplicatedIdentifiersErrors = case newIdentifiersDuplicated of
                     [] -> accuErrors
-                    _ -> ("Following identifiers are duplicated: " <> (show newIdentifiersDuplicated)) : accuErrors
+                    _ -> ("Following identifiers are duplicated: " <> show newIdentifiersDuplicated) : accuErrors
                in (if isValid then duplicatedIdentifiersErrors else errorMessage : duplicatedIdentifiersErrors, newIdentifiers <> accuIds)
           )
           ([], ids)
