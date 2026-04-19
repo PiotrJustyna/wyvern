@@ -7,7 +7,7 @@ import InputArguments (inputPath, outputPath, parseInput)
 import Lexer (lexAll, runAlex)
 import Options.Applicative (execParser, fullDesc, header, helper, info, (<**>))
 import Parser (ParseResult (..), diagram)
-import Validator (findDuplicatedIDs)
+import Validator (validate)
 
 main :: IO Int
 main = do
@@ -26,13 +26,11 @@ main = do
       do
         case diagram tokens 1 of
           ParseOk blocks -> do
-            print blocks
-            let (_allIds, duplicatedIds) = findDuplicatedIDs blocks
-            case duplicatedIds of
-              [] -> do
-                renderSVG' (outputPath input) svgOptions (Blocks.renderDiagram blocks)
+            case validate blocks of
+              Left validBlocks -> do
+                renderSVG' (outputPath input) svgOptions (Blocks.renderDiagram validBlocks)
                 return 0
-              _ -> do
+              Right duplicatedIds -> do
                 putStrLn $ "Block validation failed. Following IDs are duplicated: " <> show duplicatedIds
                 return 1
           ParseFail s -> error s

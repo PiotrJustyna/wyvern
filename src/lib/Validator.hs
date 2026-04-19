@@ -32,3 +32,10 @@ findDuplicatedIDs' blocks ids = foldr findDuplicatedIDs'' ids blocks
 
 findDuplicatedIDs :: [[Block]] -> ([ID], [ID])
 findDuplicatedIDs = foldr findDuplicatedIDs' ([], [])
+
+validate :: [[Block]] -> Either [[Block]] [ID]
+validate blocks =
+  let (_allIds, duplicatedIds) = findDuplicatedIDs blocks
+   in case duplicatedIds of
+        [] -> Left blocks
+        _ -> Right duplicatedIds
