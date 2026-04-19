@@ -76,8 +76,8 @@ test-suite wyvern-tests
     build-depends:
                       -- BSD-3-Clause
                       base >= 4.19.2.0 && < 5,
-                      -- BSD-3-Clause
-                      HUnit,
+                      -- MIT
+                      hspec >= 2.11 && < 3,
                       -- BSD-3-Clause
                       diagrams-lib >= 1.5.1 && < 2,
                       -- BSD-3-Clause

@@ -1,44 +1,39 @@
 module ValidatorTests where
 
 import ID
-import Test.HUnit
+import Test.Hspec
 import Validator (categorizeId)
 
-idCategorizedAsUnique :: Test
-idCategorizedAsUnique = do
-  let ids = [ID "1", ID "2"]
-  let duplicatedIds = [ID "1", ID "2"]
-  let (resultIds, resultDuplicatedIds) = categorizeId (ID "3") (ids, duplicatedIds)
-  TestCase (assertEqual "ids count correct" 3 (length resultIds))
+spec :: Spec
+spec = describe "categorizeId" $ do
+  it "adds a new unique ID to the unique list" $ do
+    let ids = [ID "1", ID "2"]
+    let duplicatedIds = [ID "1", ID "2"]
+    let (resultIds, resultDuplicatedIds) = categorizeId (ID "3") (ids, duplicatedIds)
+    length resultIds `shouldBe` 3
+    resultIds `shouldContain` [ID "3"]
+    resultDuplicatedIds `shouldBe` duplicatedIds
 
--- Test when an ID is seen for the second time (should move to duplicated list)
-idMovedToDuplicated :: Test
-idMovedToDuplicated = do
-  let ids = [ID "1", ID "2"]
-  let duplicatedIds = []
-  let (resultIds, resultDuplicatedIds) = categorizeId (ID "1") (ids, duplicatedIds)
-  TestCase $ do
-    assertEqual "unique ids unchanged" 2 (length resultIds)
-    assertEqual "id added to duplicated" 1 (length resultDuplicatedIds)
-    assertEqual "duplicated contains correct id" True (ID "1" `elem` resultDuplicatedIds)
+  it "moves an ID to duplicated list when seen a second time" $ do
+    let ids = [ID "1", ID "2"]
+    let duplicatedIds = []
+    let (resultIds, resultDuplicatedIds) = categorizeId (ID "1") (ids, duplicatedIds)
+    length resultIds `shouldBe` 2
+    length resultDuplicatedIds `shouldBe` 1
+    resultDuplicatedIds `shouldContain` [ID "1"]
 
--- Test when an ID already exists in duplicated list (should remain unchanged)
-idAlreadyInDuplicated :: Test
-idAlreadyInDuplicated = do
-  let ids = [ID "1", ID "2"]
-  let duplicatedIds = [ID "1"]
-  let (resultIds, resultDuplicatedIds) = categorizeId (ID "1") (ids, duplicatedIds)
-  TestCase $ do
-    assertEqual "unique ids unchanged" 2 (length resultIds)
-    assertEqual "duplicated ids unchanged" 1 (length resultDuplicatedIds)
+  it "leaves an ID unchanged if already in duplicated list" $ do
+    let ids = [ID "1", ID "2"]
+    let duplicatedIds = [ID "1"]
+    let (resultIds, resultDuplicatedIds) = categorizeId (ID "1") (ids, duplicatedIds)
+    length resultIds `shouldBe` 2
+    length resultDuplicatedIds `shouldBe` 1
+    resultDuplicatedIds `shouldBe` [ID "1"]
 
--- Test with empty initial lists (new ID should be added to unique list)
-newIdWithEmptyLists :: Test
-newIdWithEmptyLists = do
-  let ids = []
-  let duplicatedIds = []
-  let (resultIds, resultDuplicatedIds) = categorizeId (ID "1") (ids, duplicatedIds)
-  TestCase $ do
-    assertEqual "id added to unique list" 1 (length resultIds)
-    assertEqual "duplicated list remains empty" 0 (length resultDuplicatedIds)
-    assertEqual "unique list contains correct id" True (ID "1" `elem` resultIds)
+  it "adds a new ID to unique list with empty starting lists" $ do
+    let ids = []
+    let duplicatedIds = []
+    let (resultIds, resultDuplicatedIds) = categorizeId (ID "1") (ids, duplicatedIds)
+    length resultIds `shouldBe` 1
+    length resultDuplicatedIds `shouldBe` 0
+    resultIds `shouldContain` [ID "1"]

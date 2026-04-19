@@ -1,10 +1,7 @@
 module Main where
 
-import Test.HUnit
-import ValidatorTests (idCategorizedAsUnique)
-
-validationTests :: Test
-validationTests = TestList [idCategorizedAsUnique]
+import Test.Hspec
+import ValidatorTests (spec)
 
 main :: IO ()
-main = runTestTTAndExit validationTests
+main = hspec spec

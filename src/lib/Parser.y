@@ -61,7 +61,7 @@ toHeadline :: String -> Block
 toHeadline t = Headline (toId t) (toContent t)
 
 toAddress :: String -> Block
-toAddress t = Address (toId t) (head $ words t)
+toAddress t = Address Nothing (head $ words t)
 
 happyError :: [Token] -> a
 happyError [] = error ("Parse error - no input")
