@@ -50,28 +50,28 @@ jobs:
         key: ${{ runner.os }}-${{ matrix.ghc }}
 
     - name: Cabal version
-      run: |
-        cabal --version
+      run: cabal --version
 
     - name: Install alex & happy
-      run: |
-        cd ../
-        cabal install alex happy
-
-    - name: Generate source distribution file
-      run: |
-        cabal sdist --ignore-project --output-directory .
-
-    - name: Extract source code from distribution file
-      run: |
-        cabal get wyvern-diagrams-*.tar.gz
+      run: cabal install alex happy
 
     - name: Build
-      run: |
-        cd wyvern-diagrams-*/
-        cabal build all --enable-benchmarks
+      run: cabal build all --enable-benchmarks
+
+    - name: Run tests
+      run: cabal test all --enable-tests
 
     - name: Cabal check
+      run: cabal check
+
+    - name: Generate source distribution
+      run: cabal sdist --ignore-project --output-directory .
+
+    - name: Test source distribution build
       run: |
+        mkdir -p tmp-dist
+        cd tmp-dist
+        cabal get ../wyvern-diagrams-*.tar.gz
         cd wyvern-diagrams-*/
-        cabal check
+        cabal build all --enable-benchmarks
+        cabal test all --enable-tests
