@@ -1,7 +1,13 @@
 module Main where
 
 import Test.Hspec
-import ValidatorTests (spec)
+import ValidatorTests (specCategorizeId, specFindIncorrectGammaConnections', specFindIncorrectGammaConnections'')
+
+allSpecs :: Spec
+allSpecs = do
+  specCategorizeId
+  specFindIncorrectGammaConnections'
+  specFindIncorrectGammaConnections''
 
 main :: IO ()
-main = hspec spec
+main = hspec allSpecs

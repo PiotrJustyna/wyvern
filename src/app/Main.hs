@@ -30,8 +30,10 @@ main = do
               Left validBlocks -> do
                 renderSVG' (outputPath input) svgOptions (Blocks.renderDiagram validBlocks)
                 return 0
-              Right duplicatedIds -> do
-                putStrLn $ "Block validation failed. Following IDs are duplicated: " <> show duplicatedIds
+              Right (duplicatedIds, incorrectGCIds) -> do
+                putStrLn "Block validation failed."
+                putStrLn $ "*\tFollowing IDs are duplicated: " <> show duplicatedIds
+                putStrLn $ "*\tFollowing gamma connection IDs are not correct: " <> show incorrectGCIds
                 return 1
           ParseFail s -> error s
   where

@@ -27,7 +27,8 @@ h1 "headline 1" -- single line comment
         123 "action 2"
     }
     {
-        "action 3" q1
+        "action 3"
+        123
     }
     q4 "action 4"
     h2

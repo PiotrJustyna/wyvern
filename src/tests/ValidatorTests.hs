@@ -1,11 +1,12 @@
 module ValidatorTests where
 
+import Blocks (Block (..))
 import ID
 import Test.Hspec
-import Validator (categorizeId)
+import Validator (categorizeId, findIncorrectGammaConnections', findIncorrectGammaConnections'')
 
-spec :: Spec
-spec = describe "categorizeId" $ do
+specCategorizeId :: Spec
+specCategorizeId = describe "categorizeId" $ do
   it "adds a new unique ID to the unique list" $ do
     let ids = [ID "1", ID "2"]
     let duplicatedIds = [ID "1", ID "2"]
@@ -37,3 +38,25 @@ spec = describe "categorizeId" $ do
     length resultIds `shouldBe` 1
     length resultDuplicatedIds `shouldBe` 0
     resultIds `shouldContain` [ID "1"]
+
+specFindIncorrectGammaConnections'' :: Spec
+specFindIncorrectGammaConnections'' = describe "findIncorrectGammaConnections''" $ do
+  it "detects a fork's gamma connection id is correct" $ do
+    let fork = Fork Nothing "" [] [] (Just (ID "1"))
+    let result = findIncorrectGammaConnections'' fork [] [ID "1", ID "2"]
+    length result `shouldBe` 0
+
+  it "detects a fork's gamma connection id is incorrect" $ do
+    let fork = Fork Nothing "" [] [] (Just (ID "3"))
+    let result = findIncorrectGammaConnections'' fork [] [ID "1", ID "2"]
+    length result `shouldBe` 1
+    result `shouldContain` [ID "3"]
+
+specFindIncorrectGammaConnections' :: Spec
+specFindIncorrectGammaConnections' = describe "specFindIncorrectGammaConnections'" $ do
+  it "combines all incorrect ids found in a list of blocks" $ do
+    let fork = Fork Nothing "" [] [] (Just (ID "3"))
+    let action = Action Nothing ""
+    let result = findIncorrectGammaConnections' [fork, action] [] [ID "1", ID "2"]
+    length result `shouldBe` 1
+    result `shouldContain` [ID "3"]
