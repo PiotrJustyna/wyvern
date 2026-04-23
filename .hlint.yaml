@@ -1,0 +1,2 @@
+- ignore: { file: "src/lib/Parser.hs" }
+- ignore: { file: "src/lib/Lexer.hs" }

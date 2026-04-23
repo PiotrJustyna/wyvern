@@ -19,9 +19,7 @@ test: lint format
 	cabal test
 
 lint:
-	hlint . \
-	  --ignore-glob=src/lib/Parser.hs \
-	  --ignore-glob=src/lib/Lexer.hs
+	hlint .
 
 format:
 	find . -name '*.hs' ! -name 'Lexer.hs' ! -name 'Parser.hs' -exec ormolu --mode inplace {} +

@@ -236,7 +236,7 @@ For local installation, [ghcup](https://www.haskell.org/ghcup/) is the most reas
 Simply execute:
 
 ```bash
-./build.sh
+make build
 ```
 
 ## how to run
@@ -244,13 +244,7 @@ Simply execute:
 Having compiled the project, simply execute:
 
 ```bash
-cabal run wyvern-diagrams -- -i "./diagram.txt" -o "./diagram.svg"
-```
-
-Or, to see some sample diagrams, execute:
-
-```bash
-./run.sh
+make run
 ```
 
 ## how to test
@@ -258,12 +252,12 @@ Or, to see some sample diagrams, execute:
 Having compiled the project, simply execute:
 
 ```bash
-./test.sh
+make test
 ```
 
 ### debugging
 
-* `cabal repl wyvern --repl-options="-fbreak-on-error -fbreak-on-exception"`
+* `make repl`
 * `:load app/Main`
 * `:break Blocks 365`
 * `:main -i "./diagrams/simple-diagram-1.txt" -o "./diagrams/simple-diagram-1.svg"`
