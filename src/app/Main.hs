@@ -4,11 +4,11 @@ import Blocks (renderDiagram)
 import Constants (svgOptions)
 import Diagrams.Backend.SVG (renderSVG')
 import InputArguments (inputPath, outputPath, parseInput)
-import Layout (position)
+-- import Layout (position)
 import Lexer (lexAll, runAlex)
 import Options.Applicative (execParser, fullDesc, header, helper, info, (<**>))
 import Parser (ParseResult (..), diagram)
-import Renderer (render)
+-- import Renderer (render)
 import Validator (validate)
 
 main :: IO Int
@@ -30,7 +30,7 @@ main = do
           ParseOk blocks -> do
             case validate blocks of
               Left validBlocks -> do
-                renderSVG' ((outputPath input) <> "_new") svgOptions (render $ position validBlocks 0.0 0.0)
+                -- renderSVG' ((outputPath input) <> "_new") svgOptions (render $ position validBlocks 0.0 0.0)
                 renderSVG' (outputPath input) svgOptions (Blocks.renderDiagram validBlocks)
                 return 0
               Right (duplicatedIds, incorrectGCIds) -> do
