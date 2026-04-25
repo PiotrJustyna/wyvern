@@ -53,7 +53,7 @@ specFindIncorrectGammaConnections'' = describe "findIncorrectGammaConnections''"
     result `shouldContain` [ID "3"]
 
 specFindIncorrectGammaConnections' :: Spec
-specFindIncorrectGammaConnections' = describe "specFindIncorrectGammaConnections'" $ do
+specFindIncorrectGammaConnections' = describe "findIncorrectGammaConnections'" $ do
   it "combines all incorrect ids found in a list of blocks" $ do
     let fork = Fork Nothing "" [] [] (Just (ID "3"))
     let action = Action Nothing ""

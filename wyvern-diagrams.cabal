@@ -27,11 +27,14 @@ library
     exposed-modules:  ID
                       Constants
                       Blocks
+                      PositionedBlock
                       HelperDiagrams
                       Lexer
                       Parser
                       InputArguments
                       Validator
+                      Layout
+                      Renderer
     hs-source-dirs:   src/lib
     build-depends:
                       -- BSD-3-Clause
@@ -72,7 +75,9 @@ test-suite wyvern-tests
     type:             exitcode-stdio-1.0
     hs-source-dirs:   src/tests
     main-is:          Main.hs
-    other-modules:    ValidatorTests
+    other-modules:    ValidatorTests,
+                      PositionedBlockTests,
+                      LayoutTests
     build-depends:
                       -- BSD-3-Clause
                       base >= 4.19.2.0 && < 5,

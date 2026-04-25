@@ -19,9 +19,7 @@ test: lint format
 	cabal test
 
 lint:
-	hlint . \
-	  --ignore-glob=src/lib/Parser.hs \
-	  --ignore-glob=src/lib/Lexer.hs
+	hlint .
 
 format:
 	find . -name '*.hs' ! -name 'Lexer.hs' ! -name 'Parser.hs' -exec ormolu --mode inplace {} +
@@ -34,7 +32,7 @@ clean:
 
 run: lint format
 	cabal run wyvern-diagrams -- \
-	    -i "./diagrams/general/temp.txt" \
+	    -i "./diagrams/general/simple-diagram-7.txt" \
 	    -o "./diagrams/general/temp.svg"
 
 repl:
