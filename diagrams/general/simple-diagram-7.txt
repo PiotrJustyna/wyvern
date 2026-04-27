@@ -5,7 +5,6 @@ h1 "headline 1"
   {
     aa "question a"
     {
-      ba "action b"
     }
     {
       ca "action c"
