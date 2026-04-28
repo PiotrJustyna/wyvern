@@ -27,7 +27,8 @@ h1 "headline 1"
     ya "action y"
     za "question z"
     {
-      "hello"
+      "hello 1"
+      "hello 2"
     }
     {
       "world"
