@@ -39,7 +39,7 @@ position skewers x y =
         foldr
           ( \skewer (accuMaxX, accuPositionedBlocks) ->
               let (positionedSkewer, maxX, _minY) = position' skewer accuMaxX y
-               in (maxX, positionedSkewer : accuPositionedBlocks)
+               in (maxX, (Prelude.reverse positionedSkewer) : accuPositionedBlocks)
           )
           (x, [])
           skewers
@@ -50,10 +50,10 @@ connections'' (PositionedFork _i _c l r _gCId x y maxX minY) =
   let lc = case l of
         [] -> ((x, y), (x, minY))
         (b : _) ->
-          let (lx, ly, lmaxX, lMinY) = getPosition b
+          let (lx, ly, _lMaxX, _lMinY) = getPosition b
            in ((x, y), (lx, ly))
       rc = case r of
-        [] -> [((x, y), (x, minY))]
+        [] -> [((x, y), (maxX, y)), ((maxX, y), (maxX, minY))]
         (b : _) ->
           let (rx, ry, rmaxX, rMinY) = getPosition b
            in [((x, y), (rx, y)), ((rx, y), (rx, ry))]
@@ -61,7 +61,23 @@ connections'' (PositionedFork _i _c l r _gCId x y maxX minY) =
 connections'' _ = []
 
 connections' :: [PositionedBlock] -> [((Double, Double), (Double, Double))]
-connections' = foldr (\pB accu -> connections'' pB <> accu) []
+connections' [] = []
+connections' [pB] = connections'' pB
+connections' (pB1 : pB2 : pBs) =
+  case pB1 of
+    (PositionedFork _i _c l _r _gCId x1 y1 maxX1 minY1) ->
+      let position2@(x2, y2, maxX2, minY2) = getPosition pB2
+          lConnection = case l of
+            [] -> []
+            _ ->
+              let lastL@(_xLastL, yLastL, _maxXLastL, _minYLastL) = getPosition (last l)
+               in [((x1 + 1.2, yLastL), (x2 + 1.2, y2))]
+       in lConnection <> connections'' pB1 <> connections' (pB2 : pBs)
+    _ -> connections' (pB2 : pBs)
+
+-- let position1@(x1, y1, maxX1, minY1) = getPosition pB1
+--     position2@(x2, y2, maxX2, minY2) = getPosition pB2
+--  in ((x1, y1), (x2 + 0.5, y2)) : connections' (pB2 : pBs) -- connections'' pB1
 
 connections :: [[PositionedBlock]] -> [((Double, Double), (Double, Double))]
 connections = foldr (\pBs accu -> connections' pBs <> accu) []
