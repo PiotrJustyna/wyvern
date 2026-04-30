@@ -77,7 +77,8 @@ test-suite wyvern-tests
     main-is:          Main.hs
     other-modules:    ValidatorTests,
                       PositionedBlockTests,
-                      LayoutTests
+                      Layout1Tests,
+                      Layout2Tests
     build-depends:
                       -- BSD-3-Clause
                       base >= 4.19.2.0 && < 5,

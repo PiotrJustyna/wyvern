@@ -1,6 +1,7 @@
 module Main where
 
-import LayoutTests
+import Layout1Tests
+import Layout2Tests
 import PositionedBlockTests
 import Test.Hspec
 import ValidatorTests
@@ -8,6 +9,7 @@ import ValidatorTests
 layoutTests :: Spec
 layoutTests = do
   specLayout1
+  specLayout2
 
 positionedBlockTests :: Spec
 positionedBlockTests = do
