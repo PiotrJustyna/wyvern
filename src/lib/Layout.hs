@@ -18,8 +18,8 @@ position'' EndTerminator x y = PositionedEndTerminator x y (x + defaultBoundingB
 position' :: [Block] -> Double -> Double -> ([PositionedBlock], Double, Double)
 position' blocks x y =
   let (_finalX, _finalY, finalPositionedBlocks, finalMaxX, finalMinY) =
-        foldr
-          ( \b (accuX, accuY, accuPositionedBlocks, accuMaxX, accuMinY) ->
+        foldl
+          ( \(accuX, accuY, accuPositionedBlocks, accuMaxX, accuMinY) b ->
               let positionedBlock = position'' b accuX accuY
                   (_x, _y, maxX, minY) = getPosition positionedBlock
                in ( accuX,
@@ -36,8 +36,8 @@ position' blocks x y =
 position :: [[Block]] -> Double -> Double -> [[PositionedBlock]]
 position skewers x y =
   let (_finalMaxX, finalPositionedBlocks) =
-        foldr
-          ( \skewer (accuMaxX, accuPositionedBlocks) ->
+        foldl
+          ( \(accuMaxX, accuPositionedBlocks) skewer ->
               let (positionedSkewer, maxX, _minY) = position' skewer accuMaxX y
                in (maxX, (Prelude.reverse positionedSkewer) : accuPositionedBlocks)
           )
@@ -70,14 +70,10 @@ connections' (pB1 : pB2 : pBs) =
           lConnection = case l of
             [] -> []
             _ ->
-              let lastL@(_xLastL, yLastL, _maxXLastL, _minYLastL) = getPosition (last l)
-               in [((x1 + 1.2, yLastL), (x2 + 1.2, y2))]
+              let lastL@(_xLastL, yLastL, _maxXLastL, minYLastL) = getPosition (last l)
+               in [((x1 - 0.2, yLastL), (x2 + 0.2, y2))]
        in lConnection <> connections'' pB1 <> connections' (pB2 : pBs)
     _ -> connections' (pB2 : pBs)
-
--- let position1@(x1, y1, maxX1, minY1) = getPosition pB1
---     position2@(x2, y2, maxX2, minY2) = getPosition pB2
---  in ((x1, y1), (x2 + 0.5, y2)) : connections' (pB2 : pBs) -- connections'' pB1
 
 connections :: [[PositionedBlock]] -> [((Double, Double), (Double, Double))]
 connections = foldr (\pBs accu -> connections' pBs <> accu) []

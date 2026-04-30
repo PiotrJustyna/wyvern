@@ -1,6 +1,6 @@
 module Main where
 
-import Blocks (renderDiagram)
+import Blocks (renderDiagram, reverse)
 import Constants (svgOptions)
 import Diagrams.Backend.SVG (renderSVG')
 import InputArguments (inputPath, outputPath, parseInput)
@@ -30,7 +30,7 @@ main = do
           ParseOk blocks -> do
             case validate blocks of
               Left validBlocks -> do
-                let positionedBlocks = position validBlocks 0.0 0.0
+                let positionedBlocks = position (Blocks.reverse validBlocks) 0.0 0.0
                 let blockConnections = connections positionedBlocks
                 let renderedBlocks = render positionedBlocks
                 let renderedConnections = renderConnections blockConnections
