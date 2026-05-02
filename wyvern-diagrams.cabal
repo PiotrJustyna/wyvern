@@ -78,7 +78,8 @@ test-suite wyvern-tests
     other-modules:    ValidatorTests,
                       PositionedBlockTests,
                       Layout1Tests,
-                      Layout2Tests
+                      Layout2Tests,
+                      Layout3Tests
     build-depends:
                       -- BSD-3-Clause
                       base >= 4.19.2.0 && < 5,

@@ -11,12 +11,12 @@ data PositionedBlock
   | PositionedEndTerminator Double Double Double Double
 
 instance Show PositionedBlock where
-  show (PositionedStartTerminator x y _maxX _minY) = "StrartTerminator [" <> show x <> ", " <> show y <> "]"
-  show (PositionedAction _i c x y _maxX _minY) = "Action \"" <> c <> "\" [" <> show x <> ", " <> show y <> "]"
-  show (PositionedHeadline _i c x y _maxX _minY) = "Headline \"" <> c <> "\" [" <> show x <> ", " <> show y <> "]"
-  show (PositionedAddress _i c x y _maxX _minY) = "Address \"" <> c <> "\" [" <> show x <> ", " <> show y <> "]"
-  show (PositionedFork _i c _l _r _gCId x y _maxX _minY) = "Fork \"" <> c <> "\" [" <> show x <> ", " <> show y <> "]"
-  show (PositionedEndTerminator x y _maxX _minY) = "EndTerminator [" <> show x <> ", " <> show y <> "]"
+  show (PositionedStartTerminator x y maxX minY) = "StrartTerminator [" <> show x <> ", " <> show y <> ", " <> show maxX <> ", " <> show minY <> "]"
+  show (PositionedAction _i c x y maxX minY) = "Action \"" <> c <> "\" [" <> show x <> ", " <> show y <> ", " <> show maxX <> ", " <> show minY <> "]"
+  show (PositionedHeadline _i c x y maxX minY) = "Headline \"" <> c <> "\" [" <> show x <> ", " <> show y <> ", " <> show maxX <> ", " <> show minY <> "]"
+  show (PositionedAddress _i c x y maxX minY) = "Address \"" <> c <> "\" [" <> show x <> ", " <> show y <> ", " <> show maxX <> ", " <> show minY <> "]"
+  show (PositionedFork _i c _l _r _gCId x y maxX minY) = "Fork \"" <> c <> "\" [" <> show x <> ", " <> show y <> ", " <> show maxX <> ", " <> show minY <> "]"
+  show (PositionedEndTerminator x y maxX minY) = "EndTerminator [" <> show x <> ", " <> show y <> ", " <> ", " <> show maxX <> ", " <> show minY <> "]"
 
 getPosition :: PositionedBlock -> (Double, Double, Double, Double)
 getPosition (PositionedStartTerminator x y maxX minY) = (x, y, maxX, minY)
