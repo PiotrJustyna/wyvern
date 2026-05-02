@@ -2,6 +2,7 @@ module Main where
 
 import Layout1Tests
 import Layout2Tests
+import Layout3Tests
 import PositionedBlockTests
 import Test.Hspec
 import ValidatorTests
@@ -10,6 +11,7 @@ layoutTests :: Spec
 layoutTests = do
   specLayout1
   specLayout2
+  specLayout3
 
 positionedBlockTests :: Spec
 positionedBlockTests = do

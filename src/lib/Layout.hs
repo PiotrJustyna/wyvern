@@ -48,16 +48,17 @@ position skewers x y =
 connections'' :: PositionedBlock -> [((Double, Double), (Double, Double))]
 connections'' (PositionedFork _i _c l r _gCId x y maxX minY) =
   let lc = case l of
-        [] -> ((x, y), (x, minY))
+        [] -> ((x, y), (x, minY + defaultBoundingBoxHeight * 0.5))
         (b : _) ->
-          let (lx, ly, _lMaxX, _lMinY) = getPosition b
+          let (lx, ly, _lmaxX, _lMinY) = getPosition b
            in ((x, y), (lx, ly))
       rc = case r of
-        [] -> [((x, y), (maxX, y)), ((maxX, y), (maxX, minY))]
+        [] -> [((x, y), (maxX, y)), ((maxX, y), (maxX, minY + defaultBoundingBoxHeight * 0.5))]
         (b : _) ->
-          let (rx, ry, rmaxX, rMinY) = getPosition b
+          let (rx, ry, _rmaxX, _rMinY) = getPosition b
            in [((x, y), (rx, y)), ((rx, y), (rx, ry))]
-   in lc : (rc <> connections' l <> connections' r)
+      branchConnection = ((maxX, minY + defaultBoundingBoxHeight * 0.5), (x, minY + defaultBoundingBoxHeight * 0.5))
+   in lc : branchConnection : (rc <> connections' l <> connections' r)
 connections'' _ = []
 
 connections' :: [PositionedBlock] -> [((Double, Double), (Double, Double))]
@@ -69,9 +70,7 @@ connections' (pB1 : pB2 : pBs) =
       let position2@(x2, y2, maxX2, minY2) = getPosition pB2
           lConnection = case l of
             [] -> []
-            _ ->
-              let lastL@(_xLastL, yLastL, _maxXLastL, minYLastL) = getPosition (last l)
-               in [((x1 - 0.2, yLastL), (x2 + 0.2, y2))]
+            _ -> [((x1, minY1 + defaultBoundingBoxHeight * 0.5), (x2, y2))]
        in lConnection <> connections'' pB1 <> connections' (pB2 : pBs)
     _ -> connections' (pB2 : pBs)
 
