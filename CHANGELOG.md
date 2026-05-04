@@ -1,3 +1,15 @@
+## [0.4.3.0](https://github.com/PiotrJustyna/wyvern/tree/0.4.3.0) (2026-05-04)
+
+Addressed issues:
+
+* [72](https://github.com/PiotrJustyna/wyvern/issues/72) - single line comments
+* [73](https://github.com/PiotrJustyna/wyvern/issues/73) - duplicate block ids allowed while they shouldn't be
+* [64](https://github.com/PiotrJustyna/wyvern/issues/64) - Block text unnecessarily escaped
+
+Plus a number of quality of life improvements like the introduction of the makefile + its set of useful commands.
+
+Finally, generally preparing the code for new rendering engine - attempting to simplify everything further and to allow for more flexibility when working with gamma connections.
+
 ## [0.4.2.0](https://github.com/PiotrJustyna/wyvern/tree/0.4.2.0) (2026-03-27)
 
 Fixed bugs:
