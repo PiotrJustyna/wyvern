@@ -6,21 +6,21 @@ import PositionedBlock
 
 position'' :: Block -> Double -> Double -> PositionedBlock
 position'' (Fork i c l r gCId) x y =
-  let (positionedLeft, lMaxX, lMinY) = position' l x (y - defaultBoundingBoxHeight)
-      (positionedRight, rMaxX, rMinY) = position' r (max lMaxX (x + defaultBoundingBoxWidth)) (y - defaultBoundingBoxHeight)
+  let (positionedLeft, lMaxX, lMinY) = position' l x (y - defaultBoundingBoxHeight * 0.5)
+      (positionedRight, rMaxX, rMinY) = position' r (max lMaxX (x + defaultBoundingBoxWidth)) (y - defaultBoundingBoxHeight * 0.5)
    in (PositionedFork i c (Prelude.reverse positionedLeft) (Prelude.reverse positionedRight) gCId x y rMaxX (min lMinY rMinY))
-position'' StartTerminator x y = PositionedStartTerminator x y (x + defaultBoundingBoxWidth) (y - defaultBoundingBoxHeight)
-position'' (Action i c) x y = PositionedAction i c x y (x + defaultBoundingBoxWidth) (y - defaultBoundingBoxHeight)
-position'' (Headline i c) x y = PositionedHeadline i c x y (x + defaultBoundingBoxWidth) (y - defaultBoundingBoxHeight)
-position'' (Address i c) x y = PositionedAddress i c x y (x + defaultBoundingBoxWidth) (y - defaultBoundingBoxHeight)
-position'' EndTerminator x y = PositionedEndTerminator x y (x + defaultBoundingBoxWidth) (y - defaultBoundingBoxHeight)
+position'' StartTerminator x y = PositionedStartTerminator x y (x + defaultBoundingBoxWidth * 0.5) (y - defaultBoundingBoxHeight * 0.5)
+position'' (Action i c) x y = PositionedAction i c x y (x + defaultBoundingBoxWidth * 0.5) (y - defaultBoundingBoxHeight * 0.5)
+position'' (Headline i c) x y = PositionedHeadline i c x y (x + defaultBoundingBoxWidth * 0.5) (y - defaultBoundingBoxHeight * 0.5)
+position'' (Address i c) x y = PositionedAddress i c x y (x + defaultBoundingBoxWidth * 0.5) (y - defaultBoundingBoxHeight * 0.5)
+position'' EndTerminator x y = PositionedEndTerminator x y (x + defaultBoundingBoxWidth * 0.5) (y - defaultBoundingBoxHeight * 0.5)
 
 position' :: [Block] -> Double -> Double -> ([PositionedBlock], Double, Double)
 position' blocks x y =
   let (_finalX, _finalY, finalPositionedBlocks, finalMaxX, finalMinY) =
         foldl
           ( \(accuX, accuY, accuPositionedBlocks, accuMaxX, accuMinY) b ->
-              let positionedBlock = position'' b accuX accuY
+              let positionedBlock = position'' b accuX (accuY - defaultBoundingBoxHeight * 0.5)
                   (_x, _y, maxX, minY) = getPosition positionedBlock
                in ( accuX,
                     minY,
@@ -39,7 +39,7 @@ position skewers x y =
         foldl
           ( \(accuMaxX, accuPositionedBlocks) skewer ->
               let (positionedSkewer, maxX, _minY) = position' skewer accuMaxX y
-               in (maxX, (Prelude.reverse positionedSkewer) : accuPositionedBlocks)
+               in (maxX + defaultBoundingBoxWidth * 0.5, (Prelude.reverse positionedSkewer) : accuPositionedBlocks)
           )
           (x, [])
           skewers
@@ -48,16 +48,16 @@ position skewers x y =
 connections'' :: PositionedBlock -> [((Double, Double), (Double, Double))]
 connections'' (PositionedFork _i _c l r _gCId x y maxX minY) =
   let lc = case l of
-        [] -> ((x, y), (x, minY + defaultBoundingBoxHeight * 0.5))
+        [] -> ((x, y), (x, minY))
         (b : _) ->
           let (lx, ly, _lmaxX, _lMinY) = getPosition b
            in ((x, y), (lx, ly))
       rc = case r of
-        [] -> [((x, y), (maxX, y)), ((maxX, y), (maxX, minY + defaultBoundingBoxHeight * 0.5))]
+        [] -> [((x, y), (maxX - defaultBoundingBoxWidth * 0.5, y)), ((maxX - defaultBoundingBoxWidth * 0.5, y), (maxX - defaultBoundingBoxWidth * 0.5, minY))]
         (b : _) ->
           let (rx, ry, _rmaxX, _rMinY) = getPosition b
            in [((x, y), (rx, y)), ((rx, y), (rx, ry))]
-      branchConnection = ((maxX, minY + defaultBoundingBoxHeight * 0.5), (x, minY + defaultBoundingBoxHeight * 0.5))
+      branchConnection = ((maxX - defaultBoundingBoxWidth * 0.5, minY), (x, minY))
    in lc : branchConnection : (rc <> connections' l <> connections' r)
 connections'' _ = []
 
