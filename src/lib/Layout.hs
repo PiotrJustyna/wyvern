@@ -7,7 +7,7 @@ import PositionedBlock
 position'' :: Block -> Double -> Double -> PositionedBlock
 position'' (Fork i c l r gCId) x y =
   let (positionedLeft, lMaxX, lMinY) = position' l x (y - defaultBoundingBoxHeight * 0.5)
-      (positionedRight, rMaxX, rMinY) = position' r (max lMaxX (x + defaultBoundingBoxWidth)) (y - defaultBoundingBoxHeight * 0.5)
+      (positionedRight, rMaxX, rMinY) = position' r (lMaxX + defaultBoundingBoxWidth * 0.5) (y - defaultBoundingBoxHeight * 0.5)
    in (PositionedFork i c (Prelude.reverse positionedLeft) (Prelude.reverse positionedRight) gCId x y rMaxX (min lMinY rMinY))
 position'' StartTerminator x y = PositionedStartTerminator x y (x + defaultBoundingBoxWidth * 0.5) (y - defaultBoundingBoxHeight * 0.5)
 position'' (Action i c) x y = PositionedAction i c x y (x + defaultBoundingBoxWidth * 0.5) (y - defaultBoundingBoxHeight * 0.5)
@@ -48,18 +48,29 @@ position skewers x y =
 connections'' :: PositionedBlock -> [((Double, Double), (Double, Double))]
 connections'' (PositionedFork _i _c l r _gCId x y maxX minY) =
   let lc = case l of
-        [] -> ((x, y), (x, minY))
-        (b : _) ->
+        [] -> [((x, y), (x, minY - defaultBoundingBoxHeight * 0.5))]
+        bs@(b : _) ->
           let (lx, ly, _lmaxX, _lMinY) = getPosition b
-           in ((x, y), (lx, ly))
+           in case last bs of
+                (PositionedFork _i _c _l _r _gCId _x _y _maxX _minY) -> [((x, y), (lx, ly))]
+                lastB ->
+                  let (lastx, lasty, _lastmaxX, _lastMinY) = getPosition lastB
+                   in [((x, y), (lx, ly)), ((lastx, lasty), (x, minY))]
       rc = case r of
         [] -> [((x, y), (maxX - defaultBoundingBoxWidth * 0.5, y)), ((maxX - defaultBoundingBoxWidth * 0.5, y), (maxX - defaultBoundingBoxWidth * 0.5, minY))]
-        (b : _) ->
+        bs@(b : _) ->
           let (rx, ry, _rmaxX, _rMinY) = getPosition b
-           in [((x, y), (rx, y)), ((rx, y), (rx, ry))]
-      branchConnection = ((maxX - defaultBoundingBoxWidth * 0.5, minY), (x, minY))
-   in lc : branchConnection : (rc <> connections' l <> connections' r)
+           in case last bs of
+                (PositionedFork _i _c _l _r _gCId _x _y _maxX _minY) -> [((x, y), (rx, y)), ((rx, y), (rx, ry))]
+                lastB ->
+                  let (lastx, lasty, _lastmaxX, _lastMinY) = getPosition lastB
+                   in [((x, y), (rx, y)), ((rx, y), (rx, ry)), ((lastx, lasty), (lastx, minY))]
+      branchConnection = ((maxX - defaultBoundingBoxWidth * 0.5, minY - 0.2), (x, minY)) -- TODO: overlapping connections
+   in branchConnection : (lc <> rc <> connections' l <> connections' r)
 connections'' _ = []
+
+-- let position@(x, y, maxX, minY) = getPosition pB
+--  in [((x, y), (x + 0.3, y - 0.5))]
 
 connections' :: [PositionedBlock] -> [((Double, Double), (Double, Double))]
 connections' [] = []
@@ -70,9 +81,14 @@ connections' (pB1 : pB2 : pBs) =
       let position2@(x2, y2, maxX2, minY2) = getPosition pB2
           lConnection = case l of
             [] -> []
-            _ -> [((x1, minY1 + defaultBoundingBoxHeight * 0.5), (x2, y2))]
+            _ -> [((x1, minY1), (x2, y2))]
        in lConnection <> connections'' pB1 <> connections' (pB2 : pBs)
-    _ -> connections' (pB2 : pBs)
+    _ ->
+      let position1@(x1, y1, maxX1, minY1) = getPosition pB1
+          position2@(x2, y2, maxX2, minY2) = getPosition pB2
+          connection = [((x1, y1), (x2, y2))]
+          remainingConnections = connections' (pB2 : pBs)
+       in connection <> remainingConnections
 
 connections :: [[PositionedBlock]] -> [((Double, Double), (Double, Double))]
 connections = foldr (\pBs accu -> connections' pBs <> accu) []
