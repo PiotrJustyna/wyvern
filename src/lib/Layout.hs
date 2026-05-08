@@ -57,20 +57,16 @@ connections'' (PositionedFork _i _c l r _gCId x y maxX minY) =
                   let (lastx, lasty, _lastmaxX, _lastMinY) = getPosition lastB
                    in [((x, y), (lx, ly)), ((lastx, lasty), (x, minY))]
       rc = case r of
-        [] -> [((x, y), (maxX - defaultBoundingBoxWidth * 0.5, y)), ((maxX - defaultBoundingBoxWidth * 0.5, y), (maxX - defaultBoundingBoxWidth * 0.5, minY))]
+        [] -> [((x, y), (maxX - defaultBoundingBoxWidth * 0.5, y)), ((maxX - defaultBoundingBoxWidth * 0.5, y), (maxX - defaultBoundingBoxWidth * 0.5, minY)), ((maxX - defaultBoundingBoxWidth * 0.5, minY), (x, minY))]
         bs@(b : _) ->
           let (rx, ry, _rmaxX, _rMinY) = getPosition b
            in case last bs of
-                (PositionedFork _i _c _l _r _gCId _x _y _maxX _minY) -> [((x, y), (rx, y)), ((rx, y), (rx, ry))]
+                (PositionedFork _i _c _l _r _gCId _x _y _maxX _minY) -> [((x, y), (rx, y)), ((rx, y), (rx, ry)), ((rx, minY), (x, minY))]
                 lastB ->
                   let (lastx, lasty, _lastmaxX, _lastMinY) = getPosition lastB
-                   in [((x, y), (rx, y)), ((rx, y), (rx, ry)), ((lastx, lasty), (lastx, minY))]
-      branchConnection = ((maxX - defaultBoundingBoxWidth * 0.5, minY - 0.2), (x, minY)) -- TODO: overlapping connections
-   in branchConnection : (lc <> rc <> connections' l <> connections' r)
+                   in [((x, y), (rx, y)), ((rx, y), (rx, ry)), ((lastx, lasty), (lastx, minY)), ((lastx, minY), (x, minY))]
+   in (lc <> rc <> connections' l <> connections' r)
 connections'' _ = []
-
--- let position@(x, y, maxX, minY) = getPosition pB
---  in [((x, y), (x + 0.3, y - 0.5))]
 
 connections' :: [PositionedBlock] -> [((Double, Double), (Double, Double))]
 connections' [] = []
