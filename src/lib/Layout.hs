@@ -61,7 +61,7 @@ connections'' (PositionedFork _i _c l r _gCId x y maxX minY) =
         bs@(b : _) ->
           let (rx, ry, _rmaxX, _rMinY) = getPosition b
            in case last bs of
-                (PositionedFork _i _c _l _r _gCId _x _y _maxX _minY) -> [((x, y), (rx, y)), ((rx, y), (rx, ry)), ((rx, minY), (x, minY))]
+                (PositionedFork _i _c _l _r _gCId fx fy _maxX _minY) -> [((x, y), (rx, y)), ((rx, y), (rx, ry)), ((rx, minY), (x, minY)), ((fx, fy), (fx, minY))]
                 lastB ->
                   let (lastx, lasty, _lastmaxX, _lastMinY) = getPosition lastB
                    in [((x, y), (rx, y)), ((rx, y), (rx, ry)), ((lastx, lasty), (lastx, minY)), ((lastx, minY), (x, minY))]
