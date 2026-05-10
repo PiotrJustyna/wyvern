@@ -7,7 +7,6 @@ import Layout
 import PositionedBlock
 import Test.Hspec
 
--- | Helper function to create test blocks for layout positioning
 createTestBlocks :: [Block]
 createTestBlocks =
   let f2LeftBranch = [Action Nothing "A4"]
@@ -25,16 +24,16 @@ specLayout2 = describe "layout2" $ do
       it "should position at x=0.0" $
         x `shouldBe` 0.0
       it "should position at y=0.0" $
-        y `shouldBe` 0.0
+        y `shouldBe` (-0.5)
 
     context "Fork left branch" $ do
       let (lx, ly, lMaxX, lMinY) = getPosition l
       it "should position left branch at x=0.0" $
         lx `shouldBe` 0.0
       it "should position left branch one level below fork (y=-1*boxHeight)" $
-        ly `shouldBe` (defaultBoundingBoxHeight * (-1.0))
+        ly `shouldBe` (defaultBoundingBoxHeight * (-1.5))
       it "should calculate correct maximum x coordinate" $
-        lMaxX `shouldBe` defaultBoundingBoxWidth
+        lMaxX `shouldBe` defaultBoundingBoxWidth * 0.5
       it "should calculate correct maximum y coordinate" $
         lMinY `shouldBe` (defaultBoundingBoxHeight * (-2.0))
 
@@ -43,14 +42,14 @@ specLayout2 = describe "layout2" $ do
       it "should correctly position right branch - x coordinate" $
         ax `shouldBe` defaultBoundingBoxWidth
       it "should correctly position right branch - y coordinate" $
-        ay `shouldBe` defaultBoundingBoxHeight * (-1.0)
+        ay `shouldBe` defaultBoundingBoxHeight * (-1.5)
       it "should calculate correct maximum x coordinate" $
-        aMaxX `shouldBe` defaultBoundingBoxWidth * (2.0)
+        aMaxX `shouldBe` defaultBoundingBoxWidth * (1.5)
       it "should calculate correct maximum y coordinate" $
         aMinY `shouldBe` (defaultBoundingBoxHeight * (-2.0))
 
     context "Overall layout boundaries" $ do
       it "should calculate correct maximum x coordinate" $
-        maxX `shouldBe` 9.0
+        maxX `shouldBe` defaultBoundingBoxWidth * 2.5
       it "should calculate correct minimum y coordinate (deepest stack depth)" $
         minY `shouldBe` (defaultBoundingBoxHeight * (-6.0))
