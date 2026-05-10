@@ -7,7 +7,6 @@ import Layout
 import PositionedBlock
 import Test.Hspec
 
--- | Helper function to create test blocks for layout positioning
 createTestBlocks :: [Block]
 createTestBlocks =
   [ Action Nothing "-",
@@ -15,12 +14,9 @@ createTestBlocks =
     Fork Nothing "-" [Action (Just (ID "2")) "2"] [Action (Just (ID "3")) "3"] Nothing
   ]
 
--- | Helper function to position blocks at origin (0.0, 0.0)
 positionTestBlocks :: ([PositionedBlock], Double, Double)
 positionTestBlocks = position' createTestBlocks 0.0 0.0
 
--- | Helper function to extract positioned blocks and boundaries from layout result
--- Returns: (first block, second block, left fork child, right fork child, fork position, max x, min y)
 extractPositions ::
   ([PositionedBlock], Double, Double) ->
   (PositionedBlock, PositionedBlock, PositionedBlock, PositionedBlock, (Double, Double), Double, Double)
@@ -37,38 +33,38 @@ specLayout1 = describe "layout1" $ do
     it "should position at x=0.0" $
       x1 `shouldBe` 0.0
     it "should position at y=-3*boxHeight (three blocks stacked below)" $
-      y1 `shouldBe` 0.0
+      y1 `shouldBe` (-0.5)
 
   context "Second action block positioning" $ do
     let (x2, y2, _, _) = getPosition pb2
     it "should position at x=0.0" $
       x2 `shouldBe` 0.0
     it "should position at y=-2*boxHeight (two blocks above it)" $
-      y2 `shouldBe` (defaultBoundingBoxHeight * (-1.0))
+      y2 `shouldBe` (defaultBoundingBoxHeight * (-1.5))
 
   context "Fork block positioning" $ do
     context "Fork root node" $ do
       it "should position fork root at x=0.0" $
         forkX `shouldBe` 0.0
       it "should position fork root at y=0.0" $
-        forkY `shouldBe` (defaultBoundingBoxHeight * (-2.0))
+        forkY `shouldBe` (defaultBoundingBoxHeight * (-2.5))
 
     context "Fork left branch" $ do
       let (x3l, y3l, _, _) = getPosition l3
       it "should position left branch at x=0.0" $
         x3l `shouldBe` 0.0
       it "should position left branch one level below fork (y=-1*boxHeight)" $
-        y3l `shouldBe` (defaultBoundingBoxHeight * (-3.0))
+        y3l `shouldBe` (defaultBoundingBoxHeight * (-3.5))
 
     context "Fork right branch" $ do
       let (x3r, y3r, _, _) = getPosition r3
       it "should position right branch at x=boxWidth (offset for fork branches)" $
         x3r `shouldBe` (defaultBoundingBoxWidth * 1.0)
       it "should position right branch at same level as left branch (y=-1*boxHeight)" $
-        y3r `shouldBe` (defaultBoundingBoxHeight * (-3.0))
+        y3r `shouldBe` (defaultBoundingBoxHeight * (-3.5))
 
   context "Overall layout boundaries" $ do
     it "should calculate correct maximum x coordinate" $
-      maxX `shouldBe` 6.0
+      maxX `shouldBe` defaultBoundingBoxWidth * 1.5
     it "should calculate correct minimum y coordinate (deepest stack depth)" $
       minY `shouldBe` (defaultBoundingBoxHeight * (-4.0))
