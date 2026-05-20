@@ -32,3 +32,5 @@ specReposition = describe "reposition" $ do
       let repositionedActionPosition@(x', y', _maxx', _miny') = getPosition repositionedAction
       x `shouldBe` x'
       (y - 0.1) `shouldBe` y'
+
+      -- todo: verify max x and min y

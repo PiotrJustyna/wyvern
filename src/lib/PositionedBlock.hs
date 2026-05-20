@@ -26,6 +26,8 @@ getPosition (PositionedAddress _i _c x y maxX minY) = (x, y, maxX, minY)
 getPosition (PositionedFork _i _c _l _r _gCId x y maxX minY) = (x, y, maxX, minY)
 getPosition (PositionedEndTerminator x y maxX minY) = (x, y, maxX, minY)
 
+-- ?? TODO: questionable - does not set new positions of fork's branches
+-- also: min y need to reflect the new position
 setPosition :: PositionedBlock -> Double -> Double -> PositionedBlock
 setPosition (PositionedStartTerminator x y maxX minY) newx newy = (PositionedStartTerminator newx newy maxX minY)
 setPosition (PositionedAction _i _c x y maxX minY) newx newy = (PositionedAction _i _c newx newy maxX minY)
