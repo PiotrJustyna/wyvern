@@ -26,6 +26,14 @@ getPosition (PositionedAddress _i _c x y maxX minY) = (x, y, maxX, minY)
 getPosition (PositionedFork _i _c _l _r _gCId x y maxX minY) = (x, y, maxX, minY)
 getPosition (PositionedEndTerminator x y maxX minY) = (x, y, maxX, minY)
 
+setPosition :: PositionedBlock -> Double -> Double -> PositionedBlock
+setPosition (PositionedStartTerminator x y maxX minY) newx newy = (PositionedStartTerminator newx newy maxX minY)
+setPosition (PositionedAction _i _c x y maxX minY) newx newy = (PositionedAction _i _c newx newy maxX minY)
+setPosition (PositionedHeadline _i _c x y maxX minY) newx newy = (PositionedHeadline _i _c newx newy maxX minY)
+setPosition (PositionedAddress _i _c x y maxX minY) newx newy = (PositionedAddress _i _c newx newy maxX minY)
+setPosition (PositionedFork _i _c _l _r _gCId x y maxX minY) newx newy = (PositionedFork _i _c _l _r _gCId newx newy maxX minY)
+setPosition (PositionedEndTerminator x y maxX minY) newx newy = (PositionedEndTerminator newx newy maxX minY)
+
 getContent :: PositionedBlock -> String
 getContent (PositionedStartTerminator _x _y _maxX _minY) = "start"
 getContent (PositionedAction _i c _x _y _maxX _minY) = c

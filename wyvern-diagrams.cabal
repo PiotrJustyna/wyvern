@@ -79,7 +79,8 @@ test-suite wyvern-tests
                       PositionedBlockTests,
                       Layout1Tests,
                       Layout2Tests,
-                      Layout3Tests
+                      Layout3Tests,
+                      ReposititionTests
     build-depends:
                       -- BSD-3-Clause
                       base >= 4.19.2.0 && < 5,
