@@ -4,8 +4,13 @@ import Layout1Tests
 import Layout2Tests
 import Layout3Tests
 import PositionedBlockTests
+import ReposititionTests
 import Test.Hspec
 import ValidatorTests
+
+repositionTests :: Spec
+repositionTests = do
+  specReposition
 
 layoutTests :: Spec
 layoutTests = do
@@ -28,6 +33,7 @@ allSpecs = do
   validationTests
   positionedBlockTests
   layoutTests
+  repositionTests
 
 main :: IO ()
 main = hspec allSpecs

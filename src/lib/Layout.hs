@@ -45,6 +45,13 @@ position skewers x y =
           skewers
    in finalPositionedBlocks
 
+reposition'' :: PositionedBlock -> Double -> PositionedBlock
+reposition'' b y =
+  let position@(bx, by, _bmaxX, _bminY) = getPosition b
+   in if (by <= y)
+        then setPosition b bx (by - 0.1)
+        else b
+
 connections'' :: PositionedBlock -> [((Double, Double), (Double, Double))]
 connections'' (PositionedFork _i _c l r _gCId x y maxX minY) =
   let lc = case l of
