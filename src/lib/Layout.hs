@@ -52,6 +52,14 @@ reposition'' b y =
         then setPosition b bx (by - 0.1)
         else b
 
+reposition' :: [PositionedBlock] -> Double -> [PositionedBlock]
+reposition' [] y = []
+reposition' (b : bs) y = reposition'' b y : reposition' bs y
+
+reposition :: [[PositionedBlock]] -> Double -> [[PositionedBlock]]
+reposition [] y = []
+reposition (s : ss) y = reposition' s y : reposition ss y
+
 connections'' :: PositionedBlock -> [((Double, Double), (Double, Double))]
 connections'' (PositionedFork _i _c l r _gCId x y maxX minY) =
   let lc = case l of
