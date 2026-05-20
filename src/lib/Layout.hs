@@ -46,6 +46,10 @@ position skewers x y =
    in finalPositionedBlocks
 
 reposition'' :: PositionedBlock -> Double -> PositionedBlock
+reposition'' f@(PositionedFork i c l r gCId fx fy fmaxX fminY) y =
+  if (fy <= y)
+    then (PositionedFork i c (reposition' l y) (reposition' r y) gCId fx (fy - 0.1) fmaxX (fminY - 0.1))
+    else f
 reposition'' b y =
   let position@(bx, by, _bmaxX, _bminY) = getPosition b
    in if (by <= y)
@@ -53,12 +57,10 @@ reposition'' b y =
         else b
 
 reposition' :: [PositionedBlock] -> Double -> [PositionedBlock]
-reposition' [] y = []
-reposition' (b : bs) y = reposition'' b y : reposition' bs y
+reposition' bs y = foldr (\b accu -> (reposition'' b y) : accu) [] bs
 
 reposition :: [[PositionedBlock]] -> Double -> [[PositionedBlock]]
-reposition [] y = []
-reposition (s : ss) y = reposition' s y : reposition ss y
+reposition ss y = foldr (\s accu -> (reposition' s y) : accu) [] ss
 
 connections'' :: PositionedBlock -> [((Double, Double), (Double, Double))]
 connections'' (PositionedFork _i _c l r _gCId x y maxX minY) =

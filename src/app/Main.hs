@@ -4,7 +4,7 @@ import Blocks (renderDiagram, reverse)
 import Constants (svgOptions)
 import Diagrams.Backend.SVG (renderSVG')
 import InputArguments (inputPath, outputPath, parseInput)
-import Layout (connections, position)
+import Layout (connections, position, reposition)
 import Lexer (lexAll, runAlex)
 import Options.Applicative (execParser, fullDesc, header, helper, info, (<**>))
 import Parser (ParseResult (..), diagram)
@@ -31,8 +31,9 @@ main = do
             case validate blocks of
               Left validBlocks -> do
                 let positionedBlocks = position (Blocks.reverse validBlocks) 0.0 0.0
-                let blockConnections = connections positionedBlocks
-                let renderedBlocks = render positionedBlocks
+                let repositionedBlocks = reposition positionedBlocks (-1.0)
+                let blockConnections = connections repositionedBlocks
+                let renderedBlocks = render repositionedBlocks
                 let renderedConnections = renderConnections blockConnections
                 -- rendering v2:
                 -- renderSVG' ((outputPath input) <> "_new") svgOptions (renderedBlocks <> renderedConnections)
