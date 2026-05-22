@@ -46,15 +46,12 @@ position skewers x y =
    in finalPositionedBlocks
 
 reposition'' :: PositionedBlock -> Double -> PositionedBlock
-reposition'' f@(PositionedFork i c l r gCId fx fy fmaxX fminY) y =
-  if (fy <= y)
-    then (PositionedFork i c (reposition' l y) (reposition' r y) gCId fx (fy - 0.1) fmaxX (fminY - 0.1))
-    else f
-reposition'' b y =
-  let position@(bx, by, _bmaxX, _bminY) = getPosition b
-   in if (by <= y)
-        then setPosition b bx (by - 0.1)
-        else b
+reposition'' b@(PositionedFork i c l r gCId x y maxX minY) newY = if (y <= newY) then (PositionedFork i c (reposition' l newY) (reposition' r newY) gCId x (y - 0.1) maxX (minY - 0.1)) else b
+reposition'' b@(PositionedStartTerminator x y maxX minY) newY = if (y <= newY) then (PositionedStartTerminator x (y - 0.1) maxX (minY - 0.1)) else b
+reposition'' b@(PositionedEndTerminator x y maxX minY) newY = if (y <= newY) then (PositionedEndTerminator x (y - 0.1) maxX (minY - 0.1)) else b
+reposition'' b@(PositionedAction i c x y maxX minY) newY = if (y <= newY) then (PositionedAction i c x (y - 0.1) maxX (minY - 0.1)) else b
+reposition'' b@(PositionedHeadline i c x y maxX minY) newY = if (y <= newY) then (PositionedHeadline i c x (y - 0.1) maxX (minY - 0.1)) else b
+reposition'' b@(PositionedAddress i c x y maxX minY) newY = if (y <= newY) then (PositionedAddress i c x (y - 0.1) maxX (minY - 0.1)) else b
 
 reposition' :: [PositionedBlock] -> Double -> [PositionedBlock]
 reposition' bs y = foldr (\b accu -> (reposition'' b y) : accu) [] bs
