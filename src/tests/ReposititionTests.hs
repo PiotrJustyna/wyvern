@@ -1,6 +1,7 @@
 module ReposititionTests where
 
 import Blocks
+import Constants
 import ID
 import Layout
 import PositionedBlock
@@ -33,6 +34,6 @@ specReposition = describe "reposition" $ do
       let repositionedAction = reposition'' positionedAction (y + 1.0)
       let repositionedActionPosition@(x', y', maxx', miny') = getPosition repositionedAction
       x `shouldBe` x'
-      (y - 0.1) `shouldBe` y'
+      (y - repositionShift) `shouldBe` y'
       maxx `shouldBe` maxx'
-      (miny - 0.1) `shouldBe` miny'
+      (miny - repositionShift) `shouldBe` miny'

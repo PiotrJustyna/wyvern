@@ -31,12 +31,13 @@ main = do
             case validate blocks of
               Left validBlocks -> do
                 let positionedBlocks = position (Blocks.reverse validBlocks) 0.0 0.0
-                let repositionedBlocks = reposition positionedBlocks (-1.0)
+                let (repositionedBlocks, _anyRepositioned) = reposition positionedBlocks (-10.0)
+                -- let repositionedBlocks = positionedBlocks
                 let blockConnections = connections repositionedBlocks
                 let renderedBlocks = render repositionedBlocks
                 let renderedConnections = renderConnections blockConnections
                 -- rendering v2:
-                -- renderSVG' ((outputPath input) <> "_new") svgOptions (renderedBlocks <> renderedConnections)
+                renderSVG' ((outputPath input) <> "_new") svgOptions (renderedBlocks <> renderedConnections)
                 renderSVG' (outputPath input) svgOptions (Blocks.renderDiagram validBlocks)
                 return 0
               Right (duplicatedIds, incorrectGCIds) -> do
