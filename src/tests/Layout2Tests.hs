@@ -52,4 +52,4 @@ specLayout2 = describe "layout2" $ do
       it "should calculate correct maximum x coordinate" $
         maxX `shouldBe` defaultBoundingBoxWidth * 2.5
       it "should calculate correct minimum y coordinate (deepest stack depth)" $
-        minY `shouldBe` (defaultBoundingBoxHeight * (-6.0))
+        minY `shouldBe` (defaultBoundingBoxHeight * (-6.5))

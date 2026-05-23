@@ -1,14 +1,14 @@
 module Layout where
 
 import Blocks
-import Constants (defaultBoundingBoxHeight, defaultBoundingBoxWidth)
+import Constants (defaultBoundingBoxHeight, defaultBoundingBoxWidth, repositionShift)
 import PositionedBlock
 
 position'' :: Block -> Double -> Double -> PositionedBlock
 position'' (Fork i c l r gCId) x y =
   let (positionedLeft, lMaxX, lMinY) = position' l x (y - defaultBoundingBoxHeight * 0.5)
       (positionedRight, rMaxX, rMinY) = position' r (lMaxX + defaultBoundingBoxWidth * 0.5) (y - defaultBoundingBoxHeight * 0.5)
-   in (PositionedFork i c (Prelude.reverse positionedLeft) (Prelude.reverse positionedRight) gCId x y rMaxX (min lMinY rMinY))
+   in (PositionedFork i c (Prelude.reverse positionedLeft) (Prelude.reverse positionedRight) gCId x y rMaxX ((min lMinY rMinY) - defaultBoundingBoxHeight * 0.25))
 position'' StartTerminator x y = PositionedStartTerminator x y (x + defaultBoundingBoxWidth * 0.5) (y - defaultBoundingBoxHeight * 0.5)
 position'' (Action i c) x y = PositionedAction i c x y (x + defaultBoundingBoxWidth * 0.5) (y - defaultBoundingBoxHeight * 0.5)
 position'' (Headline i c) x y = PositionedHeadline i c x y (x + defaultBoundingBoxWidth * 0.5) (y - defaultBoundingBoxHeight * 0.5)
@@ -45,31 +45,51 @@ position skewers x y =
           skewers
    in finalPositionedBlocks
 
-reposition'' :: PositionedBlock -> Double -> PositionedBlock
-reposition'' b@(PositionedFork i c l r gCId x y maxX minY) newY = if (y <= newY) then (PositionedFork i c (reposition' l newY) (reposition' r newY) gCId x (y - 0.1) maxX (minY - 0.1)) else b
-reposition'' b@(PositionedStartTerminator x y maxX minY) newY = if (y <= newY) then (PositionedStartTerminator x (y - 0.1) maxX (minY - 0.1)) else b
-reposition'' b@(PositionedEndTerminator x y maxX minY) newY = if (y <= newY) then (PositionedEndTerminator x (y - 0.1) maxX (minY - 0.1)) else b
-reposition'' b@(PositionedAction i c x y maxX minY) newY = if (y <= newY) then (PositionedAction i c x (y - 0.1) maxX (minY - 0.1)) else b
-reposition'' b@(PositionedHeadline i c x y maxX minY) newY = if (y <= newY) then (PositionedHeadline i c x (y - 0.1) maxX (minY - 0.1)) else b
-reposition'' b@(PositionedAddress i c x y maxX minY) newY = if (y <= newY) then (PositionedAddress i c x (y - 0.1) maxX (minY - 0.1)) else b
+reposition'' :: PositionedBlock -> Double -> (PositionedBlock, Bool)
+reposition'' b@(PositionedFork i c l r gCId x y maxX minY) newY =
+  let (l', lAnyRepositioned) = reposition' l newY
+      (r', rAnyRepositioned) = reposition' r newY
+      anyBranchRepositioned = lAnyRepositioned || rAnyRepositioned
+   in if (y <= newY)
+        then (PositionedFork i c l' r' gCId x (y - repositionShift) maxX (minY - repositionShift), True)
+        else (PositionedFork i c l' r' gCId x y maxX (if anyBranchRepositioned then minY - repositionShift else minY), anyBranchRepositioned)
+reposition'' b@(PositionedStartTerminator x y maxX minY) newY = if (y <= newY) then (PositionedStartTerminator x (y - repositionShift) maxX (minY - repositionShift), True) else (b, False)
+reposition'' b@(PositionedEndTerminator x y maxX minY) newY = if (y <= newY) then (PositionedEndTerminator x (y - repositionShift) maxX (minY - repositionShift), True) else (b, False)
+reposition'' b@(PositionedAction i c x y maxX minY) newY = if (y <= newY) then (PositionedAction i c x (y - repositionShift) maxX (minY - repositionShift), True) else (b, False)
+reposition'' b@(PositionedHeadline i c x y maxX minY) newY = if (y <= newY) then (PositionedHeadline i c x (y - repositionShift) maxX (minY - repositionShift), True) else (b, False)
+reposition'' b@(PositionedAddress i c x y maxX minY) newY = if (y <= newY) then (PositionedAddress i c x (y - repositionShift) maxX (minY - repositionShift), True) else (b, False)
 
-reposition' :: [PositionedBlock] -> Double -> [PositionedBlock]
-reposition' bs y = foldr (\b accu -> (reposition'' b y) : accu) [] bs
+reposition' :: [PositionedBlock] -> Double -> ([PositionedBlock], Bool)
+reposition' bs y =
+  foldr
+    ( \b (accuRepositionedBlocks, accuAnyRepositioned) ->
+        let (repositionedBlock, isRepositoned) = (reposition'' b y)
+         in (repositionedBlock : accuRepositionedBlocks, isRepositoned || accuAnyRepositioned)
+    )
+    ([], False)
+    bs
 
-reposition :: [[PositionedBlock]] -> Double -> [[PositionedBlock]]
-reposition ss y = foldr (\s accu -> (reposition' s y) : accu) [] ss
+reposition :: [[PositionedBlock]] -> Double -> ([[PositionedBlock]], Bool)
+reposition ss y =
+  foldr
+    ( \s (accuRepositionedSkewers, accuAnyRepositioned) ->
+        let (repositionedSkewer, isRepositioned) = (reposition' s y)
+         in (repositionedSkewer : accuRepositionedSkewers, isRepositioned || accuAnyRepositioned)
+    )
+    ([], False)
+    ss
 
 connections'' :: PositionedBlock -> [((Double, Double), (Double, Double))]
 connections'' (PositionedFork _i _c l r _gCId x y maxX minY) =
   let lc = case l of
-        [] -> [((x, y), (x, minY - defaultBoundingBoxHeight * 0.5))]
+        [] -> [((x, y), (x, minY - defaultBoundingBoxHeight * 0.25))]
         bs@(b : _) ->
           let (lx, ly, _lmaxX, _lMinY) = getPosition b
            in case last bs of
                 (PositionedFork _i _c _l _r _gCId _x _y _maxX _minY) -> [((x, y), (lx, ly))]
                 lastB ->
                   let (lastx, lasty, _lastmaxX, _lastMinY) = getPosition lastB
-                   in [((x, y), (lx, ly)), ((lastx, lasty), (x, minY))]
+                   in [((x, y), (lx, ly)), ((lastx, lasty), (x, minY - defaultBoundingBoxHeight * 0.25))]
       rc = case r of
         [] -> [((x, y), (maxX - defaultBoundingBoxWidth * 0.5, y)), ((maxX - defaultBoundingBoxWidth * 0.5, y), (maxX - defaultBoundingBoxWidth * 0.5, minY)), ((maxX - defaultBoundingBoxWidth * 0.5, minY), (x, minY))]
         bs@(b : _) ->
