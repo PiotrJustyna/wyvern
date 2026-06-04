@@ -8,6 +8,7 @@ import Layout (connections, position, reposition)
 import Lexer (lexAll, runAlex)
 import Options.Applicative (execParser, fullDesc, header, helper, info, (<**>))
 import Parser (ParseResult (..), diagram)
+import PositionedBlock (toMap)
 import Renderer (render, renderConnections)
 import Validator (validate)
 
@@ -31,10 +32,12 @@ main = do
             case validate blocks of
               Left validBlocks -> do
                 let positionedBlocks = position (Blocks.reverse validBlocks) 0.0 0.0
-                let (repositionedBlocks, _anyRepositioned) = reposition positionedBlocks (-10.0)
+                let destinations = toMap positionedBlocks
+                -- let (repositionedBlocks, _anyRepositioned) = reposition positionedBlocks (-10.0)
+                -- print $ toMap repositionedBlocks
                 -- let repositionedBlocks = positionedBlocks
-                let blockConnections = connections repositionedBlocks
-                let renderedBlocks = render repositionedBlocks
+                let blockConnections = connections positionedBlocks destinations
+                let renderedBlocks = render positionedBlocks
                 let renderedConnections = renderConnections blockConnections
                 -- rendering v2:
                 renderSVG' ((outputPath input) <> "_new") svgOptions (renderedBlocks <> renderedConnections)

@@ -1,5 +1,6 @@
 module PositionedBlock where
 
+import Data.Map (Map, empty, insert, lookup)
 import ID
 
 data PositionedBlock
@@ -33,3 +34,32 @@ getContent (PositionedHeadline _i c _x _y _maxX _minY) = c
 getContent (PositionedAddress _i c _x _y _maxX _minY) = c
 getContent (PositionedFork _i c _l _r _gCId _x _y _maxX _minY) = c
 getContent (PositionedEndTerminator _x _y _maxX _minY) = "end"
+
+getId :: PositionedBlock -> Maybe ID
+getId (PositionedStartTerminator _x _y _maxX _minY) = Nothing
+getId (PositionedAction i _c _x _y _maxX _minY) = i
+getId (PositionedHeadline i _c _x _y _maxX _minY) = i
+getId (PositionedAddress i _c _x _y _maxX _minY) = i
+getId (PositionedFork i _c _l _r _gCId _x _y _maxX _minY) = i
+getId (PositionedEndTerminator _x _y _maxX _minY) = Nothing
+
+toMap'' :: Map ID (Double, Double, Double, Double) -> PositionedBlock -> Map ID (Double, Double, Double, Double)
+toMap'' m (PositionedFork i _c l r _gCId x y maxX minY) =
+  let questionMap = case i of
+        Nothing -> m
+        Just i' -> Data.Map.insert i' (x, y, maxX, minY) m
+      lMap = toMap' questionMap l
+      rMap = toMap' lMap r
+   in rMap
+toMap'' m b =
+  let i = getId b
+      (x, y, maxX, minY) = getPosition b
+   in case i of
+        Nothing -> m
+        Just i' -> Data.Map.insert i' (x, y, maxX, minY) m
+
+toMap' :: Map ID (Double, Double, Double, Double) -> [PositionedBlock] -> Map ID (Double, Double, Double, Double)
+toMap' = foldl toMap''
+
+toMap :: [[PositionedBlock]] -> Map ID (Double, Double, Double, Double)
+toMap = foldl (\accu x -> toMap' accu x) empty

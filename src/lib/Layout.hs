@@ -2,12 +2,16 @@ module Layout where
 
 import Blocks
 import Constants (defaultBoundingBoxHeight, defaultBoundingBoxWidth, repositionShift)
+import Data.Map (Map, empty, insert, lookup)
+import ID
 import PositionedBlock
 
 position'' :: Block -> Double -> Double -> PositionedBlock
 position'' (Fork i c l r gCId) x y =
   let (positionedLeft, lMaxX, lMinY) = position' l x (y - defaultBoundingBoxHeight * 0.5)
-      (positionedRight, rMaxX, rMinY) = position' r (lMaxX + defaultBoundingBoxWidth * 0.5) (y - defaultBoundingBoxHeight * 0.5)
+      (positionedRight, rMaxX, rMinY) = case r of
+        [] -> position' r lMaxX (y - defaultBoundingBoxHeight * 0.5)
+        _ -> position' r (lMaxX + defaultBoundingBoxWidth * 0.5) (y - defaultBoundingBoxHeight * 0.5)
    in (PositionedFork i c (Prelude.reverse positionedLeft) (Prelude.reverse positionedRight) gCId x y rMaxX ((min lMinY rMinY) - defaultBoundingBoxHeight * 0.25))
 position'' StartTerminator x y = PositionedStartTerminator x y (x + defaultBoundingBoxWidth * 0.5) (y - defaultBoundingBoxHeight * 0.5)
 position'' (Action i c) x y = PositionedAction i c x y (x + defaultBoundingBoxWidth * 0.5) (y - defaultBoundingBoxHeight * 0.5)
@@ -79,8 +83,23 @@ reposition ss y =
     ([], False)
     ss
 
-connections'' :: PositionedBlock -> [((Double, Double), (Double, Double))]
-connections'' (PositionedFork _i _c l r _gCId x y maxX minY) =
+buildGammaConnection' :: Double -> Double -> Double -> (Double, Double, Double, Double) -> [((Double, Double), (Double, Double))]
+buildGammaConnection' x y oMaxX (dX, dY, dMaxX, _dMinY) =
+  let newMaxX = max oMaxX dMaxX
+   in if dX == x && dY >= y
+        -- TODO 1: move the origin point of a block to the upper left corner of a block
+        -- TODO 2: push the whole destination down and increase its width
+        then [((x, y), (newMaxX, y)), ((newMaxX, y), (newMaxX, dY + defaultBoundingBoxHeight * 0.5)), ((newMaxX, dY + defaultBoundingBoxHeight * 0.5), (dX, dY + defaultBoundingBoxHeight * 0.5))]
+        else [((x, y), (oMaxX - defaultBoundingBoxWidth * 0.5, y)), ((oMaxX - defaultBoundingBoxWidth * 0.5, y), (oMaxX - defaultBoundingBoxWidth * 0.5 + 1.0, y + 1.0)), ((oMaxX - defaultBoundingBoxWidth * 0.5 + 1.0, y + 1.0), (dX, dY))]
+
+buildGammaConnection :: ID -> Map ID (Double, Double, Double, Double) -> Double -> Double -> Double -> [((Double, Double), (Double, Double))]
+buildGammaConnection gCId destinations x y maxX =
+  case Data.Map.lookup gCId destinations of
+    Nothing -> error $ "gamma connection id \"" <> show gCId <> "\" does not exist in the collection of block identifiers: " <> show destinations
+    (Just destination) -> buildGammaConnection' x y maxX destination
+
+connections'' :: PositionedBlock -> Map ID (Double, Double, Double, Double) -> [((Double, Double), (Double, Double))]
+connections'' (PositionedFork _i _c l r gCId x y maxX minY) destinations =
   let lc = case l of
         [] -> [((x, y), (x, minY - defaultBoundingBoxHeight * 0.25))]
         bs@(b : _) ->
@@ -90,35 +109,45 @@ connections'' (PositionedFork _i _c l r _gCId x y maxX minY) =
                 lastB ->
                   let (lastx, lasty, _lastmaxX, _lastMinY) = getPosition lastB
                    in [((x, y), (lx, ly)), ((lastx, lasty), (x, minY - defaultBoundingBoxHeight * 0.25))]
-      rc = case r of
-        [] -> [((x, y), (maxX - defaultBoundingBoxWidth * 0.5, y)), ((maxX - defaultBoundingBoxWidth * 0.5, y), (maxX - defaultBoundingBoxWidth * 0.5, minY)), ((maxX - defaultBoundingBoxWidth * 0.5, minY), (x, minY))]
-        bs@(b : _) ->
-          let (rx, ry, _rmaxX, _rMinY) = getPosition b
-           in case last bs of
-                (PositionedFork _i _c _l _r _gCId fx fy _maxX _minY) -> [((x, y), (rx, y)), ((rx, y), (rx, ry)), ((rx, minY), (x, minY)), ((fx, fy), (fx, minY))]
-                lastB ->
-                  let (lastx, lasty, _lastmaxX, _lastMinY) = getPosition lastB
-                   in [((x, y), (rx, y)), ((rx, y), (rx, ry)), ((lastx, lasty), (lastx, minY)), ((lastx, minY), (x, minY))]
-   in (lc <> rc <> connections' l <> connections' r)
-connections'' _ = []
+      rc = case gCId of
+        Nothing -> case r of
+          [] -> [((x, y), (maxX - defaultBoundingBoxWidth * 0.5, y)), ((maxX - defaultBoundingBoxWidth * 0.5, y), (maxX - defaultBoundingBoxWidth * 0.5, minY)), ((maxX - defaultBoundingBoxWidth * 0.5, minY), (x, minY))]
+          bs@(b : _) ->
+            let (rx, ry, _rmaxX, _rMinY) = getPosition b
+             in case last bs of
+                  (PositionedFork _i _c _l _r _gCId fx fy _maxX _minY) -> [((x, y), (rx, y)), ((rx, y), (rx, ry)), ((rx, minY), (x, minY)), ((fx, fy), (fx, minY))] -- TODO: ((rx, minY), (x, minY)) a mistake? ((fx, fy), (fx, minY)) - also a mistake and can lead to clashes
+                  lastB ->
+                    let (lastx, lasty, _lastmaxX, _lastMinY) = getPosition lastB
+                     in [((x, y), (rx, y)), ((rx, y), (rx, ry)), ((lastx, lasty), (lastx, minY)), ((lastx, minY), (x, minY))]
+        (Just gCId') -> case r of
+          [] -> buildGammaConnection gCId' destinations x y maxX
+          bs@(b : _) ->
+            let (rx, ry, _rmaxX, _rMinY) = getPosition b
+             in case last bs of
+                  (PositionedFork _i _c _l _r _gCId fx fy _maxX _minY) -> [((x, y), (rx, y)), ((rx, y), (rx, ry))]
+                  lastB ->
+                    let (lastx, lasty, _lastmaxX, _lastMinY) = getPosition lastB
+                     in [((x, y), (rx, y)), ((rx, y), (rx, ry))]
+   in (lc <> rc <> connections' l destinations <> connections' r destinations)
+connections'' _ _ = []
 
-connections' :: [PositionedBlock] -> [((Double, Double), (Double, Double))]
-connections' [] = []
-connections' [pB] = connections'' pB
-connections' (pB1 : pB2 : pBs) =
+connections' :: [PositionedBlock] -> Map ID (Double, Double, Double, Double) -> [((Double, Double), (Double, Double))]
+connections' [] _ = []
+connections' [pB] destinations = connections'' pB destinations
+connections' (pB1 : pB2 : pBs) destinations =
   case pB1 of
     (PositionedFork _i _c l _r _gCId x1 y1 maxX1 minY1) ->
       let position2@(x2, y2, maxX2, minY2) = getPosition pB2
           lConnection = case l of
             [] -> []
             _ -> [((x1, minY1), (x2, y2))]
-       in lConnection <> connections'' pB1 <> connections' (pB2 : pBs)
+       in lConnection <> connections'' pB1 destinations <> connections' (pB2 : pBs) destinations
     _ ->
       let position1@(x1, y1, maxX1, minY1) = getPosition pB1
           position2@(x2, y2, maxX2, minY2) = getPosition pB2
           connection = [((x1, y1), (x2, y2))]
-          remainingConnections = connections' (pB2 : pBs)
+          remainingConnections = connections' (pB2 : pBs) destinations
        in connection <> remainingConnections
 
-connections :: [[PositionedBlock]] -> [((Double, Double), (Double, Double))]
-connections = foldr (\pBs accu -> connections' pBs <> accu) []
+connections :: [[PositionedBlock]] -> Map ID (Double, Double, Double, Double) -> [((Double, Double), (Double, Double))]
+connections positionedBlocks destinations = foldr (\pBs accu -> connections' pBs destinations <> accu) [] positionedBlocks
