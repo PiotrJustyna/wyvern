@@ -43,11 +43,11 @@ getId (PositionedAddress i _c _x _y _maxX _minY) = i
 getId (PositionedFork i _c _l _r _gCId _x _y _maxX _minY) = i
 getId (PositionedEndTerminator _x _y _maxX _minY) = Nothing
 
-toMap'' :: Map ID (Double, Double, Double, Double) -> PositionedBlock -> Map ID (Double, Double, Double, Double)
+toMap'' :: Map ID (Double, Double, Double, Double, Double, Double) -> PositionedBlock -> Map ID (Double, Double, Double, Double, Double, Double)
 toMap'' m (PositionedFork i _c l r _gCId x y maxX minY) =
   let questionMap = case i of
         Nothing -> m
-        Just i' -> Data.Map.insert i' (x, y, maxX, minY) m
+        Just i' -> Data.Map.insert i' (x, y, maxX, minY, 0.0, 0.0) m
       lMap = toMap' questionMap l
       rMap = toMap' lMap r
    in rMap
@@ -56,10 +56,10 @@ toMap'' m b =
       (x, y, maxX, minY) = getPosition b
    in case i of
         Nothing -> m
-        Just i' -> Data.Map.insert i' (x, y, maxX, minY) m
+        Just i' -> Data.Map.insert i' (x, y, maxX, minY, 0.0, 0.0) m
 
-toMap' :: Map ID (Double, Double, Double, Double) -> [PositionedBlock] -> Map ID (Double, Double, Double, Double)
+toMap' :: Map ID (Double, Double, Double, Double, Double, Double) -> [PositionedBlock] -> Map ID (Double, Double, Double, Double, Double, Double)
 toMap' = foldl toMap''
 
-toMap :: [[PositionedBlock]] -> Map ID (Double, Double, Double, Double)
+toMap :: [[PositionedBlock]] -> Map ID (Double, Double, Double, Double, Double, Double)
 toMap = foldl (\accu x -> toMap' accu x) empty

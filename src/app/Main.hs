@@ -40,7 +40,7 @@ main = do
                 let renderedBlocks = render positionedBlocks
                 let renderedConnections = renderConnections blockConnections
                 -- rendering v2:
-                renderSVG' ((outputPath input) <> "_new") svgOptions (renderedBlocks <> renderedConnections)
+                -- renderSVG' ((outputPath input) <> "_new") svgOptions (renderedBlocks <> renderedConnections)
                 renderSVG' (outputPath input) svgOptions (Blocks.renderDiagram validBlocks)
                 return 0
               Right (duplicatedIds, incorrectGCIds) -> do
