@@ -31,14 +31,14 @@ main = do
           ParseOk blocks -> do
             case validate blocks of
               Left validBlocks -> do
-                let positionedBlocks = position (Blocks.reverse validBlocks) 0.0 0.0
-                let destinations = toMap positionedBlocks
-                -- let (repositionedBlocks, _anyRepositioned) = reposition positionedBlocks (-10.0)
-                -- print $ toMap repositionedBlocks
-                -- let repositionedBlocks = positionedBlocks
-                let blockConnections = connections positionedBlocks destinations
-                let renderedBlocks = render positionedBlocks
-                let renderedConnections = renderConnections blockConnections
+                -- let positionedBlocks = position (Blocks.reverse validBlocks) 0.0 0.0
+                -- let destinations = toMap positionedBlocks
+                -- -- let (repositionedBlocks, _anyRepositioned) = reposition positionedBlocks (-10.0)
+                -- -- print $ toMap repositionedBlocks
+                -- -- let repositionedBlocks = positionedBlocks
+                -- let blockConnections = connections positionedBlocks destinations
+                -- let renderedBlocks = render positionedBlocks
+                -- let renderedConnections = renderConnections blockConnections
                 -- rendering v2:
                 -- renderSVG' ((outputPath input) <> "_new") svgOptions (renderedBlocks <> renderedConnections)
                 renderSVG' (outputPath input) svgOptions (Blocks.renderDiagram validBlocks)

@@ -92,22 +92,13 @@ buildGammaConnection' x y oMaxX (dX, dY, dMaxX, _dMinY, dGammaShiftX, dGammaShif
         then [((x, y), (newMaxX, y)), ((newMaxX, y), (newMaxX, dY + dGammaShiftY + defaultBoundingBoxHeight * 0.5)), ((newMaxX, dY + dGammaShiftY + defaultBoundingBoxHeight * 0.5), (dX, dY + dGammaShiftY + defaultBoundingBoxHeight * 0.5))]
         else [((x, y), (oMaxX - defaultBoundingBoxWidth * 0.5, y)), ((oMaxX - defaultBoundingBoxWidth * 0.5, y), (oMaxX - defaultBoundingBoxWidth * 0.5 + 1.0, y + 1.0)), ((oMaxX - defaultBoundingBoxWidth * 0.5 + 1.0, y + 1.0), (dX, dY))]
 
-buildGammaConnection ::
-  ID ->
-  Map ID (Double, Double, Double, Double, Double, Double) ->
-  Double ->
-  Double ->
-  Double ->
-  ([((Double, Double), (Double, Double))], Map ID (Double, Double, Double, Double, Double, Double))
+buildGammaConnection :: ID -> Map ID (Double, Double, Double, Double, Double, Double) -> Double -> Double -> Double -> ([((Double, Double), (Double, Double))], Map ID (Double, Double, Double, Double, Double, Double))
 buildGammaConnection gCId destinations x y maxX =
   case Data.Map.lookup gCId destinations of
     Nothing -> error $ "gamma connection id \"" <> show gCId <> "\" does not exist in the collection of block identifiers: " <> show destinations
     (Just destination) -> (buildGammaConnection' x y maxX destination, Data.Map.adjust (\(vX, vY, vMaxX, vMinY, vGammaShiftX, vGammaShiftY) -> (vX, vY, vMaxX, vMinY, vGammaShiftX + 0.1, vGammaShiftY + 0.1)) gCId destinations)
 
-connections'' ::
-  PositionedBlock ->
-  Map ID (Double, Double, Double, Double, Double, Double) ->
-  ([((Double, Double), (Double, Double))], Map ID (Double, Double, Double, Double, Double, Double))
+connections'' :: PositionedBlock -> Map ID (Double, Double, Double, Double, Double, Double) -> ([((Double, Double), (Double, Double))], Map ID (Double, Double, Double, Double, Double, Double))
 connections'' (PositionedFork _i _c l r gCId x y maxX minY) destinations =
   let (lc, lDestinations) = case l of
         [] -> ([((x, y), (x, minY - defaultBoundingBoxHeight * 0.25))], destinations)
@@ -129,7 +120,7 @@ connections'' (PositionedFork _i _c l r gCId x y maxX minY) destinations =
                     let (lastx, lasty, _lastmaxX, _lastMinY) = getPosition lastB
                      in ([((x, y), (rx, y)), ((rx, y), (rx, ry)), ((lastx, lasty), (lastx, minY)), ((lastx, minY), (x, minY))], lDestinations)
         (Just gCId') -> case r of
-          [] -> buildGammaConnection gCId' lDestinations x y maxX
+          [] -> ([], lDestinations) -- TODO: buildGammaConnection gCId' lDestinations x y maxX
           bs@(b : _) ->
             let (rx, ry, _rmaxX, _rMinY) = getPosition b
              in case last bs of
@@ -142,10 +133,7 @@ connections'' (PositionedFork _i _c l r gCId x y maxX minY) destinations =
    in (lc <> rc <> lc' <> rc', rDestinations')
 connections'' _ destinations = ([], destinations)
 
-connections' ::
-  [PositionedBlock] ->
-  Map ID (Double, Double, Double, Double, Double, Double) ->
-  ([((Double, Double), (Double, Double))], Map ID (Double, Double, Double, Double, Double, Double))
+connections' :: [PositionedBlock] -> Map ID (Double, Double, Double, Double, Double, Double) -> ([((Double, Double), (Double, Double))], Map ID (Double, Double, Double, Double, Double, Double))
 connections' [] destinations = ([], destinations)
 connections' [pB] destinations = connections'' pB destinations
 connections' (pB1 : pB2 : pBs) destinations =
