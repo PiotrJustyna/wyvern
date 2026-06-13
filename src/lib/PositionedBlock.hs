@@ -1,6 +1,6 @@
 module PositionedBlock where
 
-import Data.Map (Map, empty, insert, lookup)
+import Data.Map (Map, empty, foldrWithKey, insert, insertWith, lookup, member)
 import ID
 
 data PositionedBlock
@@ -63,3 +63,71 @@ toMap' = foldl toMap''
 
 toMap :: [[PositionedBlock]] -> Map ID (Double, Double, Double, Double, Double, Double)
 toMap = foldl (\accu x -> toMap' accu x) empty
+
+toMapMicro'' :: Map ID Double -> PositionedBlock -> Map ID Double
+toMapMicro'' m (PositionedFork i _c l r _gCId x y maxX minY) =
+  let questionMap = case i of
+        Nothing -> m
+        Just i' -> Data.Map.insert i' y m
+      lMap = toMapMicro' questionMap l
+      rMap = toMapMicro' lMap r
+   in rMap
+toMapMicro'' m b =
+  let i = getId b
+      (x, y, maxX, minY) = getPosition b
+   in case i of
+        Nothing -> m
+        Just i' -> Data.Map.insert i' y m
+
+toMapMicro' :: Map ID Double -> [PositionedBlock] -> Map ID Double
+toMapMicro' = foldl toMapMicro''
+
+toMapMicro :: [[PositionedBlock]] -> Map ID Double
+toMapMicro = foldl (\accu x -> toMapMicro' accu x) empty
+
+gammaConnectionDestinations'' :: Map ID Double -> PositionedBlock -> Map ID Double
+gammaConnectionDestinations'' m (PositionedFork i _c l r gCId x y maxX minY) =
+  let questionMap = case gCId of
+        Nothing -> m
+        Just gCId' -> Data.Map.insert gCId' y m
+      lMap = gammaConnectionDestinations' questionMap l
+      rMap = gammaConnectionDestinations' lMap r
+   in rMap
+gammaConnectionDestinations'' m _ = m
+
+gammaConnectionDestinations' :: Map ID Double -> [PositionedBlock] -> Map ID Double
+gammaConnectionDestinations' = foldl gammaConnectionDestinations''
+
+-- TODO:
+-- 1. this cannot be a map - there could be duplicates and that's fine
+-- 2. positioned block with most gamma connections leading to it should win not to duplicate y shifts unnecessarily
+gammaConnectionDestinations :: [[PositionedBlock]] -> Map ID Double
+gammaConnectionDestinations = foldl (\accu x -> gammaConnectionDestinations' accu x) empty
+
+qwe :: Map ID Double -> Map Double (ID, Int)
+qwe = Data.Map.foldrWithKey (\i y accu -> Data.Map.insertWith (\(iNew, counterNew) (iOld, counterOld) -> (iNew, counterOld + counterNew)) y (i, 0) accu) empty
+
+extractGammaConnections'' :: Map ID Double -> PositionedBlock -> [(ID, Double)]
+extractGammaConnections'' m (PositionedFork _i _c l r gCId x y maxX minY) =
+  let questionConnection =
+        case gCId of
+          Nothing -> []
+          (Just gCId') ->
+            case Data.Map.lookup gCId' m of
+              Nothing -> error $ "gamma connection id \"" <> show gCId' <> "\" does not exist in the collection of block identifiers: " <> show m
+              (Just y) -> [(gCId', y)]
+      leftBranchConnections = extractGammaConnections' m l
+      rightBranchConnections = extractGammaConnections' m r
+   in questionConnection <> leftBranchConnections <> rightBranchConnections
+extractGammaConnections'' _m _positionedBlock = []
+
+extractGammaConnections' :: Map ID Double -> [PositionedBlock] -> [(ID, Double)]
+extractGammaConnections' destinations = foldl (\accu positionedBlock -> accu <> extractGammaConnections'' destinations positionedBlock) []
+
+-- NOTE:
+-- The name can be misleading but I intentionally want to leave it like this
+-- to allow myself to restructure the function easier in the future.
+-- I feel this function will return more details about gamma connections
+-- but for now the returned type feels sufficient.
+extractGammaConnections :: Map ID Double -> [[PositionedBlock]] -> [(ID, Double)]
+extractGammaConnections destinations = foldl (\accu positionedBlocks -> accu <> extractGammaConnections' destinations positionedBlocks) []

@@ -4,11 +4,11 @@ import Blocks (renderDiagram, reverse)
 import Constants (svgOptions)
 import Diagrams.Backend.SVG (renderSVG')
 import InputArguments (inputPath, outputPath, parseInput)
-import Layout (connections, position, reposition)
+import Layout (connections, def, position, reposition)
 import Lexer (lexAll, runAlex)
 import Options.Applicative (execParser, fullDesc, header, helper, info, (<**>))
 import Parser (ParseResult (..), diagram)
-import PositionedBlock (toMap)
+import PositionedBlock (extractGammaConnections, gammaConnectionDestinations, qwe, toMap, toMapMicro)
 import Renderer (render, renderConnections)
 import Validator (validate)
 
@@ -33,13 +33,21 @@ main = do
               Left validBlocks -> do
                 -- let positionedBlocks = position (Blocks.reverse validBlocks) 0.0 0.0
                 -- let destinations = toMap positionedBlocks
-                -- -- let (repositionedBlocks, _anyRepositioned) = reposition positionedBlocks (-10.0)
-                -- -- print $ toMap repositionedBlocks
-                -- -- let repositionedBlocks = positionedBlocks
-                -- let blockConnections = connections positionedBlocks destinations
-                -- let renderedBlocks = render positionedBlocks
-                -- let renderedConnections = renderConnections blockConnections
-                -- rendering v2:
+                -- let destinationsMicro = toMapMicro positionedBlocks
+                -- let gammaConnections = extractGammaConnections destinationsMicro positionedBlocks
+                -- -- let defInput = qwe destinationsMicro
+                -- print destinationsMicro
+                -- print gammaConnections
+                -- -- print defInput
+
+                -- -- -- let (repositionedBlocks, _anyRepositioned) = reposition positionedBlocks (-10.0)
+                -- -- -- print $ toMap repositionedBlocks
+                -- -- -- let repositionedBlocks = positionedBlocks
+                -- -- let blockConnections = connections positionedBlocks destinations
+                -- --
+                -- let renderedBlocks = render . fst $ def positionedBlocks (gammaConnectionDestinations positionedBlocks)
+                -- let renderedConnections = mempty -- renderConnections blockConnections
+                -- -- rendering v2:
                 -- renderSVG' ((outputPath input) <> "_new") svgOptions (renderedBlocks <> renderedConnections)
                 renderSVG' (outputPath input) svgOptions (Blocks.renderDiagram validBlocks)
                 return 0

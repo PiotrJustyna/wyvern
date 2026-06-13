@@ -2,7 +2,7 @@ module Layout where
 
 import Blocks
 import Constants (defaultBoundingBoxHeight, defaultBoundingBoxWidth, repositionShift)
-import Data.Map (Map, adjust, empty, insert, lookup)
+import Data.Map (Map, adjust, empty, insert, keys, lookup)
 import ID
 import PositionedBlock
 
@@ -163,3 +163,16 @@ connections positionedBlocks destinations =
       )
       ([], destinations)
       positionedBlocks
+
+def' :: [[PositionedBlock]] -> [ID] -> Map ID Double -> ([[PositionedBlock]], Map ID Double)
+def' positionedBlocks [] destinations = (positionedBlocks, destinations)
+def' positionedBlocks (gCId : gCIds) destinations =
+  case Data.Map.lookup gCId destinations of
+    Nothing -> error $ "gamma connection id \"" <> show gCId <> "\" does not exist in the collection of block identifiers: " <> show destinations
+    (Just destination) ->
+      let (repositionedBlocks, _) = reposition positionedBlocks destination
+          repositionedDestinations = gammaConnectionDestinations repositionedBlocks
+       in def' repositionedBlocks gCIds repositionedDestinations
+
+def :: [[PositionedBlock]] -> Map ID Double -> ([[PositionedBlock]], Map ID Double)
+def positionedBlocks destinations = def' positionedBlocks (keys destinations) destinations
