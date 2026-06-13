@@ -33,7 +33,7 @@ clean:
 run: lint format
 	cabal run wyvern-diagrams -- \
 	    -i "./diagrams/general/simple-diagram-4.txt" \
-	    -o "./diagrams/general/temp.svg"
+	    -o "./diagrams/general/simple-diagram-4.svg"
 
 repl:
 	cabal repl wyvern-diagrams --repl-options="-fbreak-on-error -fbreak-on-exception"
