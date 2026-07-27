@@ -26,7 +26,7 @@ heightRatio :: Double
 heightRatio = 0.5
 
 repositionShift :: Double
-repositionShift = 3.0
+repositionShift = 1.0
 
 -- colours used:
 -- https://www.colourlovers.com/palette/541086/Loyal_Friends

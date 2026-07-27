@@ -4,11 +4,11 @@ import Blocks (renderDiagram, reverse)
 import Constants (svgOptions)
 import Diagrams.Backend.SVG (renderSVG')
 import InputArguments (inputPath, outputPath, parseInput)
-import Layout (connections, def, position, reposition)
+import Layout (connections, def, position, reposition, repositionBasedOnGamma)
 import Lexer (lexAll, runAlex)
 import Options.Applicative (execParser, fullDesc, header, helper, info, (<**>))
 import Parser (ParseResult (..), diagram)
-import PositionedBlock (extractGammaConnections, gammaConnectionDestinations, qwe, toMap, toMapMicro)
+import PositionedBlock (extractGammaConnections, gammaConnectionDestinations, getMaxNumberOfShiftsPerDepth, qwe, toMap, toMapMicro)
 import Renderer (render, renderConnections)
 import Validator (validate)
 
@@ -31,24 +31,30 @@ main = do
           ParseOk blocks -> do
             case validate blocks of
               Left validBlocks -> do
-                -- let positionedBlocks = position (Blocks.reverse validBlocks) 0.0 0.0
-                -- let destinations = toMap positionedBlocks
-                -- let destinationsMicro = toMapMicro positionedBlocks
-                -- let gammaConnections = extractGammaConnections destinationsMicro positionedBlocks
-                -- -- let defInput = qwe destinationsMicro
-                -- print destinationsMicro
-                -- print gammaConnections
-                -- -- print defInput
+                let positionedBlocks = position (Blocks.reverse validBlocks) 0.0 0.0
+                let destinationsMicro = toMapMicro positionedBlocks
+                -- TODO:
+                -- Probably a good idea to preserve those steps for debugging just in case.
+                let gammaConnections = extractGammaConnections destinationsMicro positionedBlocks
+                print gammaConnections
 
-                -- -- -- let (repositionedBlocks, _anyRepositioned) = reposition positionedBlocks (-10.0)
-                -- -- -- print $ toMap repositionedBlocks
-                -- -- -- let repositionedBlocks = positionedBlocks
-                -- -- let blockConnections = connections positionedBlocks destinations
-                -- --
-                -- let renderedBlocks = render . fst $ def positionedBlocks (gammaConnectionDestinations positionedBlocks)
-                -- let renderedConnections = mempty -- renderConnections blockConnections
+                let defInput = qwe gammaConnections
+                print defInput
+
+                let maxNumberOfShiftsPerDepth = getMaxNumberOfShiftsPerDepth defInput
+                print maxNumberOfShiftsPerDepth
+
+                let repositionedBlocks = repositionBasedOnGamma positionedBlocks maxNumberOfShiftsPerDepth
+                putStrLn "positionedBlocks:"
+                print positionedBlocks
+                putStrLn "repositionedBlocks:"
+                print repositionedBlocks
+                -- let blockConnections = connections repositionedBlocks destinations
+
                 -- -- rendering v2:
-                -- renderSVG' ((outputPath input) <> "_new") svgOptions (renderedBlocks <> renderedConnections)
+                -- renderSVG' ((outputPath input) <> "_new") svgOptions (render repositionedBlocks) -- <> renderedConnections
+
+                -- rendering v1:
                 renderSVG' (outputPath input) svgOptions (Blocks.renderDiagram validBlocks)
                 return 0
               Right (duplicatedIds, incorrectGCIds) -> do

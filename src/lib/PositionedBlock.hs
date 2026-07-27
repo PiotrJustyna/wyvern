@@ -1,6 +1,7 @@
 module PositionedBlock where
 
-import Data.Map (Map, empty, foldrWithKey, insert, insertWith, lookup, member)
+import Data.List
+import Data.Map (Map, empty, foldlWithKey, foldr, insert, insertWith, lookup, member, singleton, unionWith)
 import ID
 
 data PositionedBlock
@@ -104,11 +105,8 @@ gammaConnectionDestinations' = foldl gammaConnectionDestinations''
 gammaConnectionDestinations :: [[PositionedBlock]] -> Map ID Double
 gammaConnectionDestinations = foldl (\accu x -> gammaConnectionDestinations' accu x) empty
 
-qwe :: Map ID Double -> Map Double (ID, Int)
-qwe = Data.Map.foldrWithKey (\i y accu -> Data.Map.insertWith (\(iNew, counterNew) (iOld, counterOld) -> (iNew, counterOld + counterNew)) y (i, 0) accu) empty
-
 extractGammaConnections'' :: Map ID Double -> PositionedBlock -> [(ID, Double)]
-extractGammaConnections'' m (PositionedFork _i _c l r gCId x y maxX minY) =
+extractGammaConnections'' m (PositionedFork _i _c l r gCId _x _y _maxX _minY) =
   let questionConnection =
         case gCId of
           Nothing -> []
@@ -131,3 +129,33 @@ extractGammaConnections' destinations = foldl (\accu positionedBlock -> accu <> 
 -- but for now the returned type feels sufficient.
 extractGammaConnections :: Map ID Double -> [[PositionedBlock]] -> [(ID, Double)]
 extractGammaConnections destinations = foldl (\accu positionedBlocks -> accu <> extractGammaConnections' destinations positionedBlocks) []
+
+qwe :: [(ID, Double)] -> Map Double (Map ID Int)
+qwe =
+  foldl
+    ( \accu (i, y) ->
+        Data.Map.insertWith
+          ( \newValue oldValue ->
+              Data.Map.unionWith (+) oldValue newValue
+          )
+          y
+          (Data.Map.singleton i 1)
+          accu
+    )
+    empty
+
+getMaxNumberOfShiftsPerDepth :: Map Double (Map ID Int) -> [(Double, Int)]
+getMaxNumberOfShiftsPerDepth m =
+  let maxNumberOfShiftsPerDepth =
+        Data.Map.foldlWithKey
+          ( \accu k v ->
+              let maxNumberOfShifts =
+                    Data.Map.foldr
+                      (\v' accu' -> if v' > accu' then v' else accu')
+                      0
+                      v
+               in (k, maxNumberOfShifts) : accu
+          )
+          []
+          m
+   in maxNumberOfShiftsPerDepth
