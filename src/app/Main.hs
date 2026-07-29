@@ -2,6 +2,7 @@ module Main where
 
 import Blocks (renderDiagram, reverse)
 import Constants (svgOptions)
+import Data.Map (empty)
 import Diagrams.Backend.SVG (renderSVG')
 import InputArguments (inputPath, outputPath, parseInput)
 import Layout (connections, def, position, reposition, repositionBasedOnGamma)
@@ -49,10 +50,11 @@ main = do
                 print positionedBlocks
                 putStrLn "repositionedBlocks:"
                 print repositionedBlocks
-                -- let blockConnections = connections repositionedBlocks destinations
+                let blockConnections = connections repositionedBlocks empty -- destinations
+                let renderedConnections = renderConnections blockConnections
 
-                -- -- rendering v2:
-                -- renderSVG' ((outputPath input) <> "_new") svgOptions (render repositionedBlocks) -- <> renderedConnections
+                -- rendering v2:
+                -- renderSVG' ((outputPath input) <> "_new") svgOptions ((render repositionedBlocks) <> renderedConnections)
 
                 -- rendering v1:
                 renderSVG' (outputPath input) svgOptions (Blocks.renderDiagram validBlocks)

@@ -129,8 +129,15 @@ connections'' (PositionedFork _i _c l r gCId x y maxX minY) destinations =
                     let (lastx, lasty, _lastmaxX, _lastMinY) = getPosition lastB
                      in ([((x, y), (rx, y)), ((rx, y), (rx, ry))], lDestinations)
       (lc', lDestinations') = connections' l rDestinations
+      -- 2026-07-29 PJ:
+      -- ==============
+      -- The section below (lc'') adds an extra line connecting the left branch with the end of the fork.
+      -- We need that extra line when the right branch is longer than the left one.
+      -- Without it, in such scenarios, there would be a gap between the end of the fork and the last left branch's block.
+      lastLeftPosition@(lLPX, lLPY) = snd $ last lc'
+      lc'' = lc' <> (if lLPY > minY + defaultBoundingBoxHeight then [((lLPX, lLPY - defaultBoundingBoxHeight), (x, minY))] else [])
       (rc', rDestinations') = connections' r lDestinations'
-   in (lc <> rc <> lc' <> rc', rDestinations')
+   in (lc <> rc <> lc' <> lc'' <> rc', rDestinations')
 connections'' _ destinations = ([], destinations)
 
 connections' :: [PositionedBlock] -> Map ID (Double, Double, Double, Double, Double, Double) -> ([((Double, Double), (Double, Double))], Map ID (Double, Double, Double, Double, Double, Double))
