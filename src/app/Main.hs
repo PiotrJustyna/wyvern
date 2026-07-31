@@ -50,7 +50,10 @@ main = do
                 print positionedBlocks
                 putStrLn "repositionedBlocks:"
                 print repositionedBlocks
-                let blockConnections = connections repositionedBlocks empty -- destinations
+
+                let destinations = toMap repositionedBlocks
+
+                let blockConnections = connections repositionedBlocks destinations
                 let renderedConnections = renderConnections blockConnections
 
                 -- rendering v2:

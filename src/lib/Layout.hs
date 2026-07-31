@@ -86,7 +86,7 @@ reposition ss y numberOfShifts =
 buildGammaConnection' :: Double -> Double -> Double -> (Double, Double, Double, Double, Double, Double) -> [((Double, Double), (Double, Double))]
 buildGammaConnection' x y oMaxX (dX, dY, dMaxX, _dMinY, dGammaShiftX, dGammaShiftY) =
   let newMaxX = max oMaxX (dMaxX + dGammaShiftX)
-   in if dX == x && dY >= y
+   in if dX <= x && dY >= y
         -- TODO 1: move the origin point of a block to the upper left corner of a block
         -- TODO 2: push the whole destination down and increase its width
         then [((x, y), (newMaxX, y)), ((newMaxX, y), (newMaxX, dY + dGammaShiftY + defaultBoundingBoxHeight * 0.5)), ((newMaxX, dY + dGammaShiftY + defaultBoundingBoxHeight * 0.5), (dX, dY + dGammaShiftY + defaultBoundingBoxHeight * 0.5))]
@@ -120,14 +120,16 @@ connections'' (PositionedFork _i _c l r gCId x y maxX minY) destinations =
                     let (lastx, lasty, _lastmaxX, _lastMinY) = getPosition lastB
                      in ([((x, y), (rx, y)), ((rx, y), (rx, ry)), ((lastx, lasty), (lastx, minY)), ((lastx, minY), (x, minY))], lDestinations)
         (Just gCId') -> case r of
-          [] -> ([], lDestinations) -- TODO: buildGammaConnection gCId' lDestinations x y maxX
+          [] -> buildGammaConnection gCId' lDestinations x y maxX
           bs@(b : _) ->
             let (rx, ry, _rmaxX, _rMinY) = getPosition b
              in case last bs of
-                  (PositionedFork _i _c _l _r _gCId fx fy _maxX _minY) -> ([((x, y), (rx, y)), ((rx, y), (rx, ry))], lDestinations)
+                  (PositionedFork _i _c _l _r _gCId fx fy _maxX _minY) -> ([((x, y), (rx, y)), ((rx, y), (rx, ry)), ((1.0, 2.0), (3.0, 4.0))], lDestinations)
                   lastB ->
-                    let (lastx, lasty, _lastmaxX, _lastMinY) = getPosition lastB
-                     in ([((x, y), (rx, y)), ((rx, y), (rx, ry))], lDestinations)
+                    let (lastx, lasty, lastmaxX, _lastMinY) = getPosition lastB
+                        lasty' = lasty - defaultBoundingBoxHeight * 0.5
+                        gammaConnections = fst $ buildGammaConnection gCId' lDestinations lastx lasty' lastmaxX
+                     in ([((x, y), (rx, y)), ((rx, y), (rx, ry)), ((lastx, lasty), (lastx, lasty'))] <> gammaConnections, lDestinations) -- TODO: there are two connections here: the leading one and the gamma one
       (lc', lDestinations') = connections' l rDestinations
       -- 2026-07-29 PJ:
       -- ==============

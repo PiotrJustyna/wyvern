@@ -8,7 +8,7 @@
     213 "action 213"
   }
   {
-    214 "action 214"
+    21
   }
 }
 {
@@ -24,8 +24,9 @@
     "dummy action"
   }
   {
-    225 "action 225"
-    21
+    "dummy action"
+    "dummy action"
+    2
   }
   2
 }
