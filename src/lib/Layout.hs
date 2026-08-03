@@ -124,12 +124,14 @@ connections'' (PositionedFork _i _c l r gCId x y maxX minY) destinations =
           bs@(b : _) ->
             let (rx, ry, _rmaxX, _rMinY) = getPosition b
              in case last bs of
-                  (PositionedFork _i _c _l _r _gCId fx fy _maxX _minY) -> ([((x, y), (rx, y)), ((rx, y), (rx, ry)), ((1.0, 2.0), (3.0, 4.0))], lDestinations)
+                  (PositionedFork _i _c _l _r _gCId fx fy fmaxX fminY) ->
+                    let (gammaConnections, lDestinations') = buildGammaConnection gCId' lDestinations fx fminY fmaxX
+                     in ([((x, y), (rx, y)), ((rx, y), (rx, ry))] <> gammaConnections, lDestinations')
                   lastB ->
                     let (lastx, lasty, lastmaxX, _lastMinY) = getPosition lastB
                         lasty' = lasty - defaultBoundingBoxHeight * 0.5
-                        gammaConnections = fst $ buildGammaConnection gCId' lDestinations lastx lasty' lastmaxX
-                     in ([((x, y), (rx, y)), ((rx, y), (rx, ry)), ((lastx, lasty), (lastx, lasty'))] <> gammaConnections, lDestinations) -- TODO: there are two connections here: the leading one and the gamma one
+                        (gammaConnections, lDestinations') = buildGammaConnection gCId' lDestinations lastx lasty' lastmaxX
+                     in ([((x, y), (rx, y)), ((rx, y), (rx, ry)), ((lastx, lasty), (lastx, lasty'))] <> gammaConnections, lDestinations') -- TODO: there are two connections here: the leading one and the gamma one
       (lc', lDestinations') = connections' l rDestinations
       -- 2026-07-29 PJ:
       -- ==============
@@ -172,19 +174,6 @@ connections positionedBlocks destinations =
       )
       ([], destinations)
       positionedBlocks
-
-def' :: [[PositionedBlock]] -> [ID] -> Map ID Double -> ([[PositionedBlock]], Map ID Double)
-def' positionedBlocks [] destinations = (positionedBlocks, destinations)
-def' positionedBlocks (gCId : gCIds) destinations =
-  case Data.Map.lookup gCId destinations of
-    Nothing -> error $ "gamma connection id \"" <> show gCId <> "\" does not exist in the collection of block identifiers: " <> show destinations
-    (Just destination) ->
-      let (repositionedBlocks, _) = reposition positionedBlocks destination 0
-          repositionedDestinations = gammaConnectionDestinations repositionedBlocks
-       in def' repositionedBlocks gCIds repositionedDestinations
-
-def :: [[PositionedBlock]] -> Map ID Double -> ([[PositionedBlock]], Map ID Double)
-def positionedBlocks destinations = def' positionedBlocks (keys destinations) destinations
 
 repositionBasedOnGamma :: [[PositionedBlock]] -> [(Double, Int)] -> [[PositionedBlock]]
 repositionBasedOnGamma positionedBlocks repositionInstructions = foldr (\(thresholdDepth, numberOfShifts) accu -> fst $ reposition accu thresholdDepth numberOfShifts) positionedBlocks repositionInstructions

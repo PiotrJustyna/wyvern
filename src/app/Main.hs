@@ -2,14 +2,13 @@ module Main where
 
 import Blocks (renderDiagram, reverse)
 import Constants (svgOptions)
-import Data.Map (empty)
 import Diagrams.Backend.SVG (renderSVG')
 import InputArguments (inputPath, outputPath, parseInput)
-import Layout (connections, def, position, reposition, repositionBasedOnGamma)
+import Layout (connections, position, repositionBasedOnGamma)
 import Lexer (lexAll, runAlex)
 import Options.Applicative (execParser, fullDesc, header, helper, info, (<**>))
 import Parser (ParseResult (..), diagram)
-import PositionedBlock (extractGammaConnections, gammaConnectionDestinations, getMaxNumberOfShiftsPerDepth, qwe, toMap, toMapMicro)
+import PositionedBlock (extractGammaConnections, getMaxNumberOfShiftsPerDepth, qwe, toMap, toMapMicro)
 import Renderer (render, renderConnections)
 import Validator (validate)
 
