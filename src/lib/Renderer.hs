@@ -6,7 +6,7 @@ import HelperDiagrams (renderConnection, wyvernAddress, wyvernHeadline, wyvernQu
 import PositionedBlock
 
 render'' :: PositionedBlock -> Diagram B
-render'' pB@(PositionedFork _i _c l r _gCId x y _maxX _minY) = position [((P (V2 x y)), wyvernQuestion $ show pB)] <> render' l <> render' r
+render'' pB@(PositionedFork _i _c l r _gCId x y _maxX _minYL _minYR) = position [((P (V2 x y)), wyvernQuestion $ show pB)] <> render' l <> render' r
 render'' pB@(PositionedStartTerminator x y _maxX _minY) = position [((P (V2 x y)), wyvernRoundedRect $ show pB)]
 render'' pB@(PositionedEndTerminator x y _maxX _minY) = position [((P (V2 x y)), wyvernRoundedRect $ show pB)]
 render'' pB@(PositionedAction _i _c x y _maxX _minY) = position [((P (V2 x y)), wyvernRect $ show pB)]

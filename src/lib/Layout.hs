@@ -12,7 +12,7 @@ position'' (Fork i c l r gCId) x y =
       (positionedRight, rMaxX, rMinY) = case r of
         [] -> position' r lMaxX (y - defaultBoundingBoxHeight * 0.5)
         _ -> position' r (lMaxX + defaultBoundingBoxWidth * 0.5) (y - defaultBoundingBoxHeight * 0.5)
-   in (PositionedFork i c (Prelude.reverse positionedLeft) (Prelude.reverse positionedRight) gCId x y rMaxX ((min lMinY rMinY) - defaultBoundingBoxHeight * 0.25))
+   in (PositionedFork i c (Prelude.reverse positionedLeft) (Prelude.reverse positionedRight) gCId x y rMaxX (lMinY - defaultBoundingBoxHeight * 0.25) (rMinY - defaultBoundingBoxHeight * 0.25))
 position'' StartTerminator x y = PositionedStartTerminator x y (x + defaultBoundingBoxWidth * 0.5) (y - defaultBoundingBoxHeight * 0.5)
 position'' (Action i c) x y = PositionedAction i c x y (x + defaultBoundingBoxWidth * 0.5) (y - defaultBoundingBoxHeight * 0.5)
 position'' (Headline i c) x y = PositionedHeadline i c x y (x + defaultBoundingBoxWidth * 0.5) (y - defaultBoundingBoxHeight * 0.5)
@@ -50,13 +50,13 @@ position skewers x y =
    in finalPositionedBlocks
 
 reposition'' :: PositionedBlock -> Double -> Int -> (PositionedBlock, Bool)
-reposition'' b@(PositionedFork i c l r gCId x y maxX minY) thresholdDepth numberOfShifts =
+reposition'' b@(PositionedFork i c l r gCId x y maxX minYL minYR) thresholdDepth numberOfShifts =
   let (l', lAnyRepositioned) = reposition' l thresholdDepth numberOfShifts
       (r', rAnyRepositioned) = reposition' r thresholdDepth numberOfShifts
       anyBranchRepositioned = lAnyRepositioned || rAnyRepositioned
    in if (y <= thresholdDepth)
-        then (PositionedFork i c l' r' gCId x (y - repositionShift * (fromIntegral numberOfShifts)) maxX (minY - repositionShift * (fromIntegral numberOfShifts)), True)
-        else (PositionedFork i c l' r' gCId x y maxX (if anyBranchRepositioned then minY - repositionShift else minY), anyBranchRepositioned)
+        then (PositionedFork i c l' r' gCId x (y - repositionShift * (fromIntegral numberOfShifts)) maxX (minYL - repositionShift * (fromIntegral numberOfShifts)) (minYR - repositionShift * (fromIntegral numberOfShifts)), True)
+        else (PositionedFork i c l' r' gCId x y maxX (if anyBranchRepositioned then minYL - repositionShift else minYL) (if anyBranchRepositioned then minYR - repositionShift else minYR), anyBranchRepositioned)
 reposition'' b@(PositionedStartTerminator x y maxX minY) thresholdDepth numberOfShifts = if (y <= thresholdDepth) then (PositionedStartTerminator x (y - repositionShift * (fromIntegral numberOfShifts)) maxX (minY - repositionShift * (fromIntegral numberOfShifts)), True) else (b, False)
 reposition'' b@(PositionedEndTerminator x y maxX minY) thresholdDepth numberOfShifts = if (y <= thresholdDepth) then (PositionedEndTerminator x (y - repositionShift * (fromIntegral numberOfShifts)) maxX (minY - repositionShift * (fromIntegral numberOfShifts)), True) else (b, False)
 reposition'' b@(PositionedAction i c x y maxX minY) thresholdDepth numberOfShifts = if (y <= thresholdDepth) then (PositionedAction i c x (y - repositionShift * (fromIntegral numberOfShifts)) maxX (minY - repositionShift * (fromIntegral numberOfShifts)), True) else (b, False)
@@ -98,91 +98,93 @@ buildGammaConnection gCId destinations x y maxX =
     Nothing -> error $ "gamma connection id \"" <> show gCId <> "\" does not exist in the collection of block identifiers: " <> show destinations
     (Just destination) -> (buildGammaConnection' x y maxX destination, Data.Map.adjust (\(vX, vY, vMaxX, vMinY, vGammaShiftX, vGammaShiftY) -> (vX, vY, vMaxX, vMinY, vGammaShiftX + 0.1, vGammaShiftY + 0.1)) gCId destinations)
 
-connections'' :: PositionedBlock -> Map ID (Double, Double, Double, Double, Double, Double) -> ([((Double, Double), (Double, Double))], Map ID (Double, Double, Double, Double, Double, Double))
-connections'' (PositionedFork _i _c l r gCId x y maxX minY) destinations =
-  let (lc, lDestinations) = case l of
-        [] -> ([((x, y), (x, minY - defaultBoundingBoxHeight * 0.25))], destinations)
-        bs@(b : _) ->
-          let (lx, ly, _lmaxX, _lMinY) = getPosition b
-           in case last bs of
-                (PositionedFork _i _c _l _r _gCId _x _y _maxX _minY) -> ([((x, y), (lx, ly))], destinations)
-                lastB ->
-                  let (lastx, lasty, _lastmaxX, _lastMinY) = getPosition lastB
-                   in ([((x, y), (lx, ly)), ((lastx, lasty), (x, minY - defaultBoundingBoxHeight * 0.25))], destinations)
-      (rc, rDestinations) = case gCId of
-        Nothing -> case r of
-          [] -> ([((x, y), (maxX - defaultBoundingBoxWidth * 0.5, y)), ((maxX - defaultBoundingBoxWidth * 0.5, y), (maxX - defaultBoundingBoxWidth * 0.5, minY)), ((maxX - defaultBoundingBoxWidth * 0.5, minY), (x, minY))], lDestinations)
-          bs@(b : _) ->
-            let (rx, ry, _rmaxX, _rMinY) = getPosition b
-             in case last bs of
-                  (PositionedFork _i _c _l _r _gCId fx fy _maxX _minY) -> ([((x, y), (rx, y)), ((rx, y), (rx, ry)), ((rx, minY), (x, minY)), ((fx, fy), (fx, minY))], lDestinations) -- TODO: ((rx, minY), (x, minY)) a mistake? ((fx, fy), (fx, minY)) - also a mistake and can lead to clashes
-                  lastB ->
-                    let (lastx, lasty, _lastmaxX, _lastMinY) = getPosition lastB
-                     in ([((x, y), (rx, y)), ((rx, y), (rx, ry)), ((lastx, lasty), (lastx, minY)), ((lastx, minY), (x, minY))], lDestinations)
-        (Just gCId') -> case r of
-          [] -> buildGammaConnection gCId' lDestinations x y maxX
-          bs@(b : _) ->
-            let (rx, ry, _rmaxX, _rMinY) = getPosition b
-             in case last bs of
-                  (PositionedFork _i _c _l _r _gCId fx fy fmaxX fminY) ->
-                    let (gammaConnections, lDestinations') = buildGammaConnection gCId' lDestinations fx fminY fmaxX
-                     in ([((x, y), (rx, y)), ((rx, y), (rx, ry))] <> gammaConnections, lDestinations')
-                  lastB ->
-                    let (lastx, lasty, lastmaxX, _lastMinY) = getPosition lastB
-                        lasty' = lasty - defaultBoundingBoxHeight * 0.5
-                        (gammaConnections, lDestinations') = buildGammaConnection gCId' lDestinations lastx lasty' lastmaxX
-                     in ([((x, y), (rx, y)), ((rx, y), (rx, ry)), ((lastx, lasty), (lastx, lasty'))] <> gammaConnections, lDestinations') -- TODO: there are two connections here: the leading one and the gamma one
-      (lc', lDestinations') = connections' l rDestinations
-      -- 2026-07-29 PJ:
-      -- ==============
-      -- The section below (lc'') adds an extra line connecting the left branch with the end of the fork.
-      -- We need that extra line when the right branch is longer than the left one.
-      -- Without it, in such scenarios, there would be a gap between the end of the fork and the last left branch's block.
-      lastLeftPosition@(lLPX, lLPY) = snd $ last lc'
-      lc'' = lc' <> (if lLPY > minY + defaultBoundingBoxHeight then [((lLPX, lLPY - defaultBoundingBoxHeight), (x, minY))] else [])
-      (rc', rDestinations') = connections' r lDestinations'
-   in (lc <> rc <> lc' <> lc'' <> rc', rDestinations')
-connections'' _ destinations = ([], destinations)
+-- connections'' :: PositionedBlock -> Map ID (Double, Double, Double, Double, Double, Double) -> ([((Double, Double), (Double, Double))], Map ID (Double, Double, Double, Double, Double, Double))
+-- connections'' (PositionedFork _i _c l r gCId x y maxX minYL minYR) destinations =
+--   let minY = min minYL minYR
+--       (lc, lDestinations) = case l of
+--         [] -> ([((x, y), (x, minY - defaultBoundingBoxHeight * 0.25))], destinations)
+--         bs@(b : _) ->
+--           let (lx, ly, _lmaxX, _lMinY) = getPosition b
+--            in case last bs of
+--                 (PositionedFork _i _c _l _r _gCId _x _y _maxX _minYL _minYR) -> ([((x, y), (lx, ly))], destinations)
+--                 lastB ->
+--                   let (lastx, lasty, _lastmaxX, _lastMinY) = getPosition lastB
+--                    in ([((x, y), (lx, ly)), ((lastx, lasty), (x, minY - defaultBoundingBoxHeight * 0.25))], destinations)
+--       (rc, rDestinations) = case gCId of
+--         Nothing -> case r of
+--           [] -> ([((x, y), (maxX - defaultBoundingBoxWidth * 0.5, y)), ((maxX - defaultBoundingBoxWidth * 0.5, y), (maxX - defaultBoundingBoxWidth * 0.5, minY)), ((maxX - defaultBoundingBoxWidth * 0.5, minY), (x, minY))], lDestinations)
+--           bs@(b : _) ->
+--             let (rx, ry, _rmaxX, _rMinY) = getPosition b
+--              in case last bs of
+--                   (PositionedFork _i _c _l _r _gCId fx fy _maxX _minYL _minYR) -> ([((x, y), (rx, y)), ((rx, y), (rx, ry)), ((rx, minY), (x, minY)), ((fx, fy), (fx, minY))], lDestinations) -- TODO: ((rx, minY), (x, minY)) a mistake? ((fx, fy), (fx, minY)) - also a mistake and can lead to clashes
+--                   lastB ->
+--                     let (lastx, lasty, _lastmaxX, _lastMinY) = getPosition lastB
+--                      in ([((x, y), (rx, y)), ((rx, y), (rx, ry)), ((lastx, lasty), (lastx, minY)), ((lastx, minY), (x, minY))], lDestinations)
+--         (Just gCId') -> case r of
+--           [] -> buildGammaConnection gCId' lDestinations x y maxX
+--           bs@(b : _) ->
+--             let (rx, ry, _rmaxX, _rMinY) = getPosition b
+--              in case last bs of
+--                   (PositionedFork _i _c _l _r _gCId fx fy fmaxX fminY) ->
+--                     let (gammaConnections, lDestinations') = buildGammaConnection gCId' lDestinations fx fminY fmaxX
+--                      in ([((x, y), (rx, y)), ((rx, y), (rx, ry))] <> gammaConnections, lDestinations')
+--                   lastB ->
+--                     let (lastx, lasty, lastmaxX, _lastMinY) = getPosition lastB
+--                         lasty' = lasty - defaultBoundingBoxHeight * 0.5
+--                         (gammaConnections, lDestinations') = buildGammaConnection gCId' lDestinations lastx lasty' lastmaxX
+--                      in ([((x, y), (rx, y)), ((rx, y), (rx, ry)), ((lastx, lasty), (lastx, lasty'))] <> gammaConnections, lDestinations') -- TODO: there are two connections here: the leading one and the gamma one
+--       (lc', lDestinations') = connections' l rDestinations
+--       -- 2026-07-29 PJ:
+--       -- ==============
+--       -- The section below (lc'') adds an extra line connecting the left branch with the end of the fork.
+--       -- We need that extra line when the right branch is longer than the left one.
+--       -- Without it, in such scenarios, there would be a gap between the end of the fork and the last left branch's block.
+--       lastLeftPosition@(lLPX, lLPY) = snd $ last lc'
+--       lc'' = lc' <> (if lLPY > minY + defaultBoundingBoxHeight then [((lLPX, lLPY - defaultBoundingBoxHeight), (x, minY))] else [])
+--       (rc', rDestinations') = connections' r lDestinations'
+--    in (lc <> rc <> lc' <> lc'' <> rc', rDestinations')
+-- connections'' _ destinations = ([], destinations)
 
-connections' :: [PositionedBlock] -> Map ID (Double, Double, Double, Double, Double, Double) -> ([((Double, Double), (Double, Double))], Map ID (Double, Double, Double, Double, Double, Double))
-connections' [] destinations = ([], destinations)
-connections' [pB] destinations = connections'' pB destinations
-connections' (pB1 : pB2 : pBs) destinations =
-  case pB1 of
-    (PositionedFork _i _c l _r _gCId x1 y1 maxX1 minY1) ->
-      let position2@(x2, y2, maxX2, minY2) = getPosition pB2
-          lConnection = case l of
-            [] -> []
-            _ -> [((x1, minY1), (x2, y2))]
-          (firstConnections, firstDestinations) = connections'' pB1 destinations
-          (remainingConnections, remainingDestinations) = connections' (pB2 : pBs) firstDestinations
-       in (lConnection <> firstConnections <> remainingConnections, remainingDestinations)
-    _ ->
-      let position1@(x1, y1, maxX1, minY1) = getPosition pB1
-          position2@(x2, y2, maxX2, minY2) = getPosition pB2
-          connection = [((x1, y1), (x2, y2))]
-          (remainingConnections, remainingDestinations) = connections' (pB2 : pBs) destinations
-       in (connection <> remainingConnections, remainingDestinations)
+-- connections' :: [PositionedBlock] -> Map ID (Double, Double, Double, Double, Double, Double) -> ([((Double, Double), (Double, Double))], Map ID (Double, Double, Double, Double, Double, Double))
+-- connections' [] destinations = ([], destinations)
+-- connections' [pB] destinations = connections'' pB destinations
+-- connections' (pB1 : pB2 : pBs) destinations =
+--   case pB1 of
+--     (PositionedFork _i _c l _r _gCId x1 y1 maxX1 minY1) ->
+--       let position2@(x2, y2, maxX2, minY2) = getPosition pB2
+--           lConnection = case l of
+--             [] -> []
+--             _ -> [((x1, minY1), (x2, y2))]
+--           (firstConnections, firstDestinations) = connections'' pB1 destinations
+--           (remainingConnections, remainingDestinations) = connections' (pB2 : pBs) firstDestinations
+--        in (lConnection <> firstConnections <> remainingConnections, remainingDestinations)
+--     _ ->
+--       let position1@(x1, y1, maxX1, minY1) = getPosition pB1
+--           position2@(x2, y2, maxX2, minY2) = getPosition pB2
+--           connection = [((x1, y1), (x2, y2))]
+--           (remainingConnections, remainingDestinations) = connections' (pB2 : pBs) destinations
+--        in (connection <> remainingConnections, remainingDestinations)
 
-connections :: [[PositionedBlock]] -> Map ID (Double, Double, Double, Double, Double, Double) -> [((Double, Double), (Double, Double))]
-connections positionedBlocks destinations =
-  fst $
-    foldr
-      ( \pBs (accuConnections, accuDestinations) ->
-          let (newConnections, newDestinations) = connections' pBs destinations
-           in (newConnections <> accuConnections, newDestinations)
-      )
-      ([], destinations)
-      positionedBlocks
+-- connections :: [[PositionedBlock]] -> Map ID (Double, Double, Double, Double, Double, Double) -> [((Double, Double), (Double, Double))]
+-- connections positionedBlocks destinations =
+--   fst $
+--     foldr
+--       ( \pBs (accuConnections, accuDestinations) ->
+--           let (newConnections, newDestinations) = connections' pBs destinations
+--            in (newConnections <> accuConnections, newDestinations)
+--       )
+--       ([], destinations)
+--       positionedBlocks
 
 connectionsV2'' :: PositionedBlock -> [((Double, Double), (Double, Double))]
-connectionsV2'' (PositionedFork _i _c l r gCId x y maxX minY) =
-  let lc = case l of
+connectionsV2'' (PositionedFork _i _c l r gCId x y maxX minYL minYR) =
+  let minY = min minYL minYR
+      lc = case l of
         [] -> [((x, y), (x, minY - defaultBoundingBoxHeight * 0.25))]
         bs@(b : _) ->
           let (lx, ly, _lmaxX, _lMinY) = getPosition b
            in case last bs of
-                (PositionedFork _i _c _l _r _gCId _x _y _maxX _minY) -> [((x, y), (lx, ly))]
+                (PositionedFork _i _c _l _r _gCId _x _y _maxX _minYL _minYR) -> [((x, y), (lx, ly))]
                 lastB ->
                   let (lastx, lasty, _lastmaxX, _lastMinY) = getPosition lastB
                    in [((x, y), (lx, ly)), ((lastx, lasty), (x, minY - defaultBoundingBoxHeight * 0.25))]
@@ -191,7 +193,7 @@ connectionsV2'' (PositionedFork _i _c l r gCId x y maxX minY) =
         bs@(b : _) ->
           let (rx, ry, _rmaxX, _rMinY) = getPosition b
            in case last bs of
-                (PositionedFork _i _c _l _r _gCId fx fy _maxX _minY) -> [((x, y), (rx, y)), ((rx, y), (rx, ry)), ((rx, minY), (x, minY)), ((fx, fy), (fx, minY))]
+                (PositionedFork _i _c _l _r _gCId fx fy _maxX _minY _minYR) -> [((x, y), (rx, y)), ((rx, y), (rx, ry)), ((rx, minY), (x, minY)), ((fx, fy), (fx, minY))]
                 lastB ->
                   let (lastx, lasty, _lastmaxX, _lastMinY) = getPosition lastB
                    in [((x, y), (rx, y)), ((rx, y), (rx, ry)), ((lastx, lasty), (lastx, minY)), ((lastx, minY), (x, minY))]
@@ -212,8 +214,9 @@ connectionsV2' [] = []
 connectionsV2' [pB] = connectionsV2'' pB
 connectionsV2' (pB1 : pB2 : pBs) =
   case pB1 of
-    (PositionedFork _i _c l _r _gCId x1 y1 maxX1 minY1) ->
-      let position2@(x2, y2, maxX2, minY2) = getPosition pB2
+    (PositionedFork _i _c l _r _gCId x1 y1 maxX1 minYL1 minYR1) ->
+      let minY1 = min minYL1 minYR1
+          position2@(x2, y2, maxX2, minY2) = getPosition pB2
           lConnection = case l of
             [] -> []
             _ -> [((x1, minY1), (x2, y2))]
@@ -231,14 +234,14 @@ connectionsV2 :: [[PositionedBlock]] -> [((Double, Double), (Double, Double))]
 connectionsV2 = foldr (\pBs accuConnections -> accuConnections <> connectionsV2' pBs) []
 
 barebonesGamma'' :: PositionedBlock -> [((Double, Double), ID)]
-barebonesGamma'' (PositionedFork _i _c l r gCId x y maxX minY) =
+barebonesGamma'' (PositionedFork _i _c l r gCId x y maxX minYL minYR) =
   let lGamma = barebonesGamma' l
       rGamma = barebonesGamma' r
       gamma = case gCId of
         Nothing -> []
         (Just gCId') -> case r of
           [] -> [((x, y), gCId')]
-          _ -> [((maxX, minY), gCId')]
+          _ -> [((maxX, minYR), gCId')]
    in gamma <> lGamma <> rGamma
 barebonesGamma'' _ = []
 
