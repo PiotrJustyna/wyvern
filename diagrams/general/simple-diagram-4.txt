@@ -26,7 +26,7 @@
   {
     "dummy action"
     "dummy action"
-    2
+    22
   }
   2
 }

@@ -175,5 +175,78 @@ connections positionedBlocks destinations =
       ([], destinations)
       positionedBlocks
 
+connectionsV2'' :: PositionedBlock -> [((Double, Double), (Double, Double))]
+connectionsV2'' (PositionedFork _i _c l r gCId x y maxX minY) =
+  let lc = case l of
+        [] -> [((x, y), (x, minY - defaultBoundingBoxHeight * 0.25))]
+        bs@(b : _) ->
+          let (lx, ly, _lmaxX, _lMinY) = getPosition b
+           in case last bs of
+                (PositionedFork _i _c _l _r _gCId _x _y _maxX _minY) -> [((x, y), (lx, ly))]
+                lastB ->
+                  let (lastx, lasty, _lastmaxX, _lastMinY) = getPosition lastB
+                   in [((x, y), (lx, ly)), ((lastx, lasty), (x, minY - defaultBoundingBoxHeight * 0.25))]
+      rc = case r of
+        [] -> [((x, y), (maxX - defaultBoundingBoxWidth * 0.5, y)), ((maxX - defaultBoundingBoxWidth * 0.5, y), (maxX - defaultBoundingBoxWidth * 0.5, minY)), ((maxX - defaultBoundingBoxWidth * 0.5, minY), (x, minY))]
+        bs@(b : _) ->
+          let (rx, ry, _rmaxX, _rMinY) = getPosition b
+           in case last bs of
+                (PositionedFork _i _c _l _r _gCId fx fy _maxX _minY) -> [((x, y), (rx, y)), ((rx, y), (rx, ry)), ((rx, minY), (x, minY)), ((fx, fy), (fx, minY))]
+                lastB ->
+                  let (lastx, lasty, _lastmaxX, _lastMinY) = getPosition lastB
+                   in [((x, y), (rx, y)), ((rx, y), (rx, ry)), ((lastx, lasty), (lastx, minY)), ((lastx, minY), (x, minY))]
+      lc' = connectionsV2' l
+      -- 2026-07-29 PJ:
+      -- ==============
+      -- The section below (lc'') adds an extra line connecting the left branch with the end of the fork.
+      -- We need that extra line when the right branch is longer than the left one.
+      -- Without it, in such scenarios, there would be a gap between the end of the fork and the last left branch's block.
+      lastLeftPosition@(lLPX, lLPY) = snd $ last lc'
+      lc'' = lc' <> (if lLPY > minY + defaultBoundingBoxHeight then [((lLPX, lLPY - defaultBoundingBoxHeight), (x, minY))] else [])
+      rc' = connectionsV2' r
+   in lc <> rc <> lc' <> lc'' <> rc'
+connectionsV2'' _ = []
+
+connectionsV2' :: [PositionedBlock] -> [((Double, Double), (Double, Double))]
+connectionsV2' [] = []
+connectionsV2' [pB] = connectionsV2'' pB
+connectionsV2' (pB1 : pB2 : pBs) =
+  case pB1 of
+    (PositionedFork _i _c l _r _gCId x1 y1 maxX1 minY1) ->
+      let position2@(x2, y2, maxX2, minY2) = getPosition pB2
+          lConnection = case l of
+            [] -> []
+            _ -> [((x1, minY1), (x2, y2))]
+          firstConnections = connectionsV2'' pB1
+          remainingConnections = connectionsV2' (pB2 : pBs)
+       in lConnection <> firstConnections <> remainingConnections
+    _ ->
+      let position1@(x1, y1, maxX1, minY1) = getPosition pB1
+          position2@(x2, y2, maxX2, minY2) = getPosition pB2
+          connection = [((x1, y1), (x2, y2))]
+          remainingConnections = connectionsV2' (pB2 : pBs)
+       in connection <> remainingConnections
+
+connectionsV2 :: [[PositionedBlock]] -> [((Double, Double), (Double, Double))]
+connectionsV2 = foldr (\pBs accuConnections -> accuConnections <> connectionsV2' pBs) []
+
+barebonesGamma'' :: PositionedBlock -> [((Double, Double), ID)]
+barebonesGamma'' (PositionedFork _i _c l r gCId x y maxX minY) =
+  let lGamma = barebonesGamma' l
+      rGamma = barebonesGamma' r
+      gamma = case gCId of
+        Nothing -> []
+        (Just gCId') -> case r of
+          [] -> [((x, y), gCId')]
+          _ -> [((maxX, minY), gCId')]
+   in gamma <> lGamma <> rGamma
+barebonesGamma'' _ = []
+
+barebonesGamma' :: [PositionedBlock] -> [((Double, Double), ID)]
+barebonesGamma' = foldr (\pB accuGamma -> accuGamma <> barebonesGamma'' pB) []
+
+barebonesGamma :: [[PositionedBlock]] -> [((Double, Double), ID)]
+barebonesGamma = foldr (\pBs accuGamma -> accuGamma <> barebonesGamma' pBs) []
+
 repositionBasedOnGamma :: [[PositionedBlock]] -> [(Double, Int)] -> [[PositionedBlock]]
 repositionBasedOnGamma positionedBlocks repositionInstructions = foldr (\(thresholdDepth, numberOfShifts) accu -> fst $ reposition accu thresholdDepth numberOfShifts) positionedBlocks repositionInstructions

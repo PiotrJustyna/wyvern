@@ -4,7 +4,7 @@ import Blocks (renderDiagram, reverse)
 import Constants (svgOptions)
 import Diagrams.Backend.SVG (renderSVG')
 import InputArguments (inputPath, outputPath, parseInput)
-import Layout (connections, position, repositionBasedOnGamma)
+import Layout (barebonesGamma, connections, connectionsV2, position, repositionBasedOnGamma)
 import Lexer (lexAll, runAlex)
 import Options.Applicative (execParser, fullDesc, header, helper, info, (<**>))
 import Parser (ParseResult (..), diagram)
@@ -52,8 +52,12 @@ main = do
 
                 let destinations = toMap repositionedBlocks
 
-                let blockConnections = connections repositionedBlocks destinations
+                let blockConnections = connectionsV2 repositionedBlocks
                 let renderedConnections = renderConnections blockConnections
+
+                let gamma = barebonesGamma repositionedBlocks
+                putStrLn "barebones gamma:"
+                print gamma
 
                 -- rendering v2:
                 -- renderSVG' ((outputPath input) <> "_new") svgOptions ((render repositionedBlocks) <> renderedConnections)
