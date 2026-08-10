@@ -17,7 +17,7 @@ createTestBlocks =
 
 specLayout2 :: Spec
 specLayout2 = describe "layout2" $ do
-  let ([_a, (PositionedFork _i _c [l] r _gCId x y forkMaxX formMinY)], maxX, minY) = position' createTestBlocks 0.0 0.0
+  let ([_a, (PositionedFork _i _c [l] r _gCId x _xR y forkMaxX forkMinYL forkMinYR)], maxX, minY) = position' createTestBlocks 0.0 0.0
 
   context "Fork block positioning" $ do
     context "Fork root node" $ do

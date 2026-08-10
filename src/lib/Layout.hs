@@ -9,10 +9,11 @@ import PositionedBlock
 position'' :: Block -> Double -> Double -> PositionedBlock
 position'' (Fork i c l r gCId) x y =
   let (positionedLeft, lMaxX, lMinY) = position' l x (y - defaultBoundingBoxHeight * 0.5)
+      xR = lMaxX + defaultBoundingBoxWidth * 0.5
       (positionedRight, rMaxX, rMinY) = case r of
         [] -> position' r lMaxX (y - defaultBoundingBoxHeight * 0.5)
-        _ -> position' r (lMaxX + defaultBoundingBoxWidth * 0.5) (y - defaultBoundingBoxHeight * 0.5)
-   in (PositionedFork i c (Prelude.reverse positionedLeft) (Prelude.reverse positionedRight) gCId x y rMaxX (lMinY - defaultBoundingBoxHeight * 0.25) (rMinY - defaultBoundingBoxHeight * 0.25))
+        _ -> position' r xR (y - defaultBoundingBoxHeight * 0.5)
+   in (PositionedFork i c (Prelude.reverse positionedLeft) (Prelude.reverse positionedRight) gCId x xR y rMaxX (lMinY - defaultBoundingBoxHeight * 0.25) (rMinY - defaultBoundingBoxHeight * 0.25))
 position'' StartTerminator x y = PositionedStartTerminator x y (x + defaultBoundingBoxWidth * 0.5) (y - defaultBoundingBoxHeight * 0.5)
 position'' (Action i c) x y = PositionedAction i c x y (x + defaultBoundingBoxWidth * 0.5) (y - defaultBoundingBoxHeight * 0.5)
 position'' (Headline i c) x y = PositionedHeadline i c x y (x + defaultBoundingBoxWidth * 0.5) (y - defaultBoundingBoxHeight * 0.5)
@@ -50,13 +51,13 @@ position skewers x y =
    in finalPositionedBlocks
 
 reposition'' :: PositionedBlock -> Double -> Int -> (PositionedBlock, Bool)
-reposition'' b@(PositionedFork i c l r gCId x y maxX minYL minYR) thresholdDepth numberOfShifts =
+reposition'' b@(PositionedFork i c l r gCId x xR y maxX minYL minYR) thresholdDepth numberOfShifts =
   let (l', lAnyRepositioned) = reposition' l thresholdDepth numberOfShifts
       (r', rAnyRepositioned) = reposition' r thresholdDepth numberOfShifts
       anyBranchRepositioned = lAnyRepositioned || rAnyRepositioned
    in if (y <= thresholdDepth)
-        then (PositionedFork i c l' r' gCId x (y - repositionShift * (fromIntegral numberOfShifts)) maxX (minYL - repositionShift * (fromIntegral numberOfShifts)) (minYR - repositionShift * (fromIntegral numberOfShifts)), True)
-        else (PositionedFork i c l' r' gCId x y maxX (if anyBranchRepositioned then minYL - repositionShift else minYL) (if anyBranchRepositioned then minYR - repositionShift else minYR), anyBranchRepositioned)
+        then (PositionedFork i c l' r' gCId x xR (y - repositionShift * (fromIntegral numberOfShifts)) maxX (minYL - repositionShift * (fromIntegral numberOfShifts)) (minYR - repositionShift * (fromIntegral numberOfShifts)), True)
+        else (PositionedFork i c l' r' gCId x xR y maxX (if anyBranchRepositioned then minYL - repositionShift else minYL) (if anyBranchRepositioned then minYR - repositionShift else minYR), anyBranchRepositioned)
 reposition'' b@(PositionedStartTerminator x y maxX minY) thresholdDepth numberOfShifts = if (y <= thresholdDepth) then (PositionedStartTerminator x (y - repositionShift * (fromIntegral numberOfShifts)) maxX (minY - repositionShift * (fromIntegral numberOfShifts)), True) else (b, False)
 reposition'' b@(PositionedEndTerminator x y maxX minY) thresholdDepth numberOfShifts = if (y <= thresholdDepth) then (PositionedEndTerminator x (y - repositionShift * (fromIntegral numberOfShifts)) maxX (minY - repositionShift * (fromIntegral numberOfShifts)), True) else (b, False)
 reposition'' b@(PositionedAction i c x y maxX minY) thresholdDepth numberOfShifts = if (y <= thresholdDepth) then (PositionedAction i c x (y - repositionShift * (fromIntegral numberOfShifts)) maxX (minY - repositionShift * (fromIntegral numberOfShifts)), True) else (b, False)
@@ -177,14 +178,14 @@ buildGammaConnection gCId destinations x y maxX =
 --       positionedBlocks
 
 connectionsV2'' :: PositionedBlock -> [((Double, Double), (Double, Double))]
-connectionsV2'' (PositionedFork _i _c l r gCId x y maxX minYL minYR) =
+connectionsV2'' (PositionedFork _i _c l r gCId x _xR y maxX minYL minYR) =
   let minY = min minYL minYR
       lc = case l of
         [] -> [((x, y), (x, minY - defaultBoundingBoxHeight * 0.25))]
         bs@(b : _) ->
           let (lx, ly, _lmaxX, _lMinY) = getPosition b
            in case last bs of
-                (PositionedFork _i _c _l _r _gCId _x _y _maxX _minYL _minYR) -> [((x, y), (lx, ly))]
+                (PositionedFork _i _c _l _r _gCId _x _xR _y _maxX _minYL _minYR) -> [((x, y), (lx, ly))]
                 lastB ->
                   let (lastx, lasty, _lastmaxX, _lastMinY) = getPosition lastB
                    in [((x, y), (lx, ly)), ((lastx, lasty), (x, minY - defaultBoundingBoxHeight * 0.25))]
@@ -193,7 +194,7 @@ connectionsV2'' (PositionedFork _i _c l r gCId x y maxX minYL minYR) =
         bs@(b : _) ->
           let (rx, ry, _rmaxX, _rMinY) = getPosition b
            in case last bs of
-                (PositionedFork _i _c _l _r _gCId fx fy _maxX _minY _minYR) -> [((x, y), (rx, y)), ((rx, y), (rx, ry)), ((rx, minY), (x, minY)), ((fx, fy), (fx, minY))]
+                (PositionedFork _i _c _l _r _gCId fx _fxR fy _maxX _minY _minYR) -> [((x, y), (rx, y)), ((rx, y), (rx, ry)), ((rx, minY), (x, minY)), ((fx, fy), (fx, minY))]
                 lastB ->
                   let (lastx, lasty, _lastmaxX, _lastMinY) = getPosition lastB
                    in [((x, y), (rx, y)), ((rx, y), (rx, ry)), ((lastx, lasty), (lastx, minY)), ((lastx, minY), (x, minY))]
@@ -214,7 +215,7 @@ connectionsV2' [] = []
 connectionsV2' [pB] = connectionsV2'' pB
 connectionsV2' (pB1 : pB2 : pBs) =
   case pB1 of
-    (PositionedFork _i _c l _r _gCId x1 y1 maxX1 minYL1 minYR1) ->
+    (PositionedFork _i _c l _r _gCId x1 _x1R y1 maxX1 minYL1 minYR1) ->
       let minY1 = min minYL1 minYR1
           position2@(x2, y2, maxX2, minY2) = getPosition pB2
           lConnection = case l of
@@ -234,14 +235,14 @@ connectionsV2 :: [[PositionedBlock]] -> [((Double, Double), (Double, Double))]
 connectionsV2 = foldr (\pBs accuConnections -> accuConnections <> connectionsV2' pBs) []
 
 barebonesGamma'' :: PositionedBlock -> [((Double, Double), ID)]
-barebonesGamma'' (PositionedFork _i _c l r gCId x y maxX minYL minYR) =
+barebonesGamma'' (PositionedFork _i _c l r gCId x xR y maxX minYL minYR) =
   let lGamma = barebonesGamma' l
       rGamma = barebonesGamma' r
       gamma = case gCId of
         Nothing -> []
         (Just gCId') -> case r of
           [] -> [((x, y), gCId')]
-          _ -> [((maxX, minYR), gCId')]
+          _ -> [((xR, minYR), gCId')]
    in gamma <> lGamma <> rGamma
 barebonesGamma'' _ = []
 

@@ -13,9 +13,9 @@ createActionWithId :: String -> String -> Double -> Double -> Double -> Double -
 createActionWithId idStr label x1 y1 x2 y2 =
   PositionedAction (Just (ID idStr)) label x1 y1 x2 y2
 
-createFork :: String -> Double -> Double -> Double -> Double -> PositionedBlock
-createFork label x1 y1 x2 y2 =
-  PositionedFork Nothing label [] [] Nothing x1 y1 x2 y2
+createFork :: String -> Double -> Double -> Double -> Double -> Double -> Double -> PositionedBlock
+createFork label x1 x1R y1 x2 y2L y2R =
+  PositionedFork Nothing label [] [] Nothing x1 x1R y1 x2 y2L y2R
 
 specShow :: Spec
 specShow = describe "show" $ do
@@ -31,5 +31,5 @@ specShow = describe "show" $ do
   context "PositionedFork" $ do
     -- Verify that Fork blocks display their label and coordinates
     it "displays a Fork block" $ do
-      let block = createFork "-" 4.0 5.0 4.0 5.0
-      show block `shouldBe` "Fork \"-\" [4.0, 5.0, 4.0, 5.0]"
+      let block = createFork "-" 4.0 7.0 5.0 4.0 5.0 6.0
+      show block `shouldBe` "Fork \"-\" [4.0, 7.0, 5.0, 4.0, 5.0, 6.0]"

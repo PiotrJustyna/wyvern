@@ -21,7 +21,7 @@ extractPositions ::
   ([PositionedBlock], Double, Double) ->
   (PositionedBlock, PositionedBlock, PositionedBlock, PositionedBlock, (Double, Double), Double, Double)
 extractPositions (positionedBlocks, skewerMaxX, skewerMinY) =
-  let [(PositionedFork _i _c [l3] [r3] _gCId x3 y3 _maxX _minY), pb2, pb1] = positionedBlocks
+  let [(PositionedFork _i _c [l3] [r3] _gCId x3 _xR3 y3 _maxX _minYL _minYR), pb2, pb1] = positionedBlocks
    in (pb1, pb2, l3, r3, (x3, y3), skewerMaxX, skewerMinY)
 
 specLayout1 :: Spec
