@@ -9,6 +9,7 @@ help:
 	@echo "  make format-check   - Check formatting without changes"
 	@echo "  make clean          - Clean build artifacts"
 	@echo "  make run            - Run the application"
+	@echo "  make demo           - Run the application in demo mode"
 	@echo "  make repl           - Start GHCi REPL"
 	@echo "  make all            - Build and test"
 
@@ -34,6 +35,23 @@ run: lint format
 	cabal run wyvern-diagrams -- \
 	    -i "./diagrams/general/simple-diagram-4.txt" \
 	    -o "./diagrams/general/simple-diagram-4.svg"
+
+demo: lint format
+	cabal run wyvern-diagrams -- \
+	    -i "./diagrams/general/simple-diagram-1.txt" \
+	    -o "./diagrams/general/simple-diagram-1.svg" && \
+	cabal run wyvern-diagrams -- \
+	    -i "./diagrams/general/simple-diagram-2.txt" \
+	    -o "./diagrams/general/simple-diagram-2.svg" && \
+	cabal run wyvern-diagrams -- \
+	    -i "./diagrams/general/simple-diagram-3.txt" \
+	    -o "./diagrams/general/simple-diagram-3.svg" && \
+	cabal run wyvern-diagrams -- \
+	    -i "./diagrams/general/simple-diagram-4.txt" \
+	    -o "./diagrams/general/simple-diagram-4.svg" && \
+	cabal run wyvern-diagrams -- \
+	    -i "./diagrams/general/simple-diagram-5.txt" \
+	    -o "./diagrams/general/simple-diagram-5.svg"
 
 repl:
 	cabal repl wyvern-diagrams --repl-options="-fbreak-on-error -fbreak-on-exception"

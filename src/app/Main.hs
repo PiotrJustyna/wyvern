@@ -4,7 +4,7 @@ import Blocks (renderDiagram, reverse)
 import Constants (svgOptions)
 import Diagrams.Backend.SVG (renderSVG')
 import InputArguments (inputPath, outputPath, parseInput)
-import Layout (barebonesGamma, connectionsV2, position, repositionBasedOnGamma)
+import Layout (barebonesGamma, buildGammaConnection, connectionsV2, position, repositionBasedOnGamma)
 import Lexer (lexAll, runAlex)
 import Options.Applicative (execParser, fullDesc, header, helper, info, (<**>))
 import Parser (ParseResult (..), diagram)
@@ -59,8 +59,20 @@ main = do
                 putStrLn "barebones gamma:"
                 print gamma
 
+                let (gammaConnections', updatedDestinations) =
+                      foldl
+                        ( \(accuConnections, accuDestinations) singleGamma@((originX, originY), gCId, originMaxX) ->
+                            let (newConnections, accuDestinations') = buildGammaConnection gCId accuDestinations originX originY originMaxX
+                             in (accuConnections <> newConnections, accuDestinations')
+                        )
+                        ([], destinations)
+                        gamma
+
+                -- print destinations
+                -- print updatedDestinations
+
                 -- rendering v2:
-                -- renderSVG' ((outputPath input) <> "_new") svgOptions ((render repositionedBlocks) <> renderedConnections)
+                renderSVG' ((outputPath input) <> "_new") svgOptions ((render repositionedBlocks) <> renderConnections (blockConnections <> gammaConnections'))
 
                 -- rendering v1:
                 renderSVG' (outputPath input) svgOptions (Blocks.renderDiagram validBlocks)

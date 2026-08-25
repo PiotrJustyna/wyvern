@@ -13,7 +13,7 @@ position'' (Fork i c l r gCId) x y =
       (positionedRight, rMaxX, rMinY) = case r of
         [] -> position' r lMaxX (y - defaultBoundingBoxHeight * 0.5)
         _ -> position' r xR (y - defaultBoundingBoxHeight * 0.5)
-   in (PositionedFork i c (Prelude.reverse positionedLeft) (Prelude.reverse positionedRight) gCId x xR y rMaxX (lMinY - defaultBoundingBoxHeight * 0.25) (rMinY - defaultBoundingBoxHeight * 0.25))
+   in (PositionedFork i c (Prelude.reverse positionedLeft) (Prelude.reverse positionedRight) gCId x xR y rMaxX lMinY rMinY)
 position'' StartTerminator x y = PositionedStartTerminator x y (x + defaultBoundingBoxWidth * 0.5) (y - defaultBoundingBoxHeight * 0.5)
 position'' (Action i c) x y = PositionedAction i c x y (x + defaultBoundingBoxWidth * 0.5) (y - defaultBoundingBoxHeight * 0.5)
 position'' (Headline i c) x y = PositionedHeadline i c x y (x + defaultBoundingBoxWidth * 0.5) (y - defaultBoundingBoxHeight * 0.5)
@@ -55,9 +55,10 @@ reposition'' b@(PositionedFork i c l r gCId x xR y maxX minYL minYR) thresholdDe
   let (l', lAnyRepositioned) = reposition' l thresholdDepth numberOfShifts
       (r', rAnyRepositioned) = reposition' r thresholdDepth numberOfShifts
       anyBranchRepositioned = lAnyRepositioned || rAnyRepositioned
+      shift = repositionShift * (fromIntegral numberOfShifts)
    in if (y <= thresholdDepth)
-        then (PositionedFork i c l' r' gCId x xR (y - repositionShift * (fromIntegral numberOfShifts)) maxX (minYL - repositionShift * (fromIntegral numberOfShifts)) (minYR - repositionShift * (fromIntegral numberOfShifts)), True)
-        else (PositionedFork i c l' r' gCId x xR y maxX (if anyBranchRepositioned then minYL - repositionShift else minYL) (if anyBranchRepositioned then minYR - repositionShift else minYR), anyBranchRepositioned)
+        then (PositionedFork i c l' r' gCId x xR (y - shift) maxX (minYL - shift) (minYR - shift), True)
+        else (PositionedFork i c l' r' gCId x xR y maxX (minYL - shift) (minYR - shift), anyBranchRepositioned)
 reposition'' b@(PositionedStartTerminator x y maxX minY) thresholdDepth numberOfShifts = if (y <= thresholdDepth) then (PositionedStartTerminator x (y - repositionShift * (fromIntegral numberOfShifts)) maxX (minY - repositionShift * (fromIntegral numberOfShifts)), True) else (b, False)
 reposition'' b@(PositionedEndTerminator x y maxX minY) thresholdDepth numberOfShifts = if (y <= thresholdDepth) then (PositionedEndTerminator x (y - repositionShift * (fromIntegral numberOfShifts)) maxX (minY - repositionShift * (fromIntegral numberOfShifts)), True) else (b, False)
 reposition'' b@(PositionedAction i c x y maxX minY) thresholdDepth numberOfShifts = if (y <= thresholdDepth) then (PositionedAction i c x (y - repositionShift * (fromIntegral numberOfShifts)) maxX (minY - repositionShift * (fromIntegral numberOfShifts)), True) else (b, False)
@@ -90,14 +91,19 @@ buildGammaConnection' x y oMaxX (dX, dY, dMaxX, _dMinY, dGammaShiftX, dGammaShif
    in if dX <= x && dY >= y
         -- TODO 1: move the origin point of a block to the upper left corner of a block
         -- TODO 2: push the whole destination down and increase its width
-        then [((x, y), (newMaxX, y)), ((newMaxX, y), (newMaxX, dY + dGammaShiftY + defaultBoundingBoxHeight * 0.5)), ((newMaxX, dY + dGammaShiftY + defaultBoundingBoxHeight * 0.5), (dX, dY + dGammaShiftY + defaultBoundingBoxHeight * 0.5))]
-        else [((x, y), (oMaxX - defaultBoundingBoxWidth * 0.5, y)), ((oMaxX - defaultBoundingBoxWidth * 0.5, y), (oMaxX - defaultBoundingBoxWidth * 0.5 + 1.0, y + 1.0)), ((oMaxX - defaultBoundingBoxWidth * 0.5 + 1.0, y + 1.0), (dX, dY))]
+        then
+          -- 2026-08-24 PJ:
+          -- ##############
+          -- Predictable shape of a gamma connection.
+          -- [((x, y), (x + defaultBoundingBoxWidth, y))]
+          [((x, y), (newMaxX, y)), ((newMaxX, y), (newMaxX, dY + dGammaShiftY + defaultBoundingBoxHeight * 0.5)), ((newMaxX, dY + dGammaShiftY + defaultBoundingBoxHeight * 0.5), (dX, dY + dGammaShiftY + defaultBoundingBoxHeight * 0.5))]
+        else [((x, y), (dX, dY + dGammaShiftY + defaultBoundingBoxHeight * 0.5))]
 
 buildGammaConnection :: ID -> Map ID (Double, Double, Double, Double, Double, Double) -> Double -> Double -> Double -> ([((Double, Double), (Double, Double))], Map ID (Double, Double, Double, Double, Double, Double))
 buildGammaConnection gCId destinations x y maxX =
   case Data.Map.lookup gCId destinations of
     Nothing -> error $ "gamma connection id \"" <> show gCId <> "\" does not exist in the collection of block identifiers: " <> show destinations
-    (Just destination) -> (buildGammaConnection' x y maxX destination, Data.Map.adjust (\(vX, vY, vMaxX, vMinY, vGammaShiftX, vGammaShiftY) -> (vX, vY, vMaxX, vMinY, vGammaShiftX + 0.1, vGammaShiftY + 0.1)) gCId destinations)
+    (Just destination) -> (buildGammaConnection' x y maxX destination, Data.Map.adjust (\(vX, vY, vMaxX, vMinY, vGammaShiftX, vGammaShiftY) -> (vX, vY, vMaxX, vMinY, vGammaShiftX + repositionShift, vGammaShiftY + repositionShift)) gCId destinations)
 
 -- connections'' :: PositionedBlock -> Map ID (Double, Double, Double, Double, Double, Double) -> ([((Double, Double), (Double, Double))], Map ID (Double, Double, Double, Double, Double, Double))
 -- connections'' (PositionedFork _i _c l r gCId x y maxX minYL minYR) destinations =
@@ -188,26 +194,36 @@ connectionsV2'' (PositionedFork _i _c l r gCId x _xR y maxX minYL minYR) =
                 (PositionedFork _i _c _l _r _gCId _x _xR _y _maxX _minYL _minYR) -> [((x, y), (lx, ly))]
                 lastB ->
                   let (lastx, lasty, _lastmaxX, _lastMinY) = getPosition lastB
-                   in [((x, y), (lx, ly)), ((lastx, lasty), (x, minY - defaultBoundingBoxHeight * 0.25))]
+                   in [((x, y), (lx, ly)), ((lastx, lasty), (x, minY))]
       rc = case r of
-        [] -> [((x, y), (maxX - defaultBoundingBoxWidth * 0.5, y)), ((maxX - defaultBoundingBoxWidth * 0.5, y), (maxX - defaultBoundingBoxWidth * 0.5, minY)), ((maxX - defaultBoundingBoxWidth * 0.5, minY), (x, minY))]
+        [] -> case gCId of
+          Nothing -> [((x, y), (maxX - defaultBoundingBoxWidth * 0.5, y)), ((maxX - defaultBoundingBoxWidth * 0.5, y), (maxX - defaultBoundingBoxWidth * 0.5, minY)), ((maxX - defaultBoundingBoxWidth * 0.5, minY), (x, minY))]
+          _ -> []
         bs@(b : _) ->
           let (rx, ry, _rmaxX, _rMinY) = getPosition b
+              leadingRc = [((x, y), (rx, y)), ((rx, y), (rx, ry))]
            in case last bs of
-                (PositionedFork _i _c _l _r _gCId fx _fxR fy _maxX _minY _minYR) -> [((x, y), (rx, y)), ((rx, y), (rx, ry)), ((rx, minY), (x, minY)), ((fx, fy), (fx, minY))]
+                (PositionedFork _i _c _l _r _gCId fx _fxR fy _maxX _minY minYR) -> case gCId of
+                  Nothing -> leadingRc <> [((rx, minY), (x, minY)), ((fx, fy), (fx, minYR))]
+                  _ -> leadingRc
                 lastB ->
                   let (lastx, lasty, _lastmaxX, _lastMinY) = getPosition lastB
-                   in [((x, y), (rx, y)), ((rx, y), (rx, ry)), ((lastx, lasty), (lastx, minY)), ((lastx, minY), (x, minY))]
+                   in case gCId of
+                        Nothing -> leadingRc <> [((lastx, lasty), (lastx, minY)), ((lastx, minY), (x, minY))]
+                        _ -> leadingRc <> [((lastx, lasty), (lastx, minYR))]
       lc' = connectionsV2' l
       -- 2026-07-29 PJ:
       -- ==============
       -- The section below (lc'') adds an extra line connecting the left branch with the end of the fork.
       -- We need that extra line when the right branch is longer than the left one.
       -- Without it, in such scenarios, there would be a gap between the end of the fork and the last left branch's block.
-      lastLeftPosition@(lLPX, lLPY) = snd $ last lc'
-      lc'' = lc' <> (if lLPY > minY + defaultBoundingBoxHeight then [((lLPX, lLPY - defaultBoundingBoxHeight), (x, minY))] else [])
+      lc'' = case lc' of
+        [] -> []
+        _ ->
+          let (lLPX, lLPY) = snd $ last lc'
+           in if lLPY > minY + defaultBoundingBoxHeight then [((lLPX, lLPY - defaultBoundingBoxHeight * 0.5), (x, minY))] else []
       rc' = connectionsV2' r
-   in lc <> rc <> lc' <> lc'' <> rc'
+   in lc <> rc <> lc' <> rc' <> lc''
 connectionsV2'' _ = []
 
 connectionsV2' :: [PositionedBlock] -> [((Double, Double), (Double, Double))]
@@ -234,22 +250,22 @@ connectionsV2' (pB1 : pB2 : pBs) =
 connectionsV2 :: [[PositionedBlock]] -> [((Double, Double), (Double, Double))]
 connectionsV2 = foldr (\pBs accuConnections -> accuConnections <> connectionsV2' pBs) []
 
-barebonesGamma'' :: PositionedBlock -> [((Double, Double), ID)]
+barebonesGamma'' :: PositionedBlock -> [((Double, Double), ID, Double)]
 barebonesGamma'' (PositionedFork _i _c l r gCId x xR y maxX minYL minYR) =
   let lGamma = barebonesGamma' l
       rGamma = barebonesGamma' r
       gamma = case gCId of
         Nothing -> []
         (Just gCId') -> case r of
-          [] -> [((x, y), gCId')]
-          _ -> [((xR, minYR), gCId')]
+          [] -> [((x, y), gCId', maxX)]
+          _ -> [((xR, minYR), gCId', maxX)]
    in gamma <> lGamma <> rGamma
 barebonesGamma'' _ = []
 
-barebonesGamma' :: [PositionedBlock] -> [((Double, Double), ID)]
+barebonesGamma' :: [PositionedBlock] -> [((Double, Double), ID, Double)]
 barebonesGamma' = foldr (\pB accuGamma -> accuGamma <> barebonesGamma'' pB) []
 
-barebonesGamma :: [[PositionedBlock]] -> [((Double, Double), ID)]
+barebonesGamma :: [[PositionedBlock]] -> [((Double, Double), ID, Double)]
 barebonesGamma = foldr (\pBs accuGamma -> accuGamma <> barebonesGamma' pBs) []
 
 repositionBasedOnGamma :: [[PositionedBlock]] -> [(Double, Int)] -> [[PositionedBlock]]
