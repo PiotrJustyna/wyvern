@@ -56,7 +56,7 @@ main = do
                 --         ([], positionedBlocks)
                 --         gamma
 
-                let repositionedBlocks = processGammaShifts gamma positionedBlocks
+                let (_iDs, repositionedBlocks) = processGammaShifts gamma [] positionedBlocks
 
                 let gamma' = barebonesGamma repositionedBlocks
 
@@ -140,10 +140,11 @@ main = do
 
 processGammaShifts ::
   [((Double, Double), ID, Double)] ->
+  [((Double, Double), ID, Double)] ->
   [[PositionedBlock]] ->
-  [[PositionedBlock]]
-processGammaShifts [] positionedBlocks = positionedBlocks
-processGammaShifts (g@((xOrigin, yOrigin), gCId, maxXOrigin) : gs) positionedBlocks =
+  ([((Double, Double), ID, Double)], [[PositionedBlock]])
+processGammaShifts [] processedGammaConnections positionedBlocks = (processedGammaConnections, positionedBlocks)
+processGammaShifts (g@((xOrigin, yOrigin), gCId, maxXOrigin) : gs) processedGammaConnections positionedBlocks =
   let destinations = toMap positionedBlocks
       (repositionedBlocks, gs') = case Data.Map.lookup gCId destinations of
         Nothing -> (positionedBlocks, gs)
@@ -151,4 +152,4 @@ processGammaShifts (g@((xOrigin, yOrigin), gCId, maxXOrigin) : gs) positionedBlo
           ( repositionBasedOnGammaX (repositionBasedOnGamma positionedBlocks [(y, 1)]) [(maxXOrigin, 1)],
             repositionOriginsBasedOnGamma maxXOrigin y gs
           )
-   in processGammaShifts gs' repositionedBlocks
+   in processGammaShifts gs' (g : processedGammaConnections) repositionedBlocks
