@@ -1,27 +1,43 @@
-1 "action 1"
+"action 1"
 2 "question 2"
 {
   21 "question 21"
   {
-    211 "action 211"
-    212 "action 212"
-    213 "action 213"
+    "action 211"
   }
   {
+    21
+  }
+  "dummy action"
+  21a "question 21a"
+  {
+    "action 211a"
+  }
+  {
+    21b "fork"
+    {
+        "dummy action"
+        "dummy action"
+    }
+    {
+        "dummy action"
+        "dummy action"
+        "dummy action"
+        21b
+    }
     21
   }
 }
 {
   22 "question 22"
   {
-    221 "action 221"
-    222 "action 222"
-    223 "action 223"
-    224 "action 224"
+    "action 221"
+    "action 222"
+    "action 223"
+    "action 224"
+    "action 225"
   }
   {
-    21
   }
-  21
 }
-5 "action 5"
+"action 5"

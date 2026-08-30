@@ -61,6 +61,8 @@ executable wyvern-diagrams
     import:           warnings
     main-is:          Main.hs
     build-depends:
+                      -- TODO: remove
+                      containers,
                       -- BSD-3-Clause
                       base >= 4.19.2.0 && < 5,
                       -- BSD-3-Clause
