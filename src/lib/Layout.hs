@@ -50,20 +50,35 @@ position skewers x y =
           skewers
    in finalPositionedBlocks
 
-reposition'' :: PositionedBlock -> Double -> Int -> (PositionedBlock, Bool)
-reposition'' b@(PositionedFork i c l r gCId x xR y maxX minYL minYR) thresholdDepth numberOfShifts =
-  let (l', lAnyRepositioned) = reposition' l thresholdDepth numberOfShifts
-      (r', rAnyRepositioned) = reposition' r thresholdDepth numberOfShifts
+repositionTopY'' :: PositionedBlock -> Double -> Int -> (PositionedBlock, Bool)
+repositionTopY'' b@(PositionedFork i c l r gCId x xR y maxX minYL minYR) thresholdDepth numberOfShifts =
+  let (l', lAnyRepositioned) = repositionTopY' l thresholdDepth numberOfShifts
+      (r', rAnyRepositioned) = repositionTopY' r thresholdDepth numberOfShifts
       anyBranchRepositioned = lAnyRepositioned || rAnyRepositioned
       shift = repositionShift * (fromIntegral numberOfShifts)
    in if (y <= thresholdDepth)
         then (PositionedFork i c l' r' gCId x xR (y - shift) maxX (minYL - shift) (minYR - shift), True)
         else (PositionedFork i c l' r' gCId x xR y maxX (minYL - shift) (minYR - shift), anyBranchRepositioned)
-reposition'' b@(PositionedStartTerminator x y maxX minY) thresholdDepth numberOfShifts = if (y <= thresholdDepth) then (PositionedStartTerminator x (y - repositionShift * (fromIntegral numberOfShifts)) maxX (minY - repositionShift * (fromIntegral numberOfShifts)), True) else (b, False)
-reposition'' b@(PositionedEndTerminator x y maxX minY) thresholdDepth numberOfShifts = if (y <= thresholdDepth) then (PositionedEndTerminator x (y - repositionShift * (fromIntegral numberOfShifts)) maxX (minY - repositionShift * (fromIntegral numberOfShifts)), True) else (b, False)
-reposition'' b@(PositionedAction i c x y maxX minY) thresholdDepth numberOfShifts = if (y <= thresholdDepth) then (PositionedAction i c x (y - repositionShift * (fromIntegral numberOfShifts)) maxX (minY - repositionShift * (fromIntegral numberOfShifts)), True) else (b, False)
-reposition'' b@(PositionedHeadline i c x y maxX minY) thresholdDepth numberOfShifts = if (y <= thresholdDepth) then (PositionedHeadline i c x (y - repositionShift * (fromIntegral numberOfShifts)) maxX (minY - repositionShift * (fromIntegral numberOfShifts)), True) else (b, False)
-reposition'' b@(PositionedAddress i c x y maxX minY) thresholdDepth numberOfShifts = if (y <= thresholdDepth) then (PositionedAddress i c x (y - repositionShift * (fromIntegral numberOfShifts)) maxX (minY - repositionShift * (fromIntegral numberOfShifts)), True) else (b, False)
+repositionTopY'' b@(PositionedStartTerminator x y maxX minY) thresholdDepth numberOfShifts = if (y <= thresholdDepth) then (PositionedStartTerminator x (y - repositionShift * (fromIntegral numberOfShifts)) maxX (minY - repositionShift * (fromIntegral numberOfShifts)), True) else (b, False)
+repositionTopY'' b@(PositionedEndTerminator x y maxX minY) thresholdDepth numberOfShifts = if (y <= thresholdDepth) then (PositionedEndTerminator x (y - repositionShift * (fromIntegral numberOfShifts)) maxX (minY - repositionShift * (fromIntegral numberOfShifts)), True) else (b, False)
+repositionTopY'' b@(PositionedAction i c x y maxX minY) thresholdDepth numberOfShifts = if (y <= thresholdDepth) then (PositionedAction i c x (y - repositionShift * (fromIntegral numberOfShifts)) maxX (minY - repositionShift * (fromIntegral numberOfShifts)), True) else (b, False)
+repositionTopY'' b@(PositionedHeadline i c x y maxX minY) thresholdDepth numberOfShifts = if (y <= thresholdDepth) then (PositionedHeadline i c x (y - repositionShift * (fromIntegral numberOfShifts)) maxX (minY - repositionShift * (fromIntegral numberOfShifts)), True) else (b, False)
+repositionTopY'' b@(PositionedAddress i c x y maxX minY) thresholdDepth numberOfShifts = if (y <= thresholdDepth) then (PositionedAddress i c x (y - repositionShift * (fromIntegral numberOfShifts)) maxX (minY - repositionShift * (fromIntegral numberOfShifts)), True) else (b, False)
+
+repositionBottomY'' :: PositionedBlock -> Double -> Int -> (PositionedBlock, Bool)
+repositionBottomY'' b@(PositionedFork i c l r gCId x xR y maxX minYL minYR) thresholdDepth numberOfShifts =
+  let (l', lAnyRepositioned) = repositionBottomY' l thresholdDepth numberOfShifts
+      (r', rAnyRepositioned) = repositionBottomY' r thresholdDepth numberOfShifts
+      anyBranchRepositioned = lAnyRepositioned || rAnyRepositioned
+      shift = repositionShift * (fromIntegral numberOfShifts)
+   in if (y < thresholdDepth)
+        then (PositionedFork i c l' r' gCId x xR (y - shift) maxX (minYL - shift) (minYR - shift), True)
+        else (PositionedFork i c l' r' gCId x xR y maxX (minYL - shift) (minYR - shift), anyBranchRepositioned)
+repositionBottomY'' b@(PositionedStartTerminator x y maxX minY) thresholdDepth numberOfShifts = if (y < thresholdDepth) then (PositionedStartTerminator x (y - repositionShift * (fromIntegral numberOfShifts)) maxX (minY - repositionShift * (fromIntegral numberOfShifts)), True) else (b, False)
+repositionBottomY'' b@(PositionedEndTerminator x y maxX minY) thresholdDepth numberOfShifts = if (y < thresholdDepth) then (PositionedEndTerminator x (y - repositionShift * (fromIntegral numberOfShifts)) maxX (minY - repositionShift * (fromIntegral numberOfShifts)), True) else (b, False)
+repositionBottomY'' b@(PositionedAction i c x y maxX minY) thresholdDepth numberOfShifts = if (y < thresholdDepth) then (PositionedAction i c x (y - repositionShift * (fromIntegral numberOfShifts)) maxX (minY - repositionShift * (fromIntegral numberOfShifts)), True) else (b, False)
+repositionBottomY'' b@(PositionedHeadline i c x y maxX minY) thresholdDepth numberOfShifts = if (y < thresholdDepth) then (PositionedHeadline i c x (y - repositionShift * (fromIntegral numberOfShifts)) maxX (minY - repositionShift * (fromIntegral numberOfShifts)), True) else (b, False)
+repositionBottomY'' b@(PositionedAddress i c x y maxX minY) thresholdDepth numberOfShifts = if (y < thresholdDepth) then (PositionedAddress i c x (y - repositionShift * (fromIntegral numberOfShifts)) maxX (minY - repositionShift * (fromIntegral numberOfShifts)), True) else (b, False)
 
 repositionX'' :: PositionedBlock -> Double -> Int -> (PositionedBlock, Bool)
 repositionX'' b@(PositionedFork i c l r gCId x xR y maxX minYL minYR) thresholdWidth numberOfShifts =
@@ -80,11 +95,21 @@ repositionX'' b@(PositionedAction i c x y maxX minY) thresholdWidth numberOfShif
 repositionX'' b@(PositionedHeadline i c x y maxX minY) thresholdWidth numberOfShifts = if (x >= thresholdWidth) then (PositionedHeadline i c (x + repositionShift * (fromIntegral numberOfShifts)) y (maxX + repositionShift * (fromIntegral numberOfShifts)) minY, True) else (b, False)
 repositionX'' b@(PositionedAddress i c x y maxX minY) thresholdWidth numberOfShifts = if (x >= thresholdWidth) then (PositionedAddress i c (x + repositionShift * (fromIntegral numberOfShifts)) y (maxX + repositionShift * (fromIntegral numberOfShifts)) minY, True) else (b, False)
 
-reposition' :: [PositionedBlock] -> Double -> Int -> ([PositionedBlock], Bool)
-reposition' bs y numberOfShifts =
+repositionTopY' :: [PositionedBlock] -> Double -> Int -> ([PositionedBlock], Bool)
+repositionTopY' bs y numberOfShifts =
   foldr
     ( \b (accuRepositionedBlocks, accuAnyRepositioned) ->
-        let (repositionedBlock, isRepositoned) = (reposition'' b y numberOfShifts)
+        let (repositionedBlock, isRepositoned) = (repositionTopY'' b y numberOfShifts)
+         in (repositionedBlock : accuRepositionedBlocks, isRepositoned || accuAnyRepositioned)
+    )
+    ([], False)
+    bs
+
+repositionBottomY' :: [PositionedBlock] -> Double -> Int -> ([PositionedBlock], Bool)
+repositionBottomY' bs y numberOfShifts =
+  foldr
+    ( \b (accuRepositionedBlocks, accuAnyRepositioned) ->
+        let (repositionedBlock, isRepositoned) = (repositionBottomY'' b y numberOfShifts)
          in (repositionedBlock : accuRepositionedBlocks, isRepositoned || accuAnyRepositioned)
     )
     ([], False)
@@ -100,29 +125,24 @@ repositionX' bs x numberOfShifts =
     ([], False)
     bs
 
-reposition :: [[PositionedBlock]] -> Double -> Int -> ([[PositionedBlock]], Bool)
-reposition ss y numberOfShifts =
-  foldr
-    ( \s (accuRepositionedSkewers, accuAnyRepositioned) ->
-        let (repositionedSkewer, isRepositioned) = (reposition' s y numberOfShifts)
-         in (repositionedSkewer : accuRepositionedSkewers, isRepositioned || accuAnyRepositioned)
-    )
-    ([], False)
-    ss
+repositionX :: Double -> [[PositionedBlock]] -> [[PositionedBlock]]
+repositionX x = foldr (\b accu -> (fst $ repositionX' b x 1) : accu) []
 
-repositionX :: [[PositionedBlock]] -> Double -> Int -> ([[PositionedBlock]], Bool)
-repositionX ss x numberOfShifts =
-  foldr
-    ( \s (accuRepositionedSkewers, accuAnyRepositioned) ->
-        let (repositionedSkewer, isRepositioned) = (repositionX' s x numberOfShifts)
-         in (repositionedSkewer : accuRepositionedSkewers, isRepositioned || accuAnyRepositioned)
-    )
-    ([], False)
-    ss
+repositionTopY :: Double -> [[PositionedBlock]] -> [[PositionedBlock]]
+repositionTopY y = foldr (\b accu -> (fst $ repositionTopY' b y 1) : accu) []
 
-buildGammaConnection' :: Double -> Double -> Double -> (Double, Double, Double, Double, Double, Double) -> [((Double, Double), (Double, Double))]
-buildGammaConnection' x y oMaxX (dX, dY, dMaxX, _dMinY, dGammaShiftX, dGammaShiftY) =
-  let newMaxX = max oMaxX (dMaxX + dGammaShiftX)
+repositionBottomY :: Double -> [[PositionedBlock]] -> [[PositionedBlock]]
+repositionBottomY y = foldr (\b accu -> (fst $ repositionBottomY' b y 1) : accu) []
+
+buildGammaConnection' ::
+  Double ->
+  Double ->
+  Double ->
+  Double ->
+  (Double, Double, Double, Double, Double, Double) ->
+  [((Double, Double), (Double, Double))]
+buildGammaConnection' x y oMaxX oGammaShiftY (dX, dY, dMaxX, _dMinY, dGammaShiftX, dGammaShiftY) =
+  let newMaxX = (max oMaxX dMaxX) + dGammaShiftX
    in if dX <= x && dY >= y
         -- TODO 1: move the origin point of a block to the upper left corner of a block
         -- TODO 2: push the whole destination down and increase its width
@@ -131,14 +151,31 @@ buildGammaConnection' x y oMaxX (dX, dY, dMaxX, _dMinY, dGammaShiftX, dGammaShif
           -- ##############
           -- Predictable shape of a gamma connection.
           -- [((x, y), (x + defaultBoundingBoxWidth, y))]
-          [((x, y), (newMaxX, y)), ((newMaxX, y), (newMaxX, dY + dGammaShiftY + defaultBoundingBoxHeight * 0.5)), ((newMaxX, dY + dGammaShiftY + defaultBoundingBoxHeight * 0.5), (dX, dY + dGammaShiftY + defaultBoundingBoxHeight * 0.5))]
+          [ ((x, y - oGammaShiftY), (newMaxX, y - oGammaShiftY)), -- bottom horizontal line
+            ((newMaxX, y - oGammaShiftY), (newMaxX, dY + dGammaShiftY + defaultBoundingBoxHeight * 0.5)), -- right vertical line
+            ((newMaxX, dY + dGammaShiftY + defaultBoundingBoxHeight * 0.5), (dX, dY + dGammaShiftY + defaultBoundingBoxHeight * 0.5)) -- top horizontal line
+          ]
         else [((x, y), (dX, dY + dGammaShiftY + defaultBoundingBoxHeight * 0.5))]
 
-buildGammaConnection :: ID -> Map ID (Double, Double, Double, Double, Double, Double) -> Double -> Double -> Double -> ([((Double, Double), (Double, Double))], Map ID (Double, Double, Double, Double, Double, Double))
-buildGammaConnection gCId destinations x y maxX =
+buildGammaConnection ::
+  ID ->
+  Map Double Double ->
+  Map ID (Double, Double, Double, Double, Double, Double) ->
+  Double ->
+  Double ->
+  Double ->
+  ([((Double, Double), (Double, Double))], Map Double Double, Map ID (Double, Double, Double, Double, Double, Double))
+buildGammaConnection gCId origins destinations x y maxX =
   case Data.Map.lookup gCId destinations of
     Nothing -> error $ "gamma connection id \"" <> show gCId <> "\" does not exist in the collection of block identifiers: " <> show destinations
-    (Just destination) -> (buildGammaConnection' x y maxX destination, Data.Map.adjust (\(vX, vY, vMaxX, vMinY, vGammaShiftX, vGammaShiftY) -> (vX, vY, vMaxX, vMinY, vGammaShiftX + repositionShift, vGammaShiftY + repositionShift)) gCId destinations)
+    (Just destination) ->
+      case Data.Map.lookup y origins of
+        Nothing -> error $ "origin coordinate y \"" <> show y <> "\" does not exist in the collection of origins: " <> show origins
+        (Just oGammaShiftY) ->
+          ( buildGammaConnection' x y maxX (oGammaShiftY + 0.0) destination,
+            Data.Map.adjust (\vOGammaShiftY -> vOGammaShiftY + 0.0) y origins,
+            Data.Map.adjust (\(vX, vY, vMaxX, vMinY, vDGammaShiftX, vDGammaShiftY) -> (vX, vY, vMaxX, vMinY, vDGammaShiftX + repositionShift, vDGammaShiftY + repositionShift)) gCId destinations
+          )
 
 connectionsV2'' :: PositionedBlock -> [((Double, Double), (Double, Double))]
 connectionsV2'' (PositionedFork _i _c l r gCId x xR y maxX minYL minYR) =
@@ -230,19 +267,24 @@ barebonesGamma' = foldr (\pB accuGamma -> accuGamma <> barebonesGamma'' pB) []
 barebonesGamma :: [[PositionedBlock]] -> [((Double, Double), ID, Double)]
 barebonesGamma = foldr (\pBs accuGamma -> accuGamma <> barebonesGamma' pBs) []
 
--- 2026-08-25 PJ:
--- ==============
--- TODO: simplify if V3 is the right approach.
-repositionBasedOnGamma :: [[PositionedBlock]] -> [(Double, Int)] -> [[PositionedBlock]]
-repositionBasedOnGamma positionedBlocks repositionInstructions = foldr (\(thresholdDepth, numberOfShifts) accu -> fst $ reposition accu thresholdDepth numberOfShifts) positionedBlocks repositionInstructions
+repositionOriginsTopY :: Double -> [((Double, Double), ID, Double)] -> [((Double, Double), ID, Double)]
+repositionOriginsTopY _y [] = []
+repositionOriginsTopY y (o@((originX, originY), gCId, maxXOrigin) : os) =
+  ( ( originX,
+      if originY <= y then originY - repositionShift else originY
+    ),
+    gCId,
+    maxXOrigin
+  )
+    : repositionOriginsTopY y os
 
--- 2026-08-25 PJ:
--- ==============
--- TODO: simplify if V3 is the right approach.
-repositionBasedOnGammaX :: [[PositionedBlock]] -> [(Double, Int)] -> [[PositionedBlock]]
-repositionBasedOnGammaX positionedBlocks repositionInstructions = foldr (\(thresholdWidth, numberOfShifts) accu -> fst $ repositionX accu thresholdWidth numberOfShifts) positionedBlocks repositionInstructions
-
-repositionOriginsBasedOnGamma :: Double -> Double -> [((Double, Double), ID, Double)] -> [((Double, Double), ID, Double)]
-repositionOriginsBasedOnGamma _repositionInstructionsX _repositionInstructionsY [] = []
-repositionOriginsBasedOnGamma repositionInstructionsX repositionInstructionsY (o@((originX, originY), _gCId, _maxXOrigin) : os) =
-  ((if originX >= repositionInstructionsX then originX + repositionShift else originX, if originY <= repositionInstructionsY then originY - repositionShift else originY), _gCId, _maxXOrigin) : repositionOriginsBasedOnGamma repositionInstructionsX repositionInstructionsY os
+repositionOrigins :: Double -> Double -> [((Double, Double), ID, Double)] -> [((Double, Double), ID, Double)]
+repositionOrigins _x _y [] = []
+repositionOrigins x y (o@((originX, originY), gCId, maxXOrigin) : os) =
+  ( ( if originX >= x then originX + repositionShift else originX,
+      if originY < y then originY - repositionShift else originY
+    ),
+    gCId,
+    maxXOrigin
+  )
+    : repositionOrigins x y os

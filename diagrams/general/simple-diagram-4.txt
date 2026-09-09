@@ -21,9 +21,7 @@
     }
     {
         "dummy action"
-        "dummy action"
-        "dummy action"
-        21b
+        21
     }
     21
   }
