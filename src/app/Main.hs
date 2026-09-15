@@ -1,7 +1,7 @@
 module Main where
 
 import Blocks (renderDiagram, reverse)
-import Constants (svgOptions)
+import Constants (repositionShift, svgOptions)
 import Data.Map (empty, insert, lookup)
 import Diagrams.Backend.SVG (renderSVG')
 import ID
@@ -49,7 +49,7 @@ main = do
                 putStrLn "barebones gamma':"
                 print gamma'
 
-                let origins = foldl (\accu ((_originX, originY), _gCId, _maxXOrigin) -> insert originY 0.0 accu) empty gamma'
+                let origins = foldl (\accu ((_originX, originY), _gCId, _maxXOrigin) -> insert originY ((-1.0) * repositionShift) accu) empty gamma'
                 putStrLn "origins:"
                 print origins
 
@@ -69,50 +69,9 @@ main = do
 
                 let blockConnections3 = connectionsV2 repositionedBlocks
                 let renderedConnections3 = renderConnections $ blockConnections3 <> gammaConnections
-                -- let renderedConnections3 = renderConnections $ blockConnections3
-                -- <- V3
-
-                -- let destinationsMicro = toMapMicro positionedBlocks
-                -- -- TODO:
-                -- -- Probably a good idea to preserve those steps for debugging just in case.
-                -- let gammaConnections = extractGammaConnections destinationsMicro positionedBlocks
-                -- -- print gammaConnections
-
-                -- let defInput = qwe gammaConnections
-                -- -- print defInput
-
-                -- let maxNumberOfShiftsPerDepth = getMaxNumberOfShiftsPerDepth defInput
-                -- -- print maxNumberOfShiftsPerDepth
-
-                -- let repositionedBlocks' = reposition positionedBlocks maxNumberOfShiftsPerDepth
-                -- -- putStrLn "positionedBlocks:"
-                -- -- print positionedBlocks
-                -- -- putStrLn "repositionedBlocks':"
-                -- -- print repositionedBlocks'
-
-                -- let destinations = toMap repositionedBlocks'
-
-                -- let blockConnections2 = connectionsV2 repositionedBlocks'
-                -- let renderedConnections2 = renderConnections blockConnections2
-
-                -- let gamma2 = barebonesGamma repositionedBlocks'
-                -- -- putStrLn "barebones gamma:"
-                -- -- print gamma
-
-                -- let (gammaConnections', updatedDestinations) =
-                --       foldl
-                --         ( \(accuConnections, accuDestinations) singleGamma@((originX, originY), gCId, originMaxX) ->
-                --             let (newConnections, accuDestinations') = buildGammaConnection gCId accuDestinations originX originY originMaxX
-                --              in (accuConnections <> newConnections, accuDestinations')
-                --         )
-                --         ([], destinations)
-                --         gamma2
-
-                -- -- print destinations
-                -- -- print updatedDestinations
 
                 -- rendering v3:
-                -- renderSVG' ((outputPath input) <> "_v3") svgOptions ((render repositionedBlocks) <> renderedConnections3)
+                renderSVG' ((outputPath input) <> "_v3") svgOptions ((render repositionedBlocks) <> renderedConnections3)
 
                 -- rendering v1:
                 renderSVG' (outputPath input) svgOptions (Blocks.renderDiagram validBlocks)

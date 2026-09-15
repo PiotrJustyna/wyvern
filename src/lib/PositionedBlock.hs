@@ -10,7 +10,7 @@ data PositionedBlock
   | PositionedAction (Maybe ID) String Double Double Double Double
   | PositionedHeadline (Maybe ID) String Double Double Double Double
   | PositionedAddress (Maybe ID) String Double Double Double Double
-  | PositionedFork (Maybe ID) String [PositionedBlock] [PositionedBlock] (Maybe ID) Double Double Double Double Double Double
+  | PositionedFork (Maybe ID) String [PositionedBlock] [PositionedBlock] (Maybe ID) Double Double Double Double Double Double Double Double
   | PositionedEndTerminator Double Double Double Double
 
 instance Show PositionedBlock where
@@ -18,7 +18,7 @@ instance Show PositionedBlock where
   show (PositionedAction _i c x y maxX minY) = "Action \"" <> c <> "\" [" <> show x <> ", " <> show y <> ", " <> show maxX <> ", " <> show minY <> "]"
   show (PositionedHeadline _i c x y maxX minY) = "Headline \"" <> c <> "\" [" <> show x <> ", " <> show y <> ", " <> show maxX <> ", " <> show minY <> "]"
   show (PositionedAddress _i c x y maxX minY) = "Address \"" <> c <> "\" [" <> show x <> ", " <> show y <> ", " <> show maxX <> ", " <> show minY <> "]"
-  show (PositionedFork _i c _l _r _gCId x xR y maxX minYL minYR) = "Fork \"" <> c <> "\" [" <> show x <> ", " <> show xR <> ", " <> show y <> ", " <> show maxX <> ", " <> show minYL <> ", " <> show minYR <> "]"
+  show (PositionedFork _i c _l _r _gCId x xR y maxX minYL minYR lLY lRY) = "Fork \"" <> c <> "\" [" <> show x <> ", " <> show xR <> ", " <> show y <> ", " <> show maxX <> ", " <> show minYL <> ", " <> show minYR <> ", " <> show lLY <> ", " <> show lRY <> "]"
   show (PositionedEndTerminator x y maxX minY) = "EndTerminator [" <> show x <> ", " <> show y <> ", " <> ", " <> show maxX <> ", " <> show minY <> "]"
 
 getPosition :: PositionedBlock -> (Double, Double, Double, Double)
@@ -26,7 +26,7 @@ getPosition (PositionedStartTerminator x y maxX minY) = (x, y, maxX, minY)
 getPosition (PositionedAction _i _c x y maxX minY) = (x, y, maxX, minY)
 getPosition (PositionedHeadline _i _c x y maxX minY) = (x, y, maxX, minY)
 getPosition (PositionedAddress _i _c x y maxX minY) = (x, y, maxX, minY)
-getPosition (PositionedFork _i _c _l _r _gCId x _xR y maxX minYL minYR) = (x, y, maxX, min minYL minYR)
+getPosition (PositionedFork _i _c _l _r _gCId x _xR y maxX minYL minYR _lLY _lRY) = (x, y, maxX, min minYL minYR)
 getPosition (PositionedEndTerminator x y maxX minY) = (x, y, maxX, minY)
 
 getContent :: PositionedBlock -> String
@@ -34,7 +34,7 @@ getContent (PositionedStartTerminator _x _y _maxX _minY) = "start"
 getContent (PositionedAction _i c _x _y _maxX _minY) = c
 getContent (PositionedHeadline _i c _x _y _maxX _minY) = c
 getContent (PositionedAddress _i c _x _y _maxX _minY) = c
-getContent (PositionedFork _i c _l _r _gCId _x _xR _y _maxX _minYL _minYR) = c
+getContent (PositionedFork _i c _l _r _gCId _x _xR _y _maxX _minYL _minYR _lLY _lRY) = c
 getContent (PositionedEndTerminator _x _y _maxX _minY) = "end"
 
 getId :: PositionedBlock -> Maybe ID
@@ -42,11 +42,11 @@ getId (PositionedStartTerminator _x _y _maxX _minY) = Nothing
 getId (PositionedAction i _c _x _y _maxX _minY) = i
 getId (PositionedHeadline i _c _x _y _maxX _minY) = i
 getId (PositionedAddress i _c _x _y _maxX _minY) = i
-getId (PositionedFork i _c _l _r _gCId _x _xR _y _maxX _minYL _minYR) = i
+getId (PositionedFork i _c _l _r _gCId _x _xR _y _maxX _minYL _minYR _lLY _lRY) = i
 getId (PositionedEndTerminator _x _y _maxX _minY) = Nothing
 
 toMap'' :: Map ID (Double, Double, Double, Double, Double, Double) -> PositionedBlock -> Map ID (Double, Double, Double, Double, Double, Double)
-toMap'' m (PositionedFork i _c l r _gCId x xR y maxX minYL minYR) =
+toMap'' m (PositionedFork i _c l r _gCId x xR y maxX minYL minYR _lLY _lRY) =
   let questionMap = case i of
         Nothing -> m
         Just i' -> Data.Map.insert i' (x, y, maxX, min minYL minYR, 0.0, 0.0) m
@@ -67,7 +67,7 @@ toMap :: [[PositionedBlock]] -> Map ID (Double, Double, Double, Double, Double, 
 toMap = foldl (\accu x -> toMap' accu x) empty
 
 toMapMicro'' :: Map ID Double -> PositionedBlock -> Map ID Double
-toMapMicro'' m (PositionedFork i _c l r _gCId _x _xR y _maxX _minYL _minYR) =
+toMapMicro'' m (PositionedFork i _c l r _gCId _x _xR y _maxX _minYL _minYR _lLY _lRY) =
   let questionMap = case i of
         Nothing -> m
         Just i' -> Data.Map.insert i' y m
@@ -88,7 +88,7 @@ toMapMicro :: [[PositionedBlock]] -> Map ID Double
 toMapMicro = foldl (\accu x -> toMapMicro' accu x) empty
 
 gammaConnectionDestinations'' :: Map ID Double -> PositionedBlock -> Map ID Double
-gammaConnectionDestinations'' m (PositionedFork i _c l r gCId _x _xR y _maxX _minYL _minYR) =
+gammaConnectionDestinations'' m (PositionedFork i _c l r gCId _x _xR y _maxX _minYL _minYR _lLY _lRY) =
   let questionMap = case gCId of
         Nothing -> m
         Just gCId' -> Data.Map.insert gCId' y m
@@ -107,7 +107,7 @@ gammaConnectionDestinations :: [[PositionedBlock]] -> Map ID Double
 gammaConnectionDestinations = foldl (\accu x -> gammaConnectionDestinations' accu x) empty
 
 extractGammaConnections'' :: Map ID Double -> PositionedBlock -> [(ID, Double)]
-extractGammaConnections'' m (PositionedFork _i _c l r gCId _x _xR _y _maxX _minYL _minYR) =
+extractGammaConnections'' m (PositionedFork _i _c l r gCId _x _xR _y _maxX _minYL _minYR _lLY _lRY) =
   let questionConnection =
         case gCId of
           Nothing -> []
