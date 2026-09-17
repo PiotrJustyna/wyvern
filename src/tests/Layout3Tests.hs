@@ -29,7 +29,7 @@ specLayout3 = describe "layout3" $ do
   case result of
     Left err -> error $ "Failed to parse test diagram from file: " <> err
     Right blocks -> do
-      let [((PositionedHeadline _i _c _x _y h1MaxX h1MinY) : _)] = position (Blocks.reverse blocks) 0.0 0.0
+      let [((PositionedHeadline _i _pId _c _x _y h1MaxX h1MinY) : _)] = position (Blocks.reverse blocks) 1 0.0 0.0
 
       context "Boundary tests:" $ do
         context "Headline" $ do

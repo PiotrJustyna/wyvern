@@ -14,14 +14,14 @@ createTestBlocks =
     Fork Nothing "-" [Action (Just (ID "2")) "2"] [Action (Just (ID "3")) "3"] Nothing
   ]
 
-positionTestBlocks :: ([PositionedBlock], Double, Double)
-positionTestBlocks = position' createTestBlocks 0.0 0.0
+positionTestBlocks :: ([PositionedBlock], Int, Double, Double)
+positionTestBlocks = position' createTestBlocks 1 0.0 0.0
 
 extractPositions ::
-  ([PositionedBlock], Double, Double) ->
+  ([PositionedBlock], Int, Double, Double) ->
   (PositionedBlock, PositionedBlock, PositionedBlock, PositionedBlock, (Double, Double), Double, Double)
-extractPositions (positionedBlocks, skewerMaxX, skewerMinY) =
-  let [(PositionedFork _i _c [l3] [r3] _gCId x3 _xR3 y3 _maxX _minYL _minYR), pb2, pb1] = positionedBlocks
+extractPositions (positionedBlocks, _pId, skewerMaxX, skewerMinY) =
+  let [(PositionedFork _i _pId _c [l3] [r3] _gCId x3 _xR3 y3 _maxX _minYL _minYR _lLY _lRY), _pId', pb2, pb1] = positionedBlocks
    in (pb1, pb2, l3, r3, (x3, y3), skewerMaxX, skewerMinY)
 
 specLayout1 :: Spec

@@ -7,15 +7,15 @@ import Test.Hspec
 
 createActionWithoutId :: String -> Double -> Double -> Double -> Double -> PositionedBlock
 createActionWithoutId label x1 y1 x2 y2 =
-  PositionedAction Nothing label x1 y1 x2 y2
+  PositionedAction Nothing 1 label x1 y1 x2 y2
 
 createActionWithId :: String -> String -> Double -> Double -> Double -> Double -> PositionedBlock
 createActionWithId idStr label x1 y1 x2 y2 =
-  PositionedAction (Just (ID idStr)) label x1 y1 x2 y2
+  PositionedAction (Just (ID idStr)) 1 label x1 y1 x2 y2
 
 createFork :: String -> Double -> Double -> Double -> Double -> Double -> Double -> PositionedBlock
 createFork label x1 x1R y1 x2 y2L y2R =
-  PositionedFork Nothing label [] [] Nothing x1 x1R y1 x2 y2L y2R
+  PositionedFork Nothing 1 label [] [] Nothing x1 x1R y1 x2 y2L y2R 0.0 0.0
 
 specShow :: Spec
 specShow = describe "show" $ do

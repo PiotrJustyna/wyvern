@@ -16,8 +16,8 @@ specReposition = describe "reposition" $ do
       let irrelevantNumber = 0.0
       let maxx = irrelevantNumber
       let miny = irrelevantNumber
-      let positionedAction = PositionedAction Nothing "" x y maxx miny
-      let (repositionedAction, isRepositioned) = reposition'' positionedAction (y - 1.0) 1
+      let positionedAction = PositionedAction Nothing 1 "" x y maxx miny
+      let (repositionedAction, isRepositioned) = repositionTopY'' positionedAction (y - 1.0) 1
       let repositionedActionPosition@(x', y', maxx', miny') = getPosition repositionedAction
       x `shouldBe` x'
       y `shouldBe` y'
@@ -31,8 +31,8 @@ specReposition = describe "reposition" $ do
       let irrelevantNumber = 0.0
       let maxx = irrelevantNumber
       let miny = irrelevantNumber
-      let positionedAction = PositionedAction Nothing "" x y maxx miny
-      let (repositionedAction, isRepositioned) = reposition'' positionedAction (y + 1.0) 1
+      let positionedAction = PositionedAction Nothing 1 "" x y maxx miny
+      let (repositionedAction, isRepositioned) = repositionTopY'' positionedAction (y + 1.0) 1
       let repositionedActionPosition@(x', y', maxx', miny') = getPosition repositionedAction
       x `shouldBe` x'
       (y - repositionShift) `shouldBe` y'

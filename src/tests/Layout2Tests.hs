@@ -17,7 +17,7 @@ createTestBlocks =
 
 specLayout2 :: Spec
 specLayout2 = describe "layout2" $ do
-  let ([_a, (PositionedFork _i _c [l] r _gCId x _xR y forkMaxX forkMinYL forkMinYR)], maxX, minY) = position' createTestBlocks 0.0 0.0
+  let ([(PositionedFork _i _pId _c [l] r _gCId x _xR y forkMaxX forkMinYL forkMinYR _lLY _lRY)], _pId', maxX, minY) = position' createTestBlocks 1 0.0 0.0
 
   context "Fork block positioning" $ do
     context "Fork root node" $ do
@@ -38,7 +38,7 @@ specLayout2 = describe "layout2" $ do
         lMinY `shouldBe` (defaultBoundingBoxHeight * (-2.0))
 
     context "Fork right branch" $ do
-      let [(PositionedAction _i _c ax ay aMaxX aMinY), _f] = r
+      let [(PositionedAction _i _pId _c ax ay aMaxX aMinY), _f] = r
       it "should correctly position right branch - x coordinate" $
         ax `shouldBe` defaultBoundingBoxWidth
       it "should correctly position right branch - y coordinate" $
