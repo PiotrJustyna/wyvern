@@ -6,12 +6,12 @@ import HelperDiagrams (renderConnection, wyvernAddress, wyvernHeadline, wyvernQu
 import PositionedBlock
 
 render'' :: PositionedBlock -> Diagram B
-render'' pB@(PositionedFork _i _c l r _gCId x _xR y _maxX _minYL _minYR _lLY _lRY) = position [((P (V2 x y)), wyvernQuestion $ show pB)] <> render' l <> render' r
-render'' pB@(PositionedStartTerminator x y _maxX _minY) = position [((P (V2 x y)), wyvernRoundedRect $ show pB)]
-render'' pB@(PositionedEndTerminator x y _maxX _minY) = position [((P (V2 x y)), wyvernRoundedRect $ show pB)]
-render'' pB@(PositionedAction _i _c x y _maxX _minY) = position [((P (V2 x y)), wyvernRect $ show pB)]
-render'' pB@(PositionedHeadline _i _c x y _maxX _minY) = position [((P (V2 x y)), wyvernHeadline $ show pB)]
-render'' pB@(PositionedAddress _i _c x y _maxX _minY) = position [((P (V2 x y)), wyvernAddress $ show pB)]
+render'' pB@(PositionedFork _i _pId _c l r _gCId x _xR y _maxX _minYL _minYR _lLY _lRY) = position [((P (V2 x y)), wyvernQuestion $ show pB)] <> render' l <> render' r
+render'' pB@(PositionedStartTerminator _pId x y _maxX _minY) = position [((P (V2 x y)), wyvernRoundedRect $ show pB)]
+render'' pB@(PositionedEndTerminator _pId x y _maxX _minY) = position [((P (V2 x y)), wyvernRoundedRect $ show pB)]
+render'' pB@(PositionedAction _i _pId _c x y _maxX _minY) = position [((P (V2 x y)), wyvernRect $ show pB)]
+render'' pB@(PositionedHeadline _i _pId _c x y _maxX _minY) = position [((P (V2 x y)), wyvernHeadline $ show pB)]
+render'' pB@(PositionedAddress _i _pId _c x y _maxX _minY) = position [((P (V2 x y)), wyvernAddress $ show pB)]
 
 render' :: [PositionedBlock] -> Diagram B
 render' [] = mempty

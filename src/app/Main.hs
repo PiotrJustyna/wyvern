@@ -6,7 +6,7 @@ import Data.Map (empty, insert, lookup)
 import Diagrams.Backend.SVG (renderSVG')
 import ID
 import InputArguments (inputPath, outputPath, parseInput)
-import Layout (barebonesGamma, buildGammaConnection, connectionsV2, position, repositionBottomY, repositionOrigins, repositionOriginsTopY, repositionTopY, repositionX)
+import Layout (anotherReposition, barebonesGamma, buildGammaConnection, connectionsV2, position, repositionBottomY, repositionOrigins, repositionOriginsTopY, repositionTopY, repositionX)
 import Lexer (lexAll, runAlex)
 import Options.Applicative (execParser, fullDesc, header, helper, info, (<**>))
 import Parser (ParseResult (..), diagram)
@@ -33,7 +33,7 @@ main = do
           ParseOk blocks -> do
             case validate blocks of
               Left validBlocks -> do
-                let positionedBlocks = position (Blocks.reverse validBlocks) 0.0 0.0
+                let positionedBlocks = position (Blocks.reverse validBlocks) 0 0.0 0.0
                 print positionedBlocks
 
                 -- V3 ->
@@ -44,34 +44,56 @@ main = do
 
                 let repositionedBlocks = processGammaShifts gamma positionedBlocks
 
-                let gamma' = barebonesGamma repositionedBlocks
+                -- let gamma' = barebonesGamma repositionedBlocks
 
-                putStrLn "barebones gamma':"
-                print gamma'
+                -- putStrLn "barebones gamma':"
+                -- print gamma'
 
-                let origins = foldl (\accu ((_originX, originY), _gCId, _maxXOrigin) -> insert originY ((-1.0) * repositionShift) accu) empty gamma'
-                putStrLn "origins:"
-                print origins
+                -- let origins = foldl (\accu ((_pId, _originX, originY), _gCId, _maxXOrigin) -> insert originY ((-1.0) * repositionShift) accu) empty gamma'
+                -- putStrLn "origins:"
+                -- print origins
 
-                let destinations' = toMap repositionedBlocks
+                -- let destinations' = toMap repositionedBlocks
 
-                let (gammaConnections, updatedOrigins, _destinations) =
-                      foldl
-                        ( \(accuGammaConnections, accuOrigins, accuDestinations) ((originX, originY), gCId, maxXOrigin) ->
-                            let (connection, accuOrigins', destinations'') = buildGammaConnection gCId accuOrigins accuDestinations originX originY maxXOrigin
-                             in (connection <> accuGammaConnections, accuOrigins', destinations'')
-                        )
-                        ([], origins, destinations')
-                        gamma'
+                -- let (gammaConnections, updatedOrigins, _destinations) =
+                --       foldl
+                --         ( \(accuGammaConnections, accuOrigins, accuDestinations) ((_pId, originX, originY), gCId, maxXOrigin) ->
+                --             let (connection, accuOrigins', destinations'') = buildGammaConnection gCId accuOrigins accuDestinations originX originY maxXOrigin
+                --              in (connection <> accuGammaConnections, accuOrigins', destinations'')
+                --         )
+                --         ([], origins, destinations')
+                --         gamma'
 
-                putStrLn "updated origins:"
-                print updatedOrigins
+                -- putStrLn "updated origins:"
+                -- print updatedOrigins
 
+                -- let shifts =
+                --       foldl
+                --         ( \accu ((pId, _originX, originY), _gCId, _maxXOrigin) ->
+                --             case Data.Map.lookup originY updatedOrigins of
+                --               Nothing -> error $ "origin y (" <> (show originY) <> ") not found in the list of updated origins: " <> (show updatedOrigins)
+                --               Just shift -> (pId, originY, shift) : accu
+                --         )
+                --         []
+                --         gamma'
+                -- putStrLn "positioned block shifts:"
+                -- print shifts
+
+                -- let lastShift = last shifts
+                -- putStrLn "last shift:"
+                -- print lastShift
+
+                -- let repositionedBlocks' = anotherReposition repositionedBlocks lastShift
+                -- print repositionedBlocks'
+
+                -- TODO:
+                -- update origins to also contain the gamma shift (?)
+                -- reposition blocks once again given the updated origins
                 let blockConnections3 = connectionsV2 repositionedBlocks
-                let renderedConnections3 = renderConnections $ blockConnections3 <> gammaConnections
+                let renderedConnections3 = renderConnections $ blockConnections3 -- <> gammaConnections
 
                 -- rendering v3:
-                renderSVG' ((outputPath input) <> "_v3") svgOptions ((render repositionedBlocks) <> renderedConnections3)
+                -- renderSVG' ((outputPath input) <> "_v3") svgOptions ((render repositionedBlocks) <> renderedConnections3)
 
                 -- rendering v1:
                 renderSVG' (outputPath input) svgOptions (Blocks.renderDiagram validBlocks)
@@ -93,11 +115,11 @@ main = do
 -- Let this idea go: ([((Double, Double), ID, Double)], [[PositionedBlock]]).
 -- Replace with: [[PositionedBlock]]
 processGammaShifts ::
-  [((Double, Double), ID, Double)] ->
+  [((Int, Double, Double), ID, Double)] ->
   [[PositionedBlock]] ->
   [[PositionedBlock]]
 processGammaShifts [] positionedBlocks = positionedBlocks
-processGammaShifts (g@((xOrigin, yOrigin), gCId, maxXOrigin) : gs) positionedBlocks =
+processGammaShifts (g@((_pId, xOrigin, yOrigin), gCId, maxXOrigin) : gs) positionedBlocks =
   let destinations = toMap positionedBlocks
       (repositionedBlocks, gs') = case Data.Map.lookup gCId destinations of
         Nothing -> (positionedBlocks, gs)

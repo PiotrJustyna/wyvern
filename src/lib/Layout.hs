@@ -6,94 +6,95 @@ import Data.Map (Map, adjust, empty, insert, keys, lookup)
 import ID
 import PositionedBlock
 
-position'' :: Block -> Double -> Double -> PositionedBlock
-position'' (Fork i c l r gCId) x y =
-  let (positionedLeft, lMaxX, lMinY) = position' l x (y - defaultBoundingBoxHeight * 0.5)
+position'' :: Block -> Int -> Double -> Double -> (PositionedBlock, Int)
+position'' (Fork i c l r gCId) pId x y =
+  let (positionedLeft, lPId, lMaxX, lMinY) = position' l (pId + 1) x (y - defaultBoundingBoxHeight * 0.5)
       xR = lMaxX + defaultBoundingBoxWidth * 0.5
-      (positionedRight, rMaxX, rMinY) = case r of
-        [] -> position' r lMaxX (y - defaultBoundingBoxHeight * 0.5)
-        _ -> position' r xR (y - defaultBoundingBoxHeight * 0.5)
-   in (PositionedFork i c (Prelude.reverse positionedLeft) (Prelude.reverse positionedRight) gCId x xR y rMaxX lMinY rMinY (-1.0) rMinY)
-position'' StartTerminator x y = PositionedStartTerminator x y (x + defaultBoundingBoxWidth * 0.5) (y - defaultBoundingBoxHeight * 0.5)
-position'' (Action i c) x y = PositionedAction i c x y (x + defaultBoundingBoxWidth * 0.5) (y - defaultBoundingBoxHeight * 0.5)
-position'' (Headline i c) x y = PositionedHeadline i c x y (x + defaultBoundingBoxWidth * 0.5) (y - defaultBoundingBoxHeight * 0.5)
-position'' (Address i c) x y = PositionedAddress i c x y (x + defaultBoundingBoxWidth * 0.5) (y - defaultBoundingBoxHeight * 0.5)
-position'' EndTerminator x y = PositionedEndTerminator x y (x + defaultBoundingBoxWidth * 0.5) (y - defaultBoundingBoxHeight * 0.5)
+      (positionedRight, rPId, rMaxX, rMinY) = case r of
+        [] -> position' r lPId lMaxX (y - defaultBoundingBoxHeight * 0.5)
+        _ -> position' r lPId xR (y - defaultBoundingBoxHeight * 0.5)
+   in (PositionedFork i pId c (Prelude.reverse positionedLeft) (Prelude.reverse positionedRight) gCId x xR y rMaxX lMinY rMinY (-1.0) rMinY, rPId)
+position'' StartTerminator pId x y = (PositionedStartTerminator pId x y (x + defaultBoundingBoxWidth * 0.5) (y - defaultBoundingBoxHeight * 0.5), pId)
+position'' (Action i c) pId x y = (PositionedAction i pId c x y (x + defaultBoundingBoxWidth * 0.5) (y - defaultBoundingBoxHeight * 0.5), pId)
+position'' (Headline i c) pId x y = (PositionedHeadline i pId c x y (x + defaultBoundingBoxWidth * 0.5) (y - defaultBoundingBoxHeight * 0.5), pId)
+position'' (Address i c) pId x y = (PositionedAddress i pId c x y (x + defaultBoundingBoxWidth * 0.5) (y - defaultBoundingBoxHeight * 0.5), pId)
+position'' EndTerminator pId x y = (PositionedEndTerminator pId x y (x + defaultBoundingBoxWidth * 0.5) (y - defaultBoundingBoxHeight * 0.5), pId)
 
-position' :: [Block] -> Double -> Double -> ([PositionedBlock], Double, Double) -- TODO: should this also return lRY?
-position' blocks x y =
-  let (_finalX, _finalY, finalPositionedBlocks, finalMaxX, finalMinY) =
+position' :: [Block] -> Int -> Double -> Double -> ([PositionedBlock], Int, Double, Double) -- TODO: should this also return lRY?
+position' blocks pId x y =
+  let (_finalX, _finalY, finalPositionedBlocks, finalMaxX, finalMinY, finalPId) =
         foldl
-          ( \(accuX, accuY, accuPositionedBlocks, accuMaxX, accuMinY) b ->
-              let positionedBlock = position'' b accuX (accuY - defaultBoundingBoxHeight * 0.5)
+          ( \(accuX, accuY, accuPositionedBlocks, accuMaxX, accuMinY, accuPId) b ->
+              let (positionedBlock, accuPId') = position'' b accuPId accuX (accuY - defaultBoundingBoxHeight * 0.5)
                   (_x, _y, maxX, minY) = getPosition positionedBlock
                in ( accuX,
                     minY,
                     positionedBlock : accuPositionedBlocks,
                     max maxX accuMaxX,
-                    min minY accuMinY
+                    min minY accuMinY,
+                    accuPId' + 1
                   )
           )
-          (x, y, [], x, y)
+          (x, y, [], x, y, pId)
           blocks
-   in (finalPositionedBlocks, finalMaxX, finalMinY)
+   in (finalPositionedBlocks, finalPId, finalMaxX, finalMinY)
 
-position :: [[Block]] -> Double -> Double -> [[PositionedBlock]]
-position skewers x y =
-  let (_finalMaxX, finalPositionedBlocks) =
+position :: [[Block]] -> Int -> Double -> Double -> [[PositionedBlock]]
+position skewers pId x y =
+  let (_finalMaxX, finalPositionedBlocks, _finalPId) =
         foldl
-          ( \(accuMaxX, accuPositionedBlocks) skewer ->
-              let (positionedSkewer, maxX, _minY) = position' skewer accuMaxX y
-               in (maxX + defaultBoundingBoxWidth * 0.5, (Prelude.reverse positionedSkewer) : accuPositionedBlocks)
+          ( \(accuMaxX, accuPositionedBlocks, accuPId) skewer ->
+              let (positionedSkewer, accuPId', maxX, _minY) = position' skewer accuPId accuMaxX y
+               in (maxX + defaultBoundingBoxWidth * 0.5, (Prelude.reverse positionedSkewer) : accuPositionedBlocks, accuPId')
           )
-          (x, [])
+          (x, [], pId)
           skewers
    in finalPositionedBlocks
 
 repositionTopY'' :: PositionedBlock -> Double -> Int -> (PositionedBlock, Bool)
-repositionTopY'' b@(PositionedFork i c l r gCId x xR y maxX minYL minYR _lLY lRY) thresholdDepth numberOfShifts =
+repositionTopY'' b@(PositionedFork i pId c l r gCId x xR y maxX minYL minYR _lLY lRY) thresholdDepth numberOfShifts =
   let (l', lAnyRepositioned) = repositionTopY' l thresholdDepth numberOfShifts
       (r', rAnyRepositioned) = repositionTopY' r thresholdDepth numberOfShifts
       anyBranchRepositioned = lAnyRepositioned || rAnyRepositioned
       shift = repositionShift * (fromIntegral numberOfShifts)
    in if (y <= thresholdDepth)
-        then (PositionedFork i c l' r' gCId x xR (y - shift) maxX (minYL - shift) (minYR - shift) _lLY (lRY - shift), True)
-        else (PositionedFork i c l' r' gCId x xR y maxX (minYL - shift) (minYR - shift) _lLY (lRY - shift), anyBranchRepositioned) -- TODO: I am not entirely sure this is correct, shouldn't the shifts depend on "anyBranchRepositioned"?
-repositionTopY'' b@(PositionedStartTerminator x y maxX minY) thresholdDepth numberOfShifts = if (y <= thresholdDepth) then (PositionedStartTerminator x (y - repositionShift * (fromIntegral numberOfShifts)) maxX (minY - repositionShift * (fromIntegral numberOfShifts)), True) else (b, False)
-repositionTopY'' b@(PositionedEndTerminator x y maxX minY) thresholdDepth numberOfShifts = if (y <= thresholdDepth) then (PositionedEndTerminator x (y - repositionShift * (fromIntegral numberOfShifts)) maxX (minY - repositionShift * (fromIntegral numberOfShifts)), True) else (b, False)
-repositionTopY'' b@(PositionedAction i c x y maxX minY) thresholdDepth numberOfShifts = if (y <= thresholdDepth) then (PositionedAction i c x (y - repositionShift * (fromIntegral numberOfShifts)) maxX (minY - repositionShift * (fromIntegral numberOfShifts)), True) else (b, False)
-repositionTopY'' b@(PositionedHeadline i c x y maxX minY) thresholdDepth numberOfShifts = if (y <= thresholdDepth) then (PositionedHeadline i c x (y - repositionShift * (fromIntegral numberOfShifts)) maxX (minY - repositionShift * (fromIntegral numberOfShifts)), True) else (b, False)
-repositionTopY'' b@(PositionedAddress i c x y maxX minY) thresholdDepth numberOfShifts = if (y <= thresholdDepth) then (PositionedAddress i c x (y - repositionShift * (fromIntegral numberOfShifts)) maxX (minY - repositionShift * (fromIntegral numberOfShifts)), True) else (b, False)
+        then (PositionedFork i pId c l' r' gCId x xR (y - shift) maxX (minYL - shift) (minYR - shift) _lLY (lRY - shift), True)
+        else (PositionedFork i pId c l' r' gCId x xR y maxX (minYL - shift) (minYR - shift) _lLY (lRY - shift), anyBranchRepositioned) -- TODO: I am not entirely sure this is correct, shouldn't the shifts depend on "anyBranchRepositioned"?
+repositionTopY'' b@(PositionedStartTerminator pId x y maxX minY) thresholdDepth numberOfShifts = if (y <= thresholdDepth) then (PositionedStartTerminator pId x (y - repositionShift * (fromIntegral numberOfShifts)) maxX (minY - repositionShift * (fromIntegral numberOfShifts)), True) else (b, False)
+repositionTopY'' b@(PositionedEndTerminator pId x y maxX minY) thresholdDepth numberOfShifts = if (y <= thresholdDepth) then (PositionedEndTerminator pId x (y - repositionShift * (fromIntegral numberOfShifts)) maxX (minY - repositionShift * (fromIntegral numberOfShifts)), True) else (b, False)
+repositionTopY'' b@(PositionedAction i pId c x y maxX minY) thresholdDepth numberOfShifts = if (y <= thresholdDepth) then (PositionedAction i pId c x (y - repositionShift * (fromIntegral numberOfShifts)) maxX (minY - repositionShift * (fromIntegral numberOfShifts)), True) else (b, False)
+repositionTopY'' b@(PositionedHeadline i pId c x y maxX minY) thresholdDepth numberOfShifts = if (y <= thresholdDepth) then (PositionedHeadline i pId c x (y - repositionShift * (fromIntegral numberOfShifts)) maxX (minY - repositionShift * (fromIntegral numberOfShifts)), True) else (b, False)
+repositionTopY'' b@(PositionedAddress i pId c x y maxX minY) thresholdDepth numberOfShifts = if (y <= thresholdDepth) then (PositionedAddress i pId c x (y - repositionShift * (fromIntegral numberOfShifts)) maxX (minY - repositionShift * (fromIntegral numberOfShifts)), True) else (b, False)
 
 repositionBottomY'' :: PositionedBlock -> Double -> Int -> (PositionedBlock, Bool)
-repositionBottomY'' b@(PositionedFork i c l r gCId x xR y maxX minYL minYR _lLY lRY) thresholdDepth numberOfShifts =
+repositionBottomY'' b@(PositionedFork i pId c l r gCId x xR y maxX minYL minYR _lLY lRY) thresholdDepth numberOfShifts =
   let (l', lAnyRepositioned) = repositionBottomY' l thresholdDepth numberOfShifts
       (r', rAnyRepositioned) = repositionBottomY' r thresholdDepth numberOfShifts
       anyBranchRepositioned = lAnyRepositioned || rAnyRepositioned
       shift = repositionShift * (fromIntegral numberOfShifts)
    in if (y < thresholdDepth)
-        then (PositionedFork i c l' r' gCId x xR (y - shift) maxX (minYL - shift) (minYR - shift) _lLY (lRY - shift), True)
-        else (PositionedFork i c l' r' gCId x xR y maxX (minYL - if anyBranchRepositioned || minYL <= thresholdDepth then shift else 0.0) (minYR - if anyBranchRepositioned || minYR <= thresholdDepth then shift else 0.0) _lLY (lRY - if anyBranchRepositioned || lRY <= thresholdDepth then shift else 0.0), anyBranchRepositioned)
-repositionBottomY'' b@(PositionedStartTerminator x y maxX minY) thresholdDepth numberOfShifts = if (y < thresholdDepth) then (PositionedStartTerminator x (y - repositionShift * (fromIntegral numberOfShifts)) maxX (minY - repositionShift * (fromIntegral numberOfShifts)), True) else (b, False)
-repositionBottomY'' b@(PositionedEndTerminator x y maxX minY) thresholdDepth numberOfShifts = if (y < thresholdDepth) then (PositionedEndTerminator x (y - repositionShift * (fromIntegral numberOfShifts)) maxX (minY - repositionShift * (fromIntegral numberOfShifts)), True) else (b, False)
-repositionBottomY'' b@(PositionedAction i c x y maxX minY) thresholdDepth numberOfShifts = if (y < thresholdDepth) then (PositionedAction i c x (y - repositionShift * (fromIntegral numberOfShifts)) maxX (minY - repositionShift * (fromIntegral numberOfShifts)), True) else (b, False)
-repositionBottomY'' b@(PositionedHeadline i c x y maxX minY) thresholdDepth numberOfShifts = if (y < thresholdDepth) then (PositionedHeadline i c x (y - repositionShift * (fromIntegral numberOfShifts)) maxX (minY - repositionShift * (fromIntegral numberOfShifts)), True) else (b, False)
-repositionBottomY'' b@(PositionedAddress i c x y maxX minY) thresholdDepth numberOfShifts = if (y < thresholdDepth) then (PositionedAddress i c x (y - repositionShift * (fromIntegral numberOfShifts)) maxX (minY - repositionShift * (fromIntegral numberOfShifts)), True) else (b, False)
+        then (PositionedFork i pId c l' r' gCId x xR (y - shift) maxX (minYL - shift) (minYR - shift) _lLY (lRY - shift), True)
+        else (PositionedFork i pId c l' r' gCId x xR y maxX (minYL - if anyBranchRepositioned || minYL <= thresholdDepth then shift else 0.0) (minYR - if anyBranchRepositioned || minYR <= thresholdDepth then shift else 0.0) _lLY (lRY - if anyBranchRepositioned || lRY <= thresholdDepth then shift else 0.0), anyBranchRepositioned)
+repositionBottomY'' b@(PositionedStartTerminator pId x y maxX minY) thresholdDepth numberOfShifts = if (y < thresholdDepth) then (PositionedStartTerminator pId x (y - repositionShift * (fromIntegral numberOfShifts)) maxX (minY - repositionShift * (fromIntegral numberOfShifts)), True) else (b, False)
+repositionBottomY'' b@(PositionedEndTerminator pId x y maxX minY) thresholdDepth numberOfShifts = if (y < thresholdDepth) then (PositionedEndTerminator pId x (y - repositionShift * (fromIntegral numberOfShifts)) maxX (minY - repositionShift * (fromIntegral numberOfShifts)), True) else (b, False)
+repositionBottomY'' b@(PositionedAction i pId c x y maxX minY) thresholdDepth numberOfShifts = if (y < thresholdDepth) then (PositionedAction i pId c x (y - repositionShift * (fromIntegral numberOfShifts)) maxX (minY - repositionShift * (fromIntegral numberOfShifts)), True) else (b, False)
+repositionBottomY'' b@(PositionedHeadline i pId c x y maxX minY) thresholdDepth numberOfShifts = if (y < thresholdDepth) then (PositionedHeadline i pId c x (y - repositionShift * (fromIntegral numberOfShifts)) maxX (minY - repositionShift * (fromIntegral numberOfShifts)), True) else (b, False)
+repositionBottomY'' b@(PositionedAddress i pId c x y maxX minY) thresholdDepth numberOfShifts = if (y < thresholdDepth) then (PositionedAddress i pId c x (y - repositionShift * (fromIntegral numberOfShifts)) maxX (minY - repositionShift * (fromIntegral numberOfShifts)), True) else (b, False)
 
 repositionX'' :: PositionedBlock -> Double -> Int -> (PositionedBlock, Bool)
-repositionX'' b@(PositionedFork i c l r gCId x xR y maxX minYL minYR lLY lRY) thresholdWidth numberOfShifts =
+repositionX'' b@(PositionedFork i pId c l r gCId x xR y maxX minYL minYR lLY lRY) thresholdWidth numberOfShifts =
   let (l', lAnyRepositioned) = repositionX' l thresholdWidth numberOfShifts
       (r', rAnyRepositioned) = repositionX' r thresholdWidth numberOfShifts
       anyBranchRepositioned = lAnyRepositioned || rAnyRepositioned
       shift = repositionShift * (fromIntegral numberOfShifts)
    in if (x >= thresholdWidth)
-        then (PositionedFork i c l' r' gCId (x + shift) (xR + shift) y (maxX + shift) minYL minYR lLY lRY, True)
-        else (PositionedFork i c l' r' gCId x (if anyBranchRepositioned then (xR + shift) else xR) y (if anyBranchRepositioned then (maxX + shift) else maxX) minYL minYR lLY lRY, anyBranchRepositioned)
-repositionX'' b@(PositionedStartTerminator x y maxX minY) thresholdWidth numberOfShifts = if (x >= thresholdWidth) then (PositionedStartTerminator (x + repositionShift * (fromIntegral numberOfShifts)) y (maxX + repositionShift * (fromIntegral numberOfShifts)) minY, True) else (b, False)
-repositionX'' b@(PositionedEndTerminator x y maxX minY) thresholdWidth numberOfShifts = if (x >= thresholdWidth) then (PositionedEndTerminator (x + repositionShift * (fromIntegral numberOfShifts)) y (maxX + repositionShift * (fromIntegral numberOfShifts)) minY, True) else (b, False)
-repositionX'' b@(PositionedAction i c x y maxX minY) thresholdWidth numberOfShifts = if (x >= thresholdWidth) then (PositionedAction i c (x + repositionShift * (fromIntegral numberOfShifts)) y (maxX + repositionShift * (fromIntegral numberOfShifts)) minY, True) else (b, False)
-repositionX'' b@(PositionedHeadline i c x y maxX minY) thresholdWidth numberOfShifts = if (x >= thresholdWidth) then (PositionedHeadline i c (x + repositionShift * (fromIntegral numberOfShifts)) y (maxX + repositionShift * (fromIntegral numberOfShifts)) minY, True) else (b, False)
-repositionX'' b@(PositionedAddress i c x y maxX minY) thresholdWidth numberOfShifts = if (x >= thresholdWidth) then (PositionedAddress i c (x + repositionShift * (fromIntegral numberOfShifts)) y (maxX + repositionShift * (fromIntegral numberOfShifts)) minY, True) else (b, False)
+        then (PositionedFork i pId c l' r' gCId (x + shift) (xR + shift) y (maxX + shift) minYL minYR lLY lRY, True)
+        else (PositionedFork i pId c l' r' gCId x (if anyBranchRepositioned then (xR + shift) else xR) y (if anyBranchRepositioned then (maxX + shift) else maxX) minYL minYR lLY lRY, anyBranchRepositioned)
+repositionX'' b@(PositionedStartTerminator pId x y maxX minY) thresholdWidth numberOfShifts = if (x >= thresholdWidth) then (PositionedStartTerminator pId (x + repositionShift * (fromIntegral numberOfShifts)) y (maxX + repositionShift * (fromIntegral numberOfShifts)) minY, True) else (b, False)
+repositionX'' b@(PositionedEndTerminator pId x y maxX minY) thresholdWidth numberOfShifts = if (x >= thresholdWidth) then (PositionedEndTerminator pId (x + repositionShift * (fromIntegral numberOfShifts)) y (maxX + repositionShift * (fromIntegral numberOfShifts)) minY, True) else (b, False)
+repositionX'' b@(PositionedAction i pId c x y maxX minY) thresholdWidth numberOfShifts = if (x >= thresholdWidth) then (PositionedAction i pId c (x + repositionShift * (fromIntegral numberOfShifts)) y (maxX + repositionShift * (fromIntegral numberOfShifts)) minY, True) else (b, False)
+repositionX'' b@(PositionedHeadline i pId c x y maxX minY) thresholdWidth numberOfShifts = if (x >= thresholdWidth) then (PositionedHeadline i pId c (x + repositionShift * (fromIntegral numberOfShifts)) y (maxX + repositionShift * (fromIntegral numberOfShifts)) minY, True) else (b, False)
+repositionX'' b@(PositionedAddress i pId c x y maxX minY) thresholdWidth numberOfShifts = if (x >= thresholdWidth) then (PositionedAddress i pId c (x + repositionShift * (fromIntegral numberOfShifts)) y (maxX + repositionShift * (fromIntegral numberOfShifts)) minY, True) else (b, False)
 
 repositionTopY' :: [PositionedBlock] -> Double -> Int -> ([PositionedBlock], Bool)
 repositionTopY' bs y numberOfShifts =
@@ -133,6 +134,29 @@ repositionTopY y = foldr (\b accu -> (fst $ repositionTopY' b y 1) : accu) []
 
 repositionBottomY :: Double -> [[PositionedBlock]] -> [[PositionedBlock]]
 repositionBottomY y = foldr (\b accu -> (fst $ repositionBottomY' b y 1) : accu) []
+
+anotherReposition :: [[PositionedBlock]] -> (Int, Double, Double) -> [[PositionedBlock]]
+anotherReposition bss x =
+  foldr
+    (\bs accu -> (anotherReposition' bs x) : accu)
+    []
+    bss
+
+anotherReposition' :: [PositionedBlock] -> (Int, Double, Double) -> [PositionedBlock]
+anotherReposition' bs x =
+  foldr
+    (\b accu -> (anotherReposition'' b x) : accu)
+    []
+    bs
+
+anotherReposition'' :: PositionedBlock -> (Int, Double, Double) -> PositionedBlock
+anotherReposition'' b@(PositionedFork i pId c l r gCId x xR y maxX minYL minYR lLY lRY) origin@(pId', minYR', shift) =
+  let l' = anotherReposition' l origin
+      r' = anotherReposition' r origin
+   in if (pId == pId')
+        then PositionedFork i pId c l' r' gCId x xR y maxX minYL (minYR' - shift) lLY lRY
+        else PositionedFork i pId c l' r' gCId x xR y maxX minYL minYR' lLY lRY
+anotherReposition'' b _x = b
 
 buildGammaConnection' ::
   Double ->
@@ -178,14 +202,14 @@ buildGammaConnection gCId origins destinations x y maxX =
           )
 
 connectionsV2'' :: PositionedBlock -> [((Double, Double), (Double, Double))]
-connectionsV2'' (PositionedFork _i _c l r gCId x xR y maxX minYL minYR _lLY _lRY) =
+connectionsV2'' (PositionedFork _i _pId _c l r gCId x xR y maxX minYL minYR _lLY _lRY) =
   let minY = min minYL minYR
       lc = case l of
         [] -> [((x, y), (x, minY - defaultBoundingBoxHeight * 0.25))]
         bs@(b : _) ->
           let (lx, ly, _lmaxX, _lMinY) = getPosition b
            in case last bs of
-                (PositionedFork _i _c _l _r _gCId _x _xR _y _maxX _minYL _minYR _lLY _lRY) -> [((x, y), (lx, ly))]
+                (PositionedFork _i _pId _c _l _r _gCId _x _xR _y _maxX _minYL _minYR _lLY _lRY) -> [((x, y), (lx, ly))]
                 lastB ->
                   let (lastx, lasty, _lastmaxX, _lastMinY) = getPosition lastB
                    in [((x, y), (lx, ly)), ((lastx, lasty), (x, minY))]
@@ -197,7 +221,7 @@ connectionsV2'' (PositionedFork _i _c l r gCId x xR y maxX minYL minYR _lLY _lRY
           let (rx, ry, _rmaxX, _rMinY) = getPosition b
               leadingRc = [((x, y), (rx, y)), ((rx, y), (rx, ry))]
            in case last bs of
-                (PositionedFork _i _c _l _r _gCId fx _fxR fy _maxX _minY minYR _lLY _lRY) -> case gCId of
+                (PositionedFork _i _pId _c _l _r _gCId fx _fxR fy _maxX _minY minYR _lLY _lRY) -> case gCId of
                   Nothing -> leadingRc <> [((rx, minY), (x, minY)), ((fx, fy), (fx, minYR))]
                   _ -> leadingRc
                 lastB ->
@@ -236,7 +260,7 @@ connectionsV2' [] = []
 connectionsV2' [pB] = connectionsV2'' pB
 connectionsV2' (pB1 : pB2 : pBs) =
   case pB1 of
-    (PositionedFork _i _c l _r _gCId x1 _x1R y1 maxX1 minYL1 minYR1 _lLY _lRY) ->
+    (PositionedFork _i _pId _c l _r _gCId x1 _x1R y1 maxX1 minYL1 minYR1 _lLY _lRY) ->
       let minY1 = min minYL1 minYR1
           position2@(x2, y2, maxX2, minY2) = getPosition pB2
           lConnection = case l of
@@ -255,15 +279,15 @@ connectionsV2' (pB1 : pB2 : pBs) =
 connectionsV2 :: [[PositionedBlock]] -> [((Double, Double), (Double, Double))]
 connectionsV2 = foldr (\pBs accuConnections -> accuConnections <> connectionsV2' pBs) []
 
-barebonesGamma'' :: PositionedBlock -> [((Double, Double), ID, Double)]
-barebonesGamma'' (PositionedFork _i _c l r gCId x xR y maxX minYL minYR _lLY lRY) =
+barebonesGamma'' :: PositionedBlock -> [((Int, Double, Double), ID, Double)]
+barebonesGamma'' (PositionedFork _i pId _c l r gCId x xR y maxX minYL minYR _lLY lRY) =
   let lGamma = barebonesGamma' l
       rGamma = barebonesGamma' r
       gamma = case gCId of
         Nothing -> []
         (Just gCId') -> case r of
-          [] -> [((x, y), gCId', maxX)]
-          _ -> [((xR, minYR), gCId', maxX)]
+          [] -> [((pId, x, y), gCId', maxX)]
+          _ -> [((pId, xR, minYR), gCId', maxX)]
    in rGamma <> lGamma <> gamma
 barebonesGamma'' _ = []
 
@@ -272,16 +296,17 @@ barebonesGamma'' _ = []
 -- We don't have non-user-provided identifiers yet but we will need to add them.
 -- Once barebones gamma connections are calculated and origins updated,
 -- we also should update minYR (I think only that?) of the positioned blocks identified by the provided positioned block identifier.
-barebonesGamma' :: [PositionedBlock] -> [((Double, Double), ID, Double)]
+barebonesGamma' :: [PositionedBlock] -> [((Int, Double, Double), ID, Double)]
 barebonesGamma' = foldr (\pB accuGamma -> accuGamma <> barebonesGamma'' pB) []
 
-barebonesGamma :: [[PositionedBlock]] -> [((Double, Double), ID, Double)]
+barebonesGamma :: [[PositionedBlock]] -> [((Int, Double, Double), ID, Double)]
 barebonesGamma = foldr (\pBs accuGamma -> accuGamma <> barebonesGamma' pBs) []
 
-repositionOriginsTopY :: Double -> [((Double, Double), ID, Double)] -> [((Double, Double), ID, Double)]
+repositionOriginsTopY :: Double -> [((Int, Double, Double), ID, Double)] -> [((Int, Double, Double), ID, Double)]
 repositionOriginsTopY _y [] = []
-repositionOriginsTopY y (o@((originX, originY), gCId, maxXOrigin) : os) =
-  ( ( originX,
+repositionOriginsTopY y (o@((pId, originX, originY), gCId, maxXOrigin) : os) =
+  ( ( pId,
+      originX,
       if originY <= y then originY - repositionShift else originY
     ),
     gCId,
@@ -289,10 +314,11 @@ repositionOriginsTopY y (o@((originX, originY), gCId, maxXOrigin) : os) =
   )
     : repositionOriginsTopY y os
 
-repositionOrigins :: Double -> Double -> [((Double, Double), ID, Double)] -> [((Double, Double), ID, Double)]
+repositionOrigins :: Double -> Double -> [((Int, Double, Double), ID, Double)] -> [((Int, Double, Double), ID, Double)]
 repositionOrigins _x _y [] = []
-repositionOrigins x y (o@((originX, originY), gCId, maxXOrigin) : os) =
-  ( ( if originX >= x then originX + repositionShift else originX,
+repositionOrigins x y (o@((pId, originX, originY), gCId, maxXOrigin) : os) =
+  ( ( pId,
+      if originX >= x then originX + repositionShift else originX,
       if originY < y then originY - repositionShift else originY
     ),
     gCId,
