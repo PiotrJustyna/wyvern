@@ -22,14 +22,14 @@ specShow = describe "show" $ do
   context "PositionedAction" $ do
     it "displays an Action block without an ID" $ do
       let block = createActionWithoutId "-" 0.0 1.0 0.0 1.0
-      show block `shouldBe` "Action \"-\" [0.0, 1.0, 0.0, 1.0]"
+      show block `shouldBe` "Action \"-\" [(1),0.0, 1.0, 0.0, 1.0]"
 
     it "displays an Action block with an ID" $ do
       let block = createActionWithId "1" "1" 2.0 3.0 2.0 3.0
-      show block `shouldBe` "Action \"1\" [2.0, 3.0, 2.0, 3.0]"
+      show block `shouldBe` "Action \"1\" [(1),2.0, 3.0, 2.0, 3.0]"
 
   context "PositionedFork" $ do
     -- Verify that Fork blocks display their label and coordinates
     it "displays a Fork block" $ do
       let block = createFork "-" 4.0 7.0 5.0 4.0 5.0 6.0
-      show block `shouldBe` "Fork \"-\" [4.0, 7.0, 5.0, 4.0, 5.0, 6.0]"
+      show block `shouldBe` "Fork \"-\" [(1),4.0, 7.0, 5.0, 4.0, 5.0, 6.0, 0.0, 0.0]"

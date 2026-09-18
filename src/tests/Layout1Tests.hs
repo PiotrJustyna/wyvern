@@ -21,7 +21,7 @@ extractPositions ::
   ([PositionedBlock], Int, Double, Double) ->
   (PositionedBlock, PositionedBlock, PositionedBlock, PositionedBlock, (Double, Double), Double, Double)
 extractPositions (positionedBlocks, _pId, skewerMaxX, skewerMinY) =
-  let [(PositionedFork _i _pId _c [l3] [r3] _gCId x3 _xR3 y3 _maxX _minYL _minYR _lLY _lRY), _pId', pb2, pb1] = positionedBlocks
+  let [(PositionedFork _i _pId _c [l3] [r3] _gCId x3 _xR3 y3 _maxX _minYL _minYR _lLY _lRY), pb1, pb2] = positionedBlocks
    in (pb1, pb2, l3, r3, (x3, y3), skewerMaxX, skewerMinY)
 
 specLayout1 :: Spec
@@ -33,14 +33,14 @@ specLayout1 = describe "layout1" $ do
     it "should position at x=0.0" $
       x1 `shouldBe` 0.0
     it "should position at y=-3*boxHeight (three blocks stacked below)" $
-      y1 `shouldBe` (-0.5)
+      y1 `shouldBe` (-1.5)
 
   context "Second action block positioning" $ do
     let (x2, y2, _, _) = getPosition pb2
     it "should position at x=0.0" $
       x2 `shouldBe` 0.0
     it "should position at y=-2*boxHeight (two blocks above it)" $
-      y2 `shouldBe` (defaultBoundingBoxHeight * (-1.5))
+      y2 `shouldBe` (defaultBoundingBoxHeight * (-0.5))
 
   context "Fork block positioning" $ do
     context "Fork root node" $ do

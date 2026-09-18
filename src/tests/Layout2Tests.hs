@@ -17,7 +17,8 @@ createTestBlocks =
 
 specLayout2 :: Spec
 specLayout2 = describe "layout2" $ do
-  let ([(PositionedFork _i _pId _c [l] r _gCId x _xR y forkMaxX forkMinYL forkMinYR _lLY _lRY)], _pId', maxX, minY) = position' createTestBlocks 1 0.0 0.0
+  let ([_action, (PositionedFork _i _pId _c [l] r _gCId x _xR y forkMaxX forkMinYL forkMinYR _lLY _lRY)], _pId', maxX, minY) =
+        position' createTestBlocks 1 0.0 0.0
 
   context "Fork block positioning" $ do
     context "Fork root node" $ do
@@ -26,30 +27,30 @@ specLayout2 = describe "layout2" $ do
       it "should position at y=0.0" $
         y `shouldBe` (-0.5)
 
-    context "Fork left branch" $ do
-      let (lx, ly, lMaxX, lMinY) = getPosition l
-      it "should position left branch at x=0.0" $
-        lx `shouldBe` 0.0
-      it "should position left branch one level below fork (y=-1*boxHeight)" $
-        ly `shouldBe` (defaultBoundingBoxHeight * (-1.5))
-      it "should calculate correct maximum x coordinate" $
-        lMaxX `shouldBe` defaultBoundingBoxWidth * 0.5
-      it "should calculate correct maximum y coordinate" $
-        lMinY `shouldBe` (defaultBoundingBoxHeight * (-2.0))
+  context "Fork left branch" $ do
+    let (lx, ly, lMaxX, lMinY) = getPosition l
+    it "should position left branch at x=0.0" $
+      lx `shouldBe` 0.0
+    it "should position left branch one level below fork (y=-1*boxHeight)" $
+      ly `shouldBe` (defaultBoundingBoxHeight * (-1.5))
+    it "should calculate correct maximum x coordinate" $
+      lMaxX `shouldBe` defaultBoundingBoxWidth * 0.5
+    it "should calculate correct maximum y coordinate" $
+      lMinY `shouldBe` (defaultBoundingBoxHeight * (-2.0))
 
-    context "Fork right branch" $ do
-      let [(PositionedAction _i _pId _c ax ay aMaxX aMinY), _f] = r
-      it "should correctly position right branch - x coordinate" $
-        ax `shouldBe` defaultBoundingBoxWidth
-      it "should correctly position right branch - y coordinate" $
-        ay `shouldBe` defaultBoundingBoxHeight * (-1.5)
-      it "should calculate correct maximum x coordinate" $
-        aMaxX `shouldBe` defaultBoundingBoxWidth * (1.5)
-      it "should calculate correct maximum y coordinate" $
-        aMinY `shouldBe` (defaultBoundingBoxHeight * (-2.0))
+  context "Fork right branch" $ do
+    let [(PositionedAction _i _pId _c ax ay aMaxX aMinY), _f] = r
+    it "should correctly position right branch - x coordinate" $
+      ax `shouldBe` defaultBoundingBoxWidth
+    it "should correctly position right branch - y coordinate" $
+      ay `shouldBe` defaultBoundingBoxHeight * (-1.5)
+    it "should calculate correct maximum x coordinate" $
+      aMaxX `shouldBe` defaultBoundingBoxWidth * (1.5)
+    it "should calculate correct maximum y coordinate" $
+      aMinY `shouldBe` (defaultBoundingBoxHeight * (-2.0))
 
-    context "Overall layout boundaries" $ do
-      it "should calculate correct maximum x coordinate" $
-        maxX `shouldBe` defaultBoundingBoxWidth * 2.5
-      it "should calculate correct minimum y coordinate (deepest stack depth)" $
-        minY `shouldBe` (defaultBoundingBoxHeight * (-6.0))
+  context "Overall layout boundaries" $ do
+    it "should calculate correct maximum x coordinate" $
+      maxX `shouldBe` defaultBoundingBoxWidth * 2.5
+    it "should calculate correct minimum y coordinate (deepest stack depth)" $
+      minY `shouldBe` (defaultBoundingBoxHeight * (-6.0))
