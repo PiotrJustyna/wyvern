@@ -1,11 +1,13 @@
 module HelperDiagrams where
 
-import Constants (defaultBoundingBoxHeight, defaultBoundingBoxWidth, defaultFontSize, fillColour, fontColour, heightRatio, lineColour, widthRatio, wyvernStyle)
+import Constants (backgroundRectangleFillColour, defaultBoundingBoxHeight, defaultBoundingBoxWidth, defaultFontSize, fillColour, fillColourV3, fontColour, fontColourV3, heightRatio, lineColour, lineColourV3, smallFontSize, widthRatio, wyvernStyle, wyvernStyleV3)
 import Diagrams.Backend.SVG (B)
 import Diagrams.Prelude
   ( Diagram,
     Point (..),
     V2 (..),
+    alignTL,
+    alignY,
     closeLine,
     fc,
     font,
@@ -16,6 +18,8 @@ import Diagrams.Prelude
     light,
     local,
     lw,
+    none,
+    opacity,
     p2,
     position,
     r2,
@@ -50,6 +54,14 @@ addressShape x y =
     # strokeLoop
     # wyvernStyle
 
+renderTextV3 :: String -> Diagram B
+renderTextV3 x =
+  text x
+    # fontSize (local smallFontSize)
+    # light
+    # font "helvetica"
+    # fc fontColourV3
+
 renderText :: String -> Diagram B
 renderText x =
   text x
@@ -62,6 +74,18 @@ wyvernRoundedRect :: String -> Diagram B
 wyvernRoundedRect x =
   renderText x
     <> roundedRect (defaultBoundingBoxWidth * widthRatio) (defaultBoundingBoxHeight * heightRatio) 0.5 # lw veryThin # lc lineColour # fc fillColour
+
+wyvernRectV3 :: String -> Double -> Double -> Double -> Double -> Double -> Diagram B
+wyvernRectV3
+  content
+  boundingBoxWidth
+  boundingBoxHeight
+  horizontalExpansion
+  verticalBottomExpansion
+  verticalTopExpansion =
+    renderTextV3 content # translate (r2 (defaultBoundingBoxWidth * 0.5, defaultBoundingBoxHeight * (-0.5) - verticalTopExpansion))
+      <> rect (defaultBoundingBoxWidth * widthRatio) (defaultBoundingBoxHeight * heightRatio) # wyvernStyleV3 # alignTL # translate (r2 (defaultBoundingBoxWidth * (1.0 - widthRatio) * 0.5, defaultBoundingBoxHeight * (1.0 - heightRatio) * (-0.5) - verticalTopExpansion))
+      <> rect boundingBoxWidth boundingBoxHeight # lw none # fc backgroundRectangleFillColour # alignTL . opacity 0.1
 
 wyvernRect :: String -> Diagram B
 wyvernRect x =
@@ -97,6 +121,44 @@ wyvernAddress x =
       # strokeLoop
       # wyvernStyle
       # translate (r2 (defaultBoundingBoxWidth * widthRatio * (-0.5), defaultBoundingBoxHeight * heightRatio * (-0.5)))
+
+wyvernQuestionV3 ::
+  String ->
+  Double ->
+  Double ->
+  Double ->
+  Double ->
+  Double ->
+  Diagram B
+wyvernQuestionV3
+  c
+  boundingBoxWidth
+  boundingBoxHeight
+  horizontalExpansion
+  verticalBottomExpansion
+  verticalTopExpansion =
+    renderTextV3 c # translate (r2 (defaultBoundingBoxWidth * 0.5, (defaultBoundingBoxHeight * (-0.5) - verticalTopExpansion)))
+      <> fromOffsets
+        [ V2 (-0.1) (defaultBoundingBoxHeight * heightRatio * 0.5),
+          V2 0.1 (defaultBoundingBoxHeight * heightRatio * 0.5),
+          V2 (defaultBoundingBoxWidth * widthRatio - 0.2) 0.0,
+          V2 0.1 (defaultBoundingBoxHeight * heightRatio * (-0.5)),
+          V2 (-0.1) (defaultBoundingBoxHeight * heightRatio * (-0.5)),
+          V2 (defaultBoundingBoxWidth * widthRatio * (-1.0) + 0.2) 0.0
+        ]
+        # closeLine
+        # strokeLoop
+        # wyvernStyleV3
+        # alignTL
+        # translate (r2 (defaultBoundingBoxWidth * (1.0 - widthRatio) * 0.5, defaultBoundingBoxHeight * heightRatio * (-0.5) - verticalTopExpansion))
+      <> renderTextV3 "yes" # translate (r2 ((defaultBoundingBoxWidth * 0.5) - 0.2, defaultBoundingBoxHeight * (-0.85) - verticalTopExpansion))
+      <> renderTextV3 "no" # translate (r2 (defaultBoundingBoxWidth * 0.95, defaultBoundingBoxHeight * (-0.4) - verticalTopExpansion))
+      -- <> rect (boundingBoxWidth + horizontalExpansion) (boundingBoxHeight + verticalBottomExpansion + verticalTopExpansion)
+      <> rect boundingBoxWidth boundingBoxHeight
+        # fc backgroundRectangleFillColour
+        # lw none
+        # alignTL
+        . opacity 0.1
 
 wyvernQuestion :: String -> Diagram B
 wyvernQuestion x =

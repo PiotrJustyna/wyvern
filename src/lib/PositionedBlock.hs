@@ -14,7 +14,7 @@ data PositionedBlock
   | PositionedEndTerminator Int Double Double Double Double
 
 instance Show PositionedBlock where
-  show (PositionedStartTerminator pId x y maxX minY) = "StrartTerminator [(" <> show pId <> ")," <> show x <> ", " <> show y <> ", " <> show maxX <> ", " <> show minY <> "]"
+  show (PositionedStartTerminator pId x y maxX minY) = "StartTerminator [(" <> show pId <> ")," <> show x <> ", " <> show y <> ", " <> show maxX <> ", " <> show minY <> "]"
   show (PositionedAction _i pId c x y maxX minY) = "Action \"" <> c <> "\" [(" <> show pId <> ")," <> show x <> ", " <> show y <> ", " <> show maxX <> ", " <> show minY <> "]"
   show (PositionedHeadline _i pId c x y maxX minY) = "Headline \"" <> c <> "\" [(" <> show pId <> ")," <> show x <> ", " <> show y <> ", " <> show maxX <> ", " <> show minY <> "]"
   show (PositionedAddress _i pId c x y maxX minY) = "Address \"" <> c <> "\" [(" <> show pId <> ")," <> show x <> ", " <> show y <> ", " <> show maxX <> ", " <> show minY <> "]"

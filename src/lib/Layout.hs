@@ -5,6 +5,7 @@ import Constants (defaultBoundingBoxHeight, defaultBoundingBoxWidth, repositionS
 import Data.Map (Map, adjust, empty, insert, keys, lookup)
 import ID
 import PositionedBlock
+import PositionedBlockV3
 
 position'' :: Block -> Int -> Double -> Double -> (PositionedBlock, Int)
 position'' (Fork i c l r gCId) pId x y =
@@ -50,6 +51,147 @@ position skewers pId x y =
           (x, [], pId)
           skewers
    in finalPositionedBlocks
+
+positionV3'' :: Block -> Int -> Double -> Double -> (PositionedBlockV3, Int)
+positionV3'' (Fork i c l r gCId) pId x y =
+  let (positionedLeft, lPId, lMaxX, lMinY) = positionV3' l (pId + 1) x (y - defaultBoundingBoxHeight)
+      (positionedRight, rPId, rMaxX, rMinY) = positionV3' r (lPId + 0) lMaxX (y - defaultBoundingBoxHeight)
+   in (PositionedForkV3 i pId c (Prelude.reverse positionedLeft) (Prelude.reverse positionedRight) gCId x y 0.0 0.0 0.0, rPId)
+positionV3'' (Action i c) pId x y = (PositionedActionV3 i pId c x y 0.0 0.0 0.0, pId + 1)
+positionV3'' StartTerminator pId x y = (PositionedStartTerminatorV3 pId x y 0.0 0.0, pId)
+positionV3'' (Headline i c) pId x y = (PositionedHeadlineV3 i pId c x y 0.0 0.0, pId)
+positionV3'' (Address i c) pId x y = (PositionedAddressV3 i pId c x y 0.0 0.0, pId)
+positionV3'' EndTerminator pId x y = (PositionedEndTerminatorV3 pId x y 0.0 0.0, pId)
+
+positionV3' :: [Block] -> Int -> Double -> Double -> ([PositionedBlockV3], Int, Double, Double)
+positionV3' blocks pId x y =
+  let (_finalX, _finalY, finalPositionedBlocks, finalMaxX, finalMinY, finalPId) =
+        foldl
+          ( \(accuX, accuY, accuPositionedBlocks, accuMaxX, accuMinY, accuPId) b ->
+              let (positionedBlock, accuPId') = positionV3'' b accuPId accuX accuY
+                  (_x, _y, maxX, minY, horizontalExpansion, verticalBottomExpansion, verticalTopExpansion) = getPositionV3 positionedBlock
+               in ( accuX,
+                    minY,
+                    positionedBlock : accuPositionedBlocks,
+                    horizontalExpansion + max maxX accuMaxX,
+                    (min minY accuMinY),
+                    accuPId'
+                  )
+          )
+          (x, y, [], x, y, pId)
+          blocks
+   in (finalPositionedBlocks, finalPId, finalMaxX, finalMinY)
+
+positionV3 :: [[Block]] -> Int -> Double -> Double -> [[PositionedBlockV3]]
+positionV3 skewers pId x y =
+  let (_finalMaxX, finalPositionedBlocks, _finalPId) =
+        foldl
+          ( \(accuMaxX, accuPositionedBlocks, accuPId) skewer ->
+              let (positionedSkewer, accuPId', maxX, _minY) = positionV3' skewer accuPId accuMaxX y
+               in (maxX, (Prelude.reverse positionedSkewer) : accuPositionedBlocks, accuPId')
+          )
+          (x, [], pId)
+          skewers
+   in finalPositionedBlocks
+
+repositionV3'' :: PositionedBlockV3 -> Double -> Double -> PositionedBlockV3
+repositionV3'' (PositionedForkV3 i pId c l r gCId x y horizontalExpansion verticalBottomExpansion verticalTopExpansion) x' y' =
+  let (positionedLeft, lMaxX, lMinY) = repositionV3' l x' (y' - defaultBoundingBoxHeight - verticalTopExpansion)
+      (positionedRight, rMaxX, rMinY) = repositionV3' r lMaxX (y' - defaultBoundingBoxHeight - verticalTopExpansion)
+   in PositionedForkV3 i pId c (Prelude.reverse positionedLeft) (Prelude.reverse positionedRight) gCId x' y' horizontalExpansion verticalBottomExpansion verticalTopExpansion
+repositionV3'' (PositionedActionV3 i pId c x y horizontalExpansion verticalBottomExpansion verticalTopExpansion) x' y' = PositionedActionV3 i pId c x' y' horizontalExpansion verticalBottomExpansion verticalTopExpansion
+repositionV3'' (PositionedStartTerminatorV3 pId x y hExpansion vExpansion) x' y' = PositionedStartTerminatorV3 pId x y hExpansion vExpansion
+repositionV3'' (PositionedHeadlineV3 i pId c x y hExpansion vExpansion) x' y' = PositionedHeadlineV3 i pId c x y hExpansion vExpansion
+repositionV3'' (PositionedAddressV3 i pId c x y hExpansion vExpansion) x' y' = PositionedAddressV3 i pId c x y hExpansion vExpansion
+repositionV3'' (PositionedEndTerminatorV3 pId x y hExpansion vExpansion) x' y' = PositionedEndTerminatorV3 pId x y hExpansion vExpansion
+
+repositionV3' :: [PositionedBlockV3] -> Double -> Double -> ([PositionedBlockV3], Double, Double) -- positioned blocks, max x, min y
+repositionV3' [] maxX minY = ([], maxX, minY)
+repositionV3' pBs x' y' =
+  foldl
+    ( \(accuPositionedBlocks, accuMaxX, accuMinY) currentPB ->
+        let (x, y, maxX, minY, horizontalExpansion, verticalBottomExpansion, verticalTopExpansion) = getPositionV3 currentPB
+            currentPB' = repositionV3'' currentPB x' accuMinY
+            (xNew, yNew, maxXNew, minYNew, horizontalExpansionNew, verticalBottomExpansionNew, verticalTopExpansionNew) = getPositionV3 currentPB'
+         in ( currentPB' : accuPositionedBlocks,
+              max maxXNew accuMaxX,
+              minYNew
+            )
+    )
+    ([], x', y')
+    pBs
+
+repositionV3 :: [[PositionedBlockV3]] -> Double -> Double -> [[PositionedBlockV3]]
+repositionV3 skewers x y =
+  let (finalPositionedBlocks, _finalMaxX, _finalMinY) =
+        foldl
+          ( \(accuPositionedBlocks, accuMaxX, accuMinY) skewer ->
+              let (positionedSkewer, maxX, minY) = repositionV3' skewer x y
+               in ((Prelude.reverse positionedSkewer) : accuPositionedBlocks, accuMaxX, accuMinY)
+          )
+          ([], x, y)
+          skewers
+   in finalPositionedBlocks
+
+expand1'' ::
+  PositionedBlockV3 ->
+  Int ->
+  Double ->
+  Double ->
+  Double ->
+  PositionedBlockV3
+expand1''
+  pB@(PositionedForkV3 i pId c l r gCId x y horizontalExpansion verticalBottomExpansion verticalTopExpansion)
+  pId'
+  horizontalExpansion'
+  verticalBottomExpansion'
+  verticalTopExpansion' =
+    if pId == pId'
+      then (PositionedForkV3 i pId c l r gCId x y (horizontalExpansion + horizontalExpansion') (verticalBottomExpansion + verticalBottomExpansion') (verticalTopExpansion + verticalTopExpansion'))
+      else
+        let l' = expand1' l pId' horizontalExpansion' verticalBottomExpansion' verticalTopExpansion'
+            r' = expand1' r pId' horizontalExpansion' verticalBottomExpansion' verticalTopExpansion'
+         in PositionedForkV3 i pId c l' r' gCId x y horizontalExpansion verticalBottomExpansion verticalTopExpansion
+expand1''
+  pB@(PositionedActionV3 _i pId _c _x _y horizontalExpansion verticalBottomExpansion verticalTopExpansion)
+  pId'
+  horizontalExpansion'
+  verticalBottomExpansion'
+  verticalTopExpansion' =
+    if pId == pId'
+      then (PositionedActionV3 _i pId _c _x _y (horizontalExpansion + horizontalExpansion') (verticalBottomExpansion + verticalBottomExpansion') (verticalTopExpansion + verticalTopExpansion'))
+      else pB
+expand1'' positionedBlock _pId _horizontalExpansion _verticalBottomExpansion _verticalTopExpansion = positionedBlock
+
+expand1' ::
+  [PositionedBlockV3] ->
+  Int ->
+  Double ->
+  Double ->
+  Double ->
+  [PositionedBlockV3]
+expand1'
+  positionedBlocks
+  pId
+  horizontalExpansion
+  verticalBottomExpansion
+  verticalTopExpansion =
+    foldr (\pB accu -> (expand1'' pB pId horizontalExpansion verticalBottomExpansion verticalTopExpansion) : accu) [] positionedBlocks
+
+expand1 ::
+  [[PositionedBlockV3]] ->
+  Int ->
+  Double ->
+  Double ->
+  Double ->
+  [[PositionedBlockV3]]
+expand1
+  skewers
+  pId
+  horizontalExpansion
+  verticalBottomExpansion
+  verticalTopExpansion =
+    foldr (\pBs accu -> (expand1' pBs pId horizontalExpansion verticalBottomExpansion verticalTopExpansion) : accu) [] skewers
 
 repositionTopY'' :: PositionedBlock -> Double -> Int -> (PositionedBlock, Bool)
 repositionTopY'' b@(PositionedFork i pId c l r gCId x xR y maxX minYL minYR _lLY lRY) thresholdDepth numberOfShifts =

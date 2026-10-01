@@ -28,6 +28,7 @@ library
                       Constants
                       Blocks
                       PositionedBlock
+                      PositionedBlockV3
                       HelperDiagrams
                       Lexer
                       Parser

@@ -6,12 +6,12 @@ import Data.Map (empty, insert, lookup)
 import Diagrams.Backend.SVG (renderSVG')
 import ID
 import InputArguments (inputPath, outputPath, parseInput)
-import Layout (anotherReposition, barebonesGamma, buildGammaConnection, connectionsV2, position, repositionBottomY, repositionOrigins, repositionOriginsTopY, repositionTopY, repositionX)
+import Layout (anotherReposition, barebonesGamma, buildGammaConnection, connectionsV2, expand1, position, positionV3, repositionBottomY, repositionOrigins, repositionOriginsTopY, repositionTopY, repositionV3, repositionX)
 import Lexer (lexAll, runAlex)
 import Options.Applicative (execParser, fullDesc, header, helper, info, (<**>))
 import Parser (ParseResult (..), diagram)
 import PositionedBlock (PositionedBlock (..), extractGammaConnections, getMaxNumberOfShiftsPerDepth, qwe, toMap, toMapMicro)
-import Renderer (render, renderConnections)
+import Renderer (render, renderConnections, renderV3)
 import Validator (validate)
 
 main :: IO Int
@@ -33,67 +33,16 @@ main = do
           ParseOk blocks -> do
             case validate blocks of
               Left validBlocks -> do
-                let positionedBlocks = position (Blocks.reverse validBlocks) 0 0.0 0.0
-                print positionedBlocks
-
-                -- V3 ->
-                let gamma = barebonesGamma positionedBlocks
-
-                putStrLn "barebones gamma:"
-                print gamma
-
-                let repositionedBlocks = processGammaShifts gamma positionedBlocks
-
-                -- let gamma' = barebonesGamma repositionedBlocks
-
-                -- putStrLn "barebones gamma':"
-                -- print gamma'
-
-                -- let origins = foldl (\accu ((_pId, _originX, originY), _gCId, _maxXOrigin) -> insert originY ((-1.0) * repositionShift) accu) empty gamma'
-                -- putStrLn "origins:"
-                -- print origins
-
-                -- let destinations' = toMap repositionedBlocks
-
-                -- let (gammaConnections, updatedOrigins, _destinations) =
-                --       foldl
-                --         ( \(accuGammaConnections, accuOrigins, accuDestinations) ((_pId, originX, originY), gCId, maxXOrigin) ->
-                --             let (connection, accuOrigins', destinations'') = buildGammaConnection gCId accuOrigins accuDestinations originX originY maxXOrigin
-                --              in (connection <> accuGammaConnections, accuOrigins', destinations'')
-                --         )
-                --         ([], origins, destinations')
-                --         gamma'
-
-                -- putStrLn "updated origins:"
-                -- print updatedOrigins
-
-                -- let shifts =
-                --       foldl
-                --         ( \accu ((pId, _originX, originY), _gCId, _maxXOrigin) ->
-                --             case Data.Map.lookup originY updatedOrigins of
-                --               Nothing -> error $ "origin y (" <> (show originY) <> ") not found in the list of updated origins: " <> (show updatedOrigins)
-                --               Just shift -> (pId, originY, shift) : accu
-                --         )
-                --         []
-                --         gamma'
-                -- putStrLn "positioned block shifts:"
-                -- print shifts
-
-                -- let lastShift = last shifts
-                -- putStrLn "last shift:"
-                -- print lastShift
-
-                -- let repositionedBlocks' = anotherReposition repositionedBlocks lastShift
-                -- print repositionedBlocks'
-
-                -- TODO:
-                -- update origins to also contain the gamma shift (?)
-                -- reposition blocks once again given the updated origins
-                let blockConnections3 = connectionsV2 repositionedBlocks
-                let renderedConnections3 = renderConnections $ blockConnections3 -- <> gammaConnections
+                -- let positionedBlocks = position (Blocks.reverse validBlocks) 0 0.0 0.0
+                -- let positionedBlocksV3 = positionV3 (Blocks.reverse validBlocks) 0 0.0 0.0
+                -- let expandedBlocksV3 = expand1 positionedBlocksV3 9 0.0 0.0 0.0
+                -- let expandedBlocksV3' = repositionV3 expandedBlocksV3 0.0 0.0
+                -- let expandedBlocksV3'' = expand1 expandedBlocksV3' 9 0.5 0.5 0.5
+                -- let expandedBlocksV3''' = repositionV3 expandedBlocksV3'' 0.0 0.0
 
                 -- rendering v3:
                 -- renderSVG' ((outputPath input) <> "_v3") svgOptions ((render repositionedBlocks) <> renderedConnections3)
+                -- renderSVG' ((outputPath input) <> "_v3") svgOptions (renderV3 expandedBlocksV3''')
 
                 -- rendering v1:
                 renderSVG' (outputPath input) svgOptions (Blocks.renderDiagram validBlocks)
