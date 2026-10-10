@@ -1,11 +1,3 @@
-
-
-
-
-
-
-
-
 1 "action 1"
 2 "question 2"
 {
@@ -23,14 +15,24 @@
     }
     {
         "dummy action"
+        3a1a "dummy fork"
+        {
+            "dummy action"
+        }
+        {
+            123a "dummy action"
+            3a
+        }
+        2
     }
   }
 }
 {
   4 "action 4"
-  "dummy action"
-  "dummy action"
-  "dummy action"
-  "dummy action"
+  456a "dummy action"
+  456b "dummy action"
+  456c "dummy action"
+  456d "dummy action"
+  -- 2
 }
 5 "action 5"

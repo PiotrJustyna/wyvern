@@ -2,10 +2,10 @@ module Layout where
 
 import Blocks
 import Constants (defaultBoundingBoxHeight, defaultBoundingBoxWidth, repositionShift)
-import Data.Map (Map, adjust, empty, insert, keys, lookup)
+import Data.Map (Map, adjust, empty, keys, lookup)
 import ID
 import PositionedBlock
-import PositionedBlockV3
+import PositionedBlockV3 (PositionedBlockV3 (..), getPositionV3)
 
 position'' :: Block -> Int -> Double -> Double -> (PositionedBlock, Int)
 position'' (Fork i c l r gCId) pId x y =
@@ -58,10 +58,10 @@ positionV3'' (Fork i c l r gCId) pId x y =
       (positionedRight, rPId, rMaxX, rMinY) = positionV3' r (lPId + 0) lMaxX (y - defaultBoundingBoxHeight)
    in (PositionedForkV3 i pId c (Prelude.reverse positionedLeft) (Prelude.reverse positionedRight) gCId x y 0.0 0.0 0.0, rPId)
 positionV3'' (Action i c) pId x y = (PositionedActionV3 i pId c x y 0.0 0.0 0.0, pId + 1)
-positionV3'' StartTerminator pId x y = (PositionedStartTerminatorV3 pId x y 0.0 0.0, pId)
-positionV3'' (Headline i c) pId x y = (PositionedHeadlineV3 i pId c x y 0.0 0.0, pId)
-positionV3'' (Address i c) pId x y = (PositionedAddressV3 i pId c x y 0.0 0.0, pId)
-positionV3'' EndTerminator pId x y = (PositionedEndTerminatorV3 pId x y 0.0 0.0, pId)
+positionV3'' StartTerminator pId x y = (PositionedStartTerminatorV3 pId x y 0.0 0.0 0.0, pId)
+positionV3'' (Headline i c) pId x y = (PositionedHeadlineV3 i pId c x y 0.0 0.0 0.0, pId)
+positionV3'' (Address i c) pId x y = (PositionedAddressV3 i pId c x y 0.0 0.0 0.0, pId)
+positionV3'' EndTerminator pId x y = (PositionedEndTerminatorV3 pId x y 0.0 0.0 0.0, pId)
 
 positionV3' :: [Block] -> Int -> Double -> Double -> ([PositionedBlockV3], Int, Double, Double)
 positionV3' blocks pId x y =
@@ -73,7 +73,7 @@ positionV3' blocks pId x y =
                in ( accuX,
                     minY,
                     positionedBlock : accuPositionedBlocks,
-                    horizontalExpansion + max maxX accuMaxX,
+                    horizontalExpansion + max maxX accuMaxX, -- TODO: no expansion?
                     (min minY accuMinY),
                     accuPId'
                   )
@@ -100,10 +100,10 @@ repositionV3'' (PositionedForkV3 i pId c l r gCId x y horizontalExpansion vertic
       (positionedRight, rMaxX, rMinY) = repositionV3' r lMaxX (y' - defaultBoundingBoxHeight - verticalTopExpansion)
    in PositionedForkV3 i pId c (Prelude.reverse positionedLeft) (Prelude.reverse positionedRight) gCId x' y' horizontalExpansion verticalBottomExpansion verticalTopExpansion
 repositionV3'' (PositionedActionV3 i pId c x y horizontalExpansion verticalBottomExpansion verticalTopExpansion) x' y' = PositionedActionV3 i pId c x' y' horizontalExpansion verticalBottomExpansion verticalTopExpansion
-repositionV3'' (PositionedStartTerminatorV3 pId x y hExpansion vExpansion) x' y' = PositionedStartTerminatorV3 pId x y hExpansion vExpansion
-repositionV3'' (PositionedHeadlineV3 i pId c x y hExpansion vExpansion) x' y' = PositionedHeadlineV3 i pId c x y hExpansion vExpansion
-repositionV3'' (PositionedAddressV3 i pId c x y hExpansion vExpansion) x' y' = PositionedAddressV3 i pId c x y hExpansion vExpansion
-repositionV3'' (PositionedEndTerminatorV3 pId x y hExpansion vExpansion) x' y' = PositionedEndTerminatorV3 pId x y hExpansion vExpansion
+repositionV3'' (PositionedStartTerminatorV3 pId x y horizontalExpansion verticalBottomExpansion verticalTopExpansion) x' y' = PositionedStartTerminatorV3 pId x y horizontalExpansion verticalBottomExpansion verticalTopExpansion
+repositionV3'' (PositionedHeadlineV3 i pId c x y horizontalExpansion verticalBottomExpansion verticalTopExpansion) x' y' = PositionedHeadlineV3 i pId c x y horizontalExpansion verticalBottomExpansion verticalTopExpansion
+repositionV3'' (PositionedAddressV3 i pId c x y horizontalExpansion verticalBottomExpansion verticalTopExpansion) x' y' = PositionedAddressV3 i pId c x y horizontalExpansion verticalBottomExpansion verticalTopExpansion
+repositionV3'' (PositionedEndTerminatorV3 pId x y horizontalExpansion verticalBottomExpansion verticalTopExpansion) x' y' = PositionedEndTerminatorV3 pId x y horizontalExpansion verticalBottomExpansion verticalTopExpansion
 
 repositionV3' :: [PositionedBlockV3] -> Double -> Double -> ([PositionedBlockV3], Double, Double) -- positioned blocks, max x, min y
 repositionV3' [] maxX minY = ([], maxX, minY)
