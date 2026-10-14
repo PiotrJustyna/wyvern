@@ -1,6 +1,8 @@
 module IntermediateBlock where
 
 import Blocks
+import Constants (repositionShift)
+import Data.List (sortOn)
 import ID
 
 data IntermediateBlock
@@ -74,7 +76,9 @@ fromBlock programmaticId gammaConnections (Fork userId content leftBranch rightB
       (rightBranch', programmaticIdRight, gammaConnectionsRight) = fromBlocks' programmaticIdLeft gammaConnectionsLeft rightBranch
       gammaConnections' = case gammaConnectionDestinationUserId of
         Nothing -> gammaConnectionsRight
-        (Just gammaConnectionDestinationUserId') -> (programmaticIdLeft, gammaConnectionDestinationUserId') : gammaConnectionsRight
+        (Just gammaConnectionDestinationUserId') -> case rightBranch' of
+          [] -> (programmaticId, gammaConnectionDestinationUserId') : gammaConnectionsRight
+          _ -> (programmaticIdLeft, gammaConnectionDestinationUserId') : gammaConnectionsRight
    in ( ( IntermediateFork
             userId
             programmaticId
@@ -109,7 +113,7 @@ fromBlocks skewers =
           )
           ([], 0, [])
           skewers
-   in (intermediateBlocks, gammaConnections)
+   in (intermediateBlocks, sortOn (\(n, s) -> (s, n)) gammaConnections)
 
 expandSource'' :: IntermediateBlock -> Int -> ID -> Double -> Double -> Double -> IntermediateBlock
 expandSource''
@@ -168,7 +172,7 @@ expandSource'
   horizontalExpansion'
   verticalBottomExpansion'
   verticalTopExpansion' =
-    foldl (\accu iB -> (expandSource'' iB programmaticId' userId' horizontalExpansion' verticalBottomExpansion' verticalTopExpansion') : accu) [] intermediateBlocks
+    foldr (\iB accu -> (expandSource'' iB programmaticId' userId' horizontalExpansion' verticalBottomExpansion' verticalTopExpansion') : accu) [] intermediateBlocks
 
 expandSource ::
   [[IntermediateBlock]] ->
@@ -189,4 +193,4 @@ expandSource
 
 gammaExpansions :: [[IntermediateBlock]] -> [(Int, ID)] -> [[IntermediateBlock]]
 gammaExpansions intermediateBlocks =
-  foldl (\accu (gammaConnectionOriginProgrammaticId, gammaConnectionDestinationUserId) -> expandSource accu gammaConnectionOriginProgrammaticId gammaConnectionDestinationUserId 0.5 0.5 0.5) intermediateBlocks
+  foldl (\accu (gammaConnectionOriginProgrammaticId, gammaConnectionDestinationUserId) -> expandSource accu gammaConnectionOriginProgrammaticId gammaConnectionDestinationUserId repositionShift repositionShift repositionShift) intermediateBlocks

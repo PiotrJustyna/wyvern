@@ -85,7 +85,7 @@ wyvernRectV3
   verticalTopExpansion =
     renderTextV3 content # translate (r2 (defaultBoundingBoxWidth * 0.5, defaultBoundingBoxHeight * (-0.5) - verticalTopExpansion))
       <> rect (defaultBoundingBoxWidth * widthRatio) (defaultBoundingBoxHeight * heightRatio) # wyvernStyleV3 # alignTL # translate (r2 (defaultBoundingBoxWidth * (1.0 - widthRatio) * 0.5, defaultBoundingBoxHeight * (1.0 - heightRatio) * (-0.5) - verticalTopExpansion))
-      <> rect boundingBoxWidth boundingBoxHeight # lw none # fc backgroundRectangleFillColour # alignTL . opacity 0.1
+      <> rect boundingBoxWidth boundingBoxHeight # lw none # fc backgroundRectangleFillColour # alignTL . opacity 0.01
 
 wyvernRect :: String -> Diagram B
 wyvernRect x =
@@ -158,7 +158,7 @@ wyvernQuestionV3
         # fc backgroundRectangleFillColour
         # lw none
         # alignTL
-        . opacity 0.1
+        . opacity 0.01
 
 wyvernQuestion :: String -> Diagram B
 wyvernQuestion x =

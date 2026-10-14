@@ -1,0 +1,26 @@
+1 "action 1"
+2 "question 2"
+{
+    2a1 "action 2a1"
+}
+{
+    2b1 "action 2b1"
+    2b2 "question 2b2"
+    {
+        2b2a1 "action 2b2a1"
+    }
+    {
+        2b2b1 "action 2b2b1"
+        2
+    }
+    2
+}
+3 "fork 3"
+{
+    3a1 "action 3a1"
+}
+{
+    3b1 "action 3b1"
+    2
+}
+4 "action 4"

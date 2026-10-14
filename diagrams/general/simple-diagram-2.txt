@@ -33,6 +33,6 @@
   456b "dummy action"
   456c "dummy action"
   456d "dummy action"
-  -- 2
+  2
 }
 5 "action 5"

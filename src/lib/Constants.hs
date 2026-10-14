@@ -15,7 +15,7 @@ import Diagrams.Backend.SVG
 import Diagrams.Prelude (Colour, Diagram, V2 (..), fc, lc, lw, mkSizeSpec, opacity, veryThin, (#))
 
 defaultBoundingBoxWidth :: Double
-defaultBoundingBoxWidth = 3.0
+defaultBoundingBoxWidth = 5.0
 
 defaultBoundingBoxHeight :: Double
 defaultBoundingBoxHeight = 1.0

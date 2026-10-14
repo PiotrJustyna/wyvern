@@ -25,20 +25,20 @@ render [skewer] = render' skewer
 render (skewer : skewers) = render' skewer <> render skewers
 
 renderV3'' :: PositionedBlockV3 -> Diagram B
-renderV3'' pB@(PositionedForkV3 _i _pId _c l r _gCId _x _y _horizontalExpansion _verticalBottomExpansion _verticalTopExpansion) =
-  let (x, y, maxX, minY, horizontalExpansion, verticalBottomExpansion, verticalTopExpansion) = getPositionV3 pB
+renderV3'' pB@(PositionedForkV3 _i _pId _c l r _gCId _x _y _horizontalExpansion _verticalBottomExpansion _verticalTopExpansion _maxXGamma) =
+  let (x, y, maxX, minY, horizontalExpansion, verticalBottomExpansion, verticalTopExpansion, _maxXGamma) = getPositionV3 pB
       boundingBoxWidth = maxX - x
       boundingBoxHeight = (minY - y) * (-1.0)
    in position [((P (V2 x y)), wyvernQuestionV3 (show pB) boundingBoxWidth boundingBoxHeight horizontalExpansion verticalBottomExpansion verticalTopExpansion)] <> renderV3' l <> renderV3' r
-renderV3'' pB@(PositionedStartTerminatorV3 _pId x y _horizontalExpansion _verticalBottomExpansion _verticalTopExpansion) = position [((P (V2 x y)), wyvernRoundedRect $ show pB)]
-renderV3'' pB@(PositionedEndTerminatorV3 _pId x y _horizontalExpansion _verticalBottomExpansion _verticalTopExpansion) = position [((P (V2 x y)), wyvernRoundedRect $ show pB)]
-renderV3'' pB@(PositionedActionV3 _i _pId _c _x _y _horizontalExpansion _verticalBottomExpansion _verticalTopExpansion) =
-  let (x, y, maxX, minY, horizontalExpansion, verticalBottomExpansion, verticalTopExpansion) = getPositionV3 pB
+renderV3'' pB@(PositionedStartTerminatorV3 _pId x y _horizontalExpansion _verticalBottomExpansion _verticalTopExpansion _maxXGamma) = position [((P (V2 x y)), wyvernRoundedRect $ show pB)]
+renderV3'' pB@(PositionedEndTerminatorV3 _pId x y _horizontalExpansion _verticalBottomExpansion _verticalTopExpansion _maxXGamma) = position [((P (V2 x y)), wyvernRoundedRect $ show pB)]
+renderV3'' pB@(PositionedActionV3 _i _pId _c _x _y _horizontalExpansion _verticalBottomExpansion _verticalTopExpansion _maxXGamma) =
+  let (x, y, maxX, minY, horizontalExpansion, verticalBottomExpansion, verticalTopExpansion, _maxXGamma) = getPositionV3 pB
       boundingBoxWidth = maxX - x
       boundingBoxHeight = (minY - y) * (-1.0)
    in position [((P (V2 x y)), wyvernRectV3 (show pB) boundingBoxWidth boundingBoxHeight horizontalExpansion verticalBottomExpansion verticalTopExpansion)]
-renderV3'' pB@(PositionedHeadlineV3 _i _pId _c x y _horizontalExpansion _verticalBottomExpansion _verticalTopExpansion) = position [((P (V2 x y)), wyvernHeadline $ show pB)]
-renderV3'' pB@(PositionedAddressV3 _i _pId _c x y _horizontalExpansion _verticalBottomExpansion _verticalTopExpansion) = position [((P (V2 x y)), wyvernAddress $ show pB)]
+renderV3'' pB@(PositionedHeadlineV3 _i _pId _c x y _horizontalExpansion _verticalBottomExpansion _verticalTopExpansion _maxXGamma) = position [((P (V2 x y)), wyvernHeadline $ show pB)]
+renderV3'' pB@(PositionedAddressV3 _i _pId _c x y _horizontalExpansion _verticalBottomExpansion _verticalTopExpansion _maxXGamma) = position [((P (V2 x y)), wyvernAddress $ show pB)]
 
 renderV3' :: [PositionedBlockV3] -> Diagram B
 renderV3' [] = mempty
@@ -52,3 +52,6 @@ renderV3 (skewer : skewers) = renderV3' skewer <> renderV3 skewers
 
 renderConnections :: [((Double, Double), (Double, Double))] -> Diagram B
 renderConnections = foldr (\((x1, y1), (x2, y2)) accu -> renderConnection [p2 (x1, y1), p2 (x2, y2)] <> accu) mempty
+
+renderGammaConnections :: [((Double, Double, Double, Double), (Double, Double, Double, Double))] -> Diagram B
+renderGammaConnections = foldr (\((x1, y1, maxX1, minY1), (x2, y2, maxX2, minY2)) accu -> renderConnection [p2 (x1, minY1), p2 (maxX1, minY1), p2 (maxX1, y2), p2 (x2, y2)] <> accu) mempty

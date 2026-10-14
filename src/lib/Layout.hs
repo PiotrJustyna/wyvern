@@ -56,12 +56,12 @@ positionV3'' :: Block -> Int -> Double -> Double -> (PositionedBlockV3, Int)
 positionV3'' (Fork i c l r gCId) pId x y =
   let (positionedLeft, lPId, lMaxX, lMinY) = positionV3' l (pId + 1) x (y - defaultBoundingBoxHeight)
       (positionedRight, rPId, rMaxX, rMinY) = positionV3' r (lPId + 0) lMaxX (y - defaultBoundingBoxHeight)
-   in (PositionedForkV3 i pId c (Prelude.reverse positionedLeft) (Prelude.reverse positionedRight) gCId x y 0.0 0.0 0.0, rPId)
-positionV3'' (Action i c) pId x y = (PositionedActionV3 i pId c x y 0.0 0.0 0.0, pId + 1)
-positionV3'' StartTerminator pId x y = (PositionedStartTerminatorV3 pId x y 0.0 0.0 0.0, pId)
-positionV3'' (Headline i c) pId x y = (PositionedHeadlineV3 i pId c x y 0.0 0.0 0.0, pId)
-positionV3'' (Address i c) pId x y = (PositionedAddressV3 i pId c x y 0.0 0.0 0.0, pId)
-positionV3'' EndTerminator pId x y = (PositionedEndTerminatorV3 pId x y 0.0 0.0 0.0, pId)
+   in (PositionedForkV3 i pId c (Prelude.reverse positionedLeft) (Prelude.reverse positionedRight) gCId x y 0.0 0.0 0.0 0.0, rPId)
+positionV3'' (Action i c) pId x y = (PositionedActionV3 i pId c x y 0.0 0.0 0.0 0.0, pId + 1)
+positionV3'' StartTerminator pId x y = (PositionedStartTerminatorV3 pId x y 0.0 0.0 0.0 0.0, pId)
+positionV3'' (Headline i c) pId x y = (PositionedHeadlineV3 i pId c x y 0.0 0.0 0.0 0.0, pId)
+positionV3'' (Address i c) pId x y = (PositionedAddressV3 i pId c x y 0.0 0.0 0.0 0.0, pId)
+positionV3'' EndTerminator pId x y = (PositionedEndTerminatorV3 pId x y 0.0 0.0 0.0 0.0, pId)
 
 positionV3' :: [Block] -> Int -> Double -> Double -> ([PositionedBlockV3], Int, Double, Double)
 positionV3' blocks pId x y =
@@ -69,7 +69,7 @@ positionV3' blocks pId x y =
         foldl
           ( \(accuX, accuY, accuPositionedBlocks, accuMaxX, accuMinY, accuPId) b ->
               let (positionedBlock, accuPId') = positionV3'' b accuPId accuX accuY
-                  (_x, _y, maxX, minY, horizontalExpansion, verticalBottomExpansion, verticalTopExpansion) = getPositionV3 positionedBlock
+                  (_x, _y, maxX, minY, horizontalExpansion, verticalBottomExpansion, verticalTopExpansion, _maxXGamma) = getPositionV3 positionedBlock
                in ( accuX,
                     minY,
                     positionedBlock : accuPositionedBlocks,
@@ -95,24 +95,24 @@ positionV3 skewers pId x y =
    in finalPositionedBlocks
 
 repositionV3'' :: PositionedBlockV3 -> Double -> Double -> PositionedBlockV3
-repositionV3'' (PositionedForkV3 i pId c l r gCId x y horizontalExpansion verticalBottomExpansion verticalTopExpansion) x' y' =
+repositionV3'' (PositionedForkV3 i pId c l r gCId x y horizontalExpansion verticalBottomExpansion verticalTopExpansion _maxXGamma) x' y' =
   let (positionedLeft, lMaxX, lMinY) = repositionV3' l x' (y' - defaultBoundingBoxHeight - verticalTopExpansion)
       (positionedRight, rMaxX, rMinY) = repositionV3' r lMaxX (y' - defaultBoundingBoxHeight - verticalTopExpansion)
-   in PositionedForkV3 i pId c (Prelude.reverse positionedLeft) (Prelude.reverse positionedRight) gCId x' y' horizontalExpansion verticalBottomExpansion verticalTopExpansion
-repositionV3'' (PositionedActionV3 i pId c x y horizontalExpansion verticalBottomExpansion verticalTopExpansion) x' y' = PositionedActionV3 i pId c x' y' horizontalExpansion verticalBottomExpansion verticalTopExpansion
-repositionV3'' (PositionedStartTerminatorV3 pId x y horizontalExpansion verticalBottomExpansion verticalTopExpansion) x' y' = PositionedStartTerminatorV3 pId x y horizontalExpansion verticalBottomExpansion verticalTopExpansion
-repositionV3'' (PositionedHeadlineV3 i pId c x y horizontalExpansion verticalBottomExpansion verticalTopExpansion) x' y' = PositionedHeadlineV3 i pId c x y horizontalExpansion verticalBottomExpansion verticalTopExpansion
-repositionV3'' (PositionedAddressV3 i pId c x y horizontalExpansion verticalBottomExpansion verticalTopExpansion) x' y' = PositionedAddressV3 i pId c x y horizontalExpansion verticalBottomExpansion verticalTopExpansion
-repositionV3'' (PositionedEndTerminatorV3 pId x y horizontalExpansion verticalBottomExpansion verticalTopExpansion) x' y' = PositionedEndTerminatorV3 pId x y horizontalExpansion verticalBottomExpansion verticalTopExpansion
+   in PositionedForkV3 i pId c (Prelude.reverse positionedLeft) (Prelude.reverse positionedRight) gCId x' y' horizontalExpansion verticalBottomExpansion verticalTopExpansion _maxXGamma
+repositionV3'' (PositionedActionV3 i pId c x y horizontalExpansion verticalBottomExpansion verticalTopExpansion _maxXGamma) x' y' = PositionedActionV3 i pId c x' y' horizontalExpansion verticalBottomExpansion verticalTopExpansion _maxXGamma
+repositionV3'' (PositionedStartTerminatorV3 pId x y horizontalExpansion verticalBottomExpansion verticalTopExpansion _maxXGamma) x' y' = PositionedStartTerminatorV3 pId x y horizontalExpansion verticalBottomExpansion verticalTopExpansion _maxXGamma
+repositionV3'' (PositionedHeadlineV3 i pId c x y horizontalExpansion verticalBottomExpansion verticalTopExpansion _maxXGamma) x' y' = PositionedHeadlineV3 i pId c x y horizontalExpansion verticalBottomExpansion verticalTopExpansion _maxXGamma
+repositionV3'' (PositionedAddressV3 i pId c x y horizontalExpansion verticalBottomExpansion verticalTopExpansion _maxXGamma) x' y' = PositionedAddressV3 i pId c x y horizontalExpansion verticalBottomExpansion verticalTopExpansion _maxXGamma
+repositionV3'' (PositionedEndTerminatorV3 pId x y horizontalExpansion verticalBottomExpansion verticalTopExpansion _maxXGamma) x' y' = PositionedEndTerminatorV3 pId x y horizontalExpansion verticalBottomExpansion verticalTopExpansion _maxXGamma
 
 repositionV3' :: [PositionedBlockV3] -> Double -> Double -> ([PositionedBlockV3], Double, Double) -- positioned blocks, max x, min y
 repositionV3' [] maxX minY = ([], maxX, minY)
 repositionV3' pBs x' y' =
   foldl
     ( \(accuPositionedBlocks, accuMaxX, accuMinY) currentPB ->
-        let (x, y, maxX, minY, horizontalExpansion, verticalBottomExpansion, verticalTopExpansion) = getPositionV3 currentPB
+        let (x, y, maxX, minY, horizontalExpansion, verticalBottomExpansion, verticalTopExpansion, _maxXGamma) = getPositionV3 currentPB
             currentPB' = repositionV3'' currentPB x' accuMinY
-            (xNew, yNew, maxXNew, minYNew, horizontalExpansionNew, verticalBottomExpansionNew, verticalTopExpansionNew) = getPositionV3 currentPB'
+            (xNew, yNew, maxXNew, minYNew, horizontalExpansionNew, verticalBottomExpansionNew, verticalTopExpansionNew, _maxXGamma') = getPositionV3 currentPB'
          in ( currentPB' : accuPositionedBlocks,
               max maxXNew accuMaxX,
               minYNew
@@ -141,25 +141,25 @@ expand1'' ::
   Double ->
   PositionedBlockV3
 expand1''
-  pB@(PositionedForkV3 i pId c l r gCId x y horizontalExpansion verticalBottomExpansion verticalTopExpansion)
+  pB@(PositionedForkV3 i pId c l r gCId x y horizontalExpansion verticalBottomExpansion verticalTopExpansion _maxXGamma)
   pId'
   horizontalExpansion'
   verticalBottomExpansion'
   verticalTopExpansion' =
     if pId == pId'
-      then (PositionedForkV3 i pId c l r gCId x y (horizontalExpansion + horizontalExpansion') (verticalBottomExpansion + verticalBottomExpansion') (verticalTopExpansion + verticalTopExpansion'))
+      then (PositionedForkV3 i pId c l r gCId x y (horizontalExpansion + horizontalExpansion') (verticalBottomExpansion + verticalBottomExpansion') (verticalTopExpansion + verticalTopExpansion') _maxXGamma)
       else
         let l' = expand1' l pId' horizontalExpansion' verticalBottomExpansion' verticalTopExpansion'
             r' = expand1' r pId' horizontalExpansion' verticalBottomExpansion' verticalTopExpansion'
-         in PositionedForkV3 i pId c l' r' gCId x y horizontalExpansion verticalBottomExpansion verticalTopExpansion
+         in PositionedForkV3 i pId c l' r' gCId x y horizontalExpansion verticalBottomExpansion verticalTopExpansion _maxXGamma
 expand1''
-  pB@(PositionedActionV3 _i pId _c _x _y horizontalExpansion verticalBottomExpansion verticalTopExpansion)
+  pB@(PositionedActionV3 _i pId _c _x _y horizontalExpansion verticalBottomExpansion verticalTopExpansion _maxXGamma)
   pId'
   horizontalExpansion'
   verticalBottomExpansion'
   verticalTopExpansion' =
     if pId == pId'
-      then (PositionedActionV3 _i pId _c _x _y (horizontalExpansion + horizontalExpansion') (verticalBottomExpansion + verticalBottomExpansion') (verticalTopExpansion + verticalTopExpansion'))
+      then (PositionedActionV3 _i pId _c _x _y (horizontalExpansion + horizontalExpansion') (verticalBottomExpansion + verticalBottomExpansion') (verticalTopExpansion + verticalTopExpansion') _maxXGamma)
       else pB
 expand1'' positionedBlock _pId _horizontalExpansion _verticalBottomExpansion _verticalTopExpansion = positionedBlock
 

@@ -10,8 +10,8 @@ import Layout (expand1, positionV3, repositionV3)
 import Lexer (lexAll, runAlex)
 import Options.Applicative (execParser, fullDesc, header, helper, info, (<**>))
 import Parser (ParseResult (..), diagram)
-import PositionedBlockV3 (position)
-import Renderer (renderV3)
+import PositionedBlockV3 (originsAndDestinations, position, positionedBlocksById)
+import Renderer (renderGammaConnections, renderV3)
 import Validator (validate)
 
 main :: IO Int
@@ -43,20 +43,35 @@ main = do
                 -- renderSVG' ((outputPath input) <> "_v3") svgOptions ((render repositionedBlocks) <> renderedConnections3)
                 -- renderSVG' ((outputPath input) <> "_v3") svgOptions (renderV3 expandedBlocksV3''')
 
-                let (intermediateBlocks, gammaConnections) = fromBlocks (validBlocks)
-                -- putStrLn "intermediate blocks:"
-                -- putStrLn $ showBlocks intermediateBlocks
-
+                let (intermediateBlocks, gammaConnections) = fromBlocks validBlocks
+                --                 putStrLn "intermediate blocks:"
+                --                 putStrLn $ showBlocks intermediateBlocks
+                --
                 putStrLn "gamma connections:"
-                putStrLn $ show gammaConnections
+                putStrLn . show $ gammaConnections
 
                 let expandedIntermediateBlocks = gammaExpansions intermediateBlocks gammaConnections
-                putStrLn "intermediate blocks expanded for gamma connections:"
-                putStrLn $ showBlocks expandedIntermediateBlocks
+                -- putStrLn "intermediate blocks expanded for gamma connections:"
+                -- putStrLn $ showBlocks expandedIntermediateBlocks
 
                 let positionedBlocks = position expandedIntermediateBlocks 0.0 0.0
+                -- putStrLn "positoned blocks:"
+                -- print positionedBlocks
+
+                let (groupedByUserId, groupedByProgrammaticId) = positionedBlocksById positionedBlocks
+                -- putStrLn "positioned blocks grouped by user id:"
+                -- print groupedByUserId
+                -- putStrLn "positioned blocks grouped by programmatic id:"
+                -- print groupedByProgrammaticId
+
+                let (gammaCoordinates, gammaExpansions) = originsAndDestinations (groupedByUserId, groupedByProgrammaticId) gammaConnections
+                putStrLn "gamma coordinates:"
+                print gammaCoordinates
+                putStrLn "gamma expansions:"
+                print gammaExpansions
+
                 -- rendering v3:
-                -- renderSVG' ((outputPath input) <> "_v3") svgOptions (renderV3 positionedBlocks)
+                renderSVG' ((outputPath input) <> "_v3") svgOptions ((renderV3 positionedBlocks) <> renderGammaConnections gammaCoordinates)
 
                 -- rendering v1:
                 renderSVG' (outputPath input) svgOptions (Blocks.renderDiagram validBlocks)
