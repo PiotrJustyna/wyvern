@@ -33,8 +33,8 @@ clean:
 
 run: lint format
 	cabal run wyvern-diagrams -- \
-	    -i "./diagrams/general/simple-diagram-4a.txt" \
-	    -o "./diagrams/general/simple-diagram-4a.svg"
+	    -i "./diagrams/general/simple-diagram-5.txt" \
+	    -o "./diagrams/general/simple-diagram-5.svg"
 
 demo: lint format
 	cabal run wyvern-diagrams -- \

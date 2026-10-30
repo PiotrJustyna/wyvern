@@ -116,7 +116,7 @@ position' intermediateBlocks x y maxXGamma =
                in ( accuX,
                     minY,
                     positionedBlock : accuPositionedBlocks,
-                    maxXGamma' + repositionShift,
+                    maxXGamma', -- + repositionShift -- if there are gamma connections here
                     (min minY accuMinY)
                   )
           )
